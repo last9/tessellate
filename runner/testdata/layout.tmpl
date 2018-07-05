@@ -1,0 +1,5 @@
+{
+  "name": "{{ name|capfirst }}",
+  "credits": "{% for c in credits %}{{ c|stringformat:"%v" }}{% endfor %}"
+}
+
