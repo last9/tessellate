@@ -5,7 +5,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/oogway/tessellate/fault"
+	"github.com/tsocial/tessellate/fault"
 	"google.golang.org/grpc"
 )
 

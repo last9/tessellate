@@ -9,8 +9,8 @@ import (
 
 	"os"
 
-	"github.com/oogway/tessellate/storage/consul"
-	"github.com/oogway/tessellate/storage/types"
+	"github.com/tsocial/tessellate/storage/consul"
+	"github.com/tsocial/tessellate/storage/types"
 	"github.com/stretchr/testify/assert"
 )
 

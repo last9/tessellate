@@ -1,6 +1,6 @@
 package storage
 
-import "github.com/oogway/tessellate/storage/types"
+import "github.com/tsocial/tessellate/storage/types"
 
 func IdToVer(val string) (string, error) {
 	return val, nil

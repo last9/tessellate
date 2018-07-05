@@ -1,6 +1,6 @@
 package server
 
-import "github.com/oogway/tessellate/storage"
+import "github.com/tsocial/tessellate/storage"
 
 type Server struct {
 	store storage.Storer

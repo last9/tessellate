@@ -5,8 +5,8 @@ import (
 	"log"
 	"net"
 
-	server "github.com/oogway/tessellate/server"
-	"github.com/oogway/tessellate/storage/consul"
+	server "github.com/tsocial/tessellate/server"
+	"github.com/tsocial/tessellate/storage/consul"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/alecthomas/kingpin.v2"
 )

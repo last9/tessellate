@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
-	"github.com/oogway/tessellate/storage/types"
+	"github.com/tsocial/tessellate/storage/types"
 	"github.com/pkg/errors"
 )
 

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package oogway.tessellate.server;
+package tsocial.tessellate.server;
 
 import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 
-option go_package = "github.com/oogway/tessellate/server";
+option go_package = "github.com/tsocial/tessellate/server";
 
 service Tessellate {
   rpc SaveWorkspace (SaveWorkspaceRequest) returns (Ok) {}
