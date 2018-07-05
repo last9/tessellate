@@ -3,6 +3,10 @@ protodep:
 	go get -v github.com/lyft/protoc-gen-validate
 	protoc --version || /bin/bash install_protobuf.sh
 
+deps:
+	dep version || (curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh)
+	dep ensure
+
 proto: protodep
 	protoc \
 		-I. \
@@ -11,8 +15,5 @@ proto: protodep
 		--validate_out="lang=go:${GOPATH}/src" \
 		proto/tessellate.proto
 
-test: protodep
-	docker-compose -f docker-compose.yaml up -d
-	go.py go test -v -run TestStorer ./storage/...
-	go.py go test -v ./runner/...
-	docker-compose -f docker-compose.yaml stop
+test: protodep deps
+	go test -v ./...

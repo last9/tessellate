@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - "1.10"
+
+services:
+  - docker
+
+script:
+  - docker-compose -f docker-compose.yaml -d
+  - make test
