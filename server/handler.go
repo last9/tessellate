@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
-
 	"github.com/pkg/errors"
+	"github.com/tsocial/tessellate/storage/types"
+	"encoding/json"
+	"strings"
 )
 
 func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*Ok, error) {
@@ -11,15 +13,38 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return nil, nil
+	var values types.Vars
+
+	for k, v := range in.Vars {
+		values[k] = v
+	}
+
+	if err := s.store.SaveWorkspace(strings.ToLower(in.Id), &values); err != nil {
+		return nil, err
+	}
+
+	return &Ok{}, nil
 }
+
 
 func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Workspace, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return nil, nil
+	versionRecord, err := s.store.GetWorkspace(in.Id)
+
+	w := Workspace{}
+
+	w.Version = versionRecord.Version
+	w.Versions = versionRecord.Versions
+	if w.Vars["Data"], err = json.Marshal(&versionRecord.Data); err != nil{
+		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
+	}
+
+	w.Name = in.Id
+
+	return &w, err
 }
 
 func (s *Server) GetWorkspaceLayouts(

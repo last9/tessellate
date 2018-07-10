@@ -139,3 +139,7 @@ func (e *ConsulStore) Setup() error {
 func (e *ConsulStore) Teardown() error {
 	return nil
 }
+
+func (e *ConsulStore) GetClient() *api.Client {
+	return e.client
+}

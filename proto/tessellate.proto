@@ -54,6 +54,8 @@ message GetWorkspaceRequest {
 message Workspace {
   string Name = 1;
   map<string, bytes> Vars = 2;
+  string Version = 3;
+  repeated string Versions = 4;
 }
 
 message Layouts {

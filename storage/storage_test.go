@@ -7,11 +7,12 @@ import (
 	"math/rand"
 	"time"
 
-	"os"
-
 	"github.com/tsocial/tessellate/storage/consul"
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/hashicorp/consul/api"
+	"github.com/pkg/errors"
+	"os"
 )
 
 var store Storer
@@ -26,6 +27,17 @@ func randStringBytes(n int) string {
 	return string(b)
 }
 
+// Deletes all the keys in the prefix / on Consul.
+func deleteTree(client *api.Client) error {
+	client.KV().Put(&api.KVPair{}, &api.WriteOptions{})
+
+	if _, err := client.KV().DeleteTree("testing/", &api.WriteOptions{}); err != nil {
+		return errors.Wrap(err, "Cannot delete all keys under prefix /")
+	}
+
+	return nil
+}
+
 func TestMain(m *testing.M) {
 	//Seed Random number generator.
 	rand.Seed(time.Now().UnixNano())
@@ -33,17 +45,23 @@ func TestMain(m *testing.M) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	store = consul.MakeConsulStore("127.0.0.1:8500")
 	store.Setup()
-	os.Exit(m.Run())
+
+	os.Exit(func () int {
+		defer deleteTree(store.GetClient())
+
+		y := m.Run()
+		return y
+	}())
 }
 
 func TestStorer(t *testing.T) {
-	workspace := "hello"
+	workspace := "testing/hello"
 
 	t.Run("Workspace tests", func(t *testing.T) {
 		t.Run("Workspace does not exist", func(t *testing.T) {
 			v, err := store.GetWorkspace(workspace)
 			if err == nil {
-				t.Fatal("Should have faled with an Error")
+				t.Fatal("Should have failed with an Error")
 			}
 			assert.Nil(t, v)
 		})
@@ -74,6 +92,9 @@ func TestStorer(t *testing.T) {
 			assert.Equal(t, "latest", val.Version)
 		})
 	})
+
+
+
 	//
 	//t.Run("Vars tests", func(t *testing.T) {
 	//	d := map[string]interface{}{"ok": "1", "world": "2"}

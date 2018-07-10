@@ -1,6 +1,9 @@
 package storage
 
-import "github.com/tsocial/tessellate/storage/types"
+import (
+	"github.com/tsocial/tessellate/storage/types"
+	"github.com/hashicorp/consul/api"
+)
 
 func IdToVer(val string) (string, error) {
 	return val, nil
@@ -9,6 +12,7 @@ func IdToVer(val string) (string, error) {
 type Storer interface {
 	Setup() error
 	Teardown() error
+	GetClient() *api.Client
 
 	GetWorkspace(id string) (*types.VersionRecord, error)
 	SaveWorkspace(id string, vars *types.Vars) error
@@ -19,7 +23,7 @@ type Storer interface {
 	//
 	//GetAllLayouts(env string) ([]map[string]interface{}, error)
 	//GetLayout(env, v string) (*types.VersionRecord, error)
-	//SaveLayout(env, name string, layout map[string]interface{}) error
+	//SaveLayout(env, name string, layout *types.Vars) error
 	//GetLayoutStatus(env, layout string) (string, error)
 	//SetLayoutStatus(env, layout, status string) error
 	//

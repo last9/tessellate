@@ -13,3 +13,5 @@ vendor/*
 
 API.md
 docs.go
+
+.terraform/
