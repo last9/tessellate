@@ -23,7 +23,7 @@ type Storer interface {
 	//
 	//GetAllLayouts(env string) ([]map[string]interface{}, error)
 	//GetLayout(env, v string) (*types.VersionRecord, error)
-	//SaveLayout(env, name string, layout *types.Vars) error
+	SaveLayout(workspace, name string, layout map[string]interface{}, vars *types.Vars) error
 	//GetLayoutStatus(env, layout string) (string, error)
 	//SetLayoutStatus(env, layout, status string) error
 	//

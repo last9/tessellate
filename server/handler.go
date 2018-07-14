@@ -62,7 +62,23 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return nil, nil
+	var values types.Vars
+
+	for k, v := range in.Vars {
+		values[k] = v
+	}
+
+	plan := make(map[string]interface{}, 2)
+
+	for k, v := range in.Plan {
+		plan[k] = v
+	}
+
+	if err := s.store.SaveLayout(strings.ToLower(in.WorkspaceId), strings.ToLower(in.Id), plan, &values); err != nil {
+		return nil, err
+	}
+
+	return &Ok{}, nil
 }
 
 func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, error) {

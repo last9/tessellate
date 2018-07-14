@@ -13,6 +13,8 @@ import (
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 	"os"
+	"encoding/json"
+	"io/ioutil"
 )
 
 var store Storer
@@ -45,13 +47,60 @@ func TestMain(m *testing.M) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	store = consul.MakeConsulStore("127.0.0.1:8500")
 	store.Setup()
-
+/*
 	os.Exit(func () int {
 		defer deleteTree(store.GetClient())
 
 		y := m.Run()
 		return y
 	}())
+	*/
+	os.Exit(m.Run())
+}
+
+func TestLayout(t *testing.T) {
+	workspace := "testing/hello"
+	name := "layout1"
+
+	if err := store.SaveWorkspace(workspace, nil); err != nil{
+		t.Fatal(err)
+	}
+
+	_, err := store.GetWorkspace(workspace)
+	if err != nil{
+		t.Fatal(err)
+	}
+
+	layouts := make(map[string]interface{}, 2)
+
+	l := json.RawMessage{}
+	d, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	v, err := ioutil.ReadFile("../runner/testdata/vars.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := json.Unmarshal(d, &l); err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	l = json.RawMessage{}
+	if err := json.Unmarshal(v, &l); err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	layouts["sleep"] = l
+	layouts["env"] = v
+
+	t.Run("Save Layouts within workspace test", func(t *testing.T) {
+		store.SaveLayout(workspace, name, layouts, nil)
+	})
 }
 
 func TestStorer(t *testing.T) {

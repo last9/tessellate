@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/consul/api"
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/pkg/errors"
+	"os"
 )
 
 func MakeConsulStore(addr ...string) *ConsulStore {
@@ -119,6 +120,22 @@ func (e *ConsulStore) GetWorkspace(id string) (*types.VersionRecord, error) {
 		Version:  "latest",
 		Versions: versions,
 	}, nil
+}
+
+func (e *ConsulStore) SaveLayout(workspace, name string, layout map[string]interface{}, vars *types.Vars) error {
+	// 1. for every string in map, save the layout json value.
+	// 2. for range apply saveRevision() cmd.
+
+	enc :=  json.NewEncoder(os.Stdout)
+	err := enc.Encode(layout)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	e.saveRevision(workspace + "/layouts/" + name, "vars", "default", vars)
+	e.saveRevision(workspace, "layouts", name, layout)
+
+	return nil
 }
 
 func (e *ConsulStore) Setup() error {
