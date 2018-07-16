@@ -604,12 +604,7 @@ func (m *SaveLayoutRequest) Validate() error {
 		}
 	}
 
-	if len(m.GetPlan()) < 1 {
-		return SaveLayoutRequestValidationError{
-			Field:  "Plan",
-			Reason: "value must contain at least 1 pair(s)",
-		}
-	}
+	// no validation rules for Plan
 
 	// no validation rules for Vars
 

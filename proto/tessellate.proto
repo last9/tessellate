@@ -65,7 +65,7 @@ message Layouts {
 message Layout {
   string Workspaceid = 1;
   string Id = 2;
-  bytes Plan = 3;
+  map<string, bytes> Plan = 3;
   map<string, bytes> Vars = 4;
   LayoutStatus Status = 5;
 }
@@ -104,7 +104,7 @@ message LayoutRequest {
 message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
-  map<string, bytes> Plan = 3 [(validate.rules).map = {min_pairs: 1}];
+  map<string, bytes> Plan = 3;
   map<string, bytes> Vars = 4;
 }
 

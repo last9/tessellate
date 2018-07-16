@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"fmt"
-	"github.com/tsocial/tessellate/server"
 )
 
 var store Storer
@@ -125,13 +124,13 @@ func TestStorer(t *testing.T) {
 		})
 
 		t.Run("Set layout status to inactive", func(t *testing.T) {
-			store.SetLayoutStatus(workspace_id, layout_id, server.Status_INACTIVE.String())
+			store.SetLayoutStatus(workspace_id, layout_id, string(types.INACTIVE))
 		})
 
 		t.Run("Get the layout status which should be inactive", func(t *testing.T) {
 			status, _ := store.GetLayoutStatus(workspace_id, layout_id)
 
-			assert.Equal(t, server.Status_INACTIVE.String(), status)
+			assert.Equal(t, types.INACTIVE, status)
 		})
 	})
 
@@ -144,21 +143,21 @@ func getLayouts() (map[string]interface{}, error) {
 	l := json.RawMessage{}
 	d, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
 	if err != nil {
-		return nil, errors.Wrap(err, server.Errors_INTERNAL_ERROR.String())
+		return nil, errors.Wrap(err, "Cannot read tf.json file")
 	}
 
 	v, err := ioutil.ReadFile("../runner/testdata/vars.json")
 	if err != nil {
-		return nil, errors.Wrap(err, server.Errors_INTERNAL_ERROR.String())
+		return nil, errors.Wrap(err, "Cannot read tf.json file")
 	}
 
 	if err := json.Unmarshal(d, &l); err != nil {
-		return nil, errors.Wrap(err, server.Errors_INVALID_VALUE.String())
+		return nil, errors.Wrap(err, "Cannot unmarshal json.")
 	}
 
 	l = json.RawMessage{}
 	if err := json.Unmarshal(v, &l); err != nil {
-		return nil, errors.Wrap(err, server.Errors_INVALID_VALUE.String())
+		return nil, errors.Wrap(err, "Cannot unmarshal json")
 	}
 
 	layouts["sleep"] = l

@@ -51,7 +51,6 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
-
 	var values types.Vars
 
 	for k, v := range in.Vars {
@@ -64,47 +63,14 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 		plan[k] = v
 	}
 
-	if err := s.store.SaveLayout(strings.ToLower(in.WorkspaceId), strings.ToLower(in.Id), plan, &values); err != nil {
+	layout := types.LayoutRecord{Id: in.Id, Plan: in.Plan , Vars: &values}
+
+	if err := s.store.SaveLayout(in.WorkspaceId, layout); err != nil {
 		return nil, err
 	}
 
 	return &Ok{}, nil
 }
-/*
-func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, error) {
-	if err := in.Validate(); err != nil {
-		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
-	}
-
-	v, err := s.store.GetLayout(strings.ToLower(in.WorkspaceId), strings.ToLower(in.Id))
-	if err != nil {
-		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
-	}
-
-	status := LayoutStatus_ACTIVE
-	var plan []byte
-	var vars []byte
-	// todo: unmarshall v.Data["plan"]
-	json.Unmarshal(v.Data, &plan)
-	// todo: unmarshall v.Data["environment"]
-	json.Unmarshal(v.Data, &vars)
-
-	layout := Layout{Id: in.Id, Plan: plan, Status: status, Vars: nil}
-
-	return &layout, nil
-}
-
-func (s *Server) GetLayoutStatus(ctx context.Context, in *LayoutRequest) (string, error) {
-
-}
-
-func (s *Server) SaveLayoutStatus(ctx context.Context, in *SaveLayoutStatusRequest ) (*Ok, error) {
-
-}
-
-func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayoutsRequest) (*Layouts, error) {
-
-}*/
 
 func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobStatus, error) {
 	if err := in.Validate(); err != nil {

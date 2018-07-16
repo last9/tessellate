@@ -290,6 +290,18 @@ func (e *ConsulStore) GetWorkspaceLayouts(workspace string) ([]map[string]interf
 	return layouts, nil
 }
 
+func CreateJob(id, workspace, origin_url, origin_method string) (*types.Job, error) {
+	return nil, nil
+}
+
+func UpdateJob(j *types.Job) error {
+	return nil
+}
+
+func GetJob(workspace, jobId string) (*types.Job, error) {
+	return nil, nil
+}
+
 func (e *ConsulStore) Setup() error {
 	conf := api.DefaultConfig()
 	if len(e.addr) > 0 {

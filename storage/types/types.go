@@ -23,7 +23,7 @@ const (
 
 type LayoutRecord struct {
 	Id string
-	Plan json.RawMessage
+	Plan map[string]interface{}
 	Vars *Vars
 	Status string
 	Version string
@@ -32,11 +32,11 @@ type LayoutRecord struct {
 
 type Vars map[string]interface{}
 
-type Namespace struct {
-	Name string
-	Vars *Vars
-}
-
-type Blueprint struct {
-	Name string
+type Job struct {
+	Id string
+	LayoutId string
+	Plan map[string]interface{}
+	Status string
+	VarsId string
+	Op string
 }
