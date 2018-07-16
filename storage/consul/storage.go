@@ -188,8 +188,13 @@ func (e *ConsulStore) GetLayout(workspace, name string) (*types.LayoutRecord, er
 		return nil, errors.Wrap(err, "Cannot unmarshal Vars")
 	}
 
+	var p map[string]interface{}
+	if err := json.Unmarshal(plan.Value, &p); err != nil {
+		return nil, errors.Wrap(err, "Cannot unmarshal Vars")
+	}
+
 	return &types.LayoutRecord{
-		Plan:     plan.Value,
+		Plan:     p,
 		Status:   string(plan.Value),
 		Version:  "latest",
 		Versions: versions,
