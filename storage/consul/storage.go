@@ -13,7 +13,10 @@ import (
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/pkg/errors"
 	"os"
+	"github.com/tsocial/tessellate/server"
 )
+
+const layout_dir = "layouts"
 
 func MakeConsulStore(addr ...string) *ConsulStore {
 	return &ConsulStore{addr: addr}
@@ -122,20 +125,126 @@ func (e *ConsulStore) GetWorkspace(id string) (*types.VersionRecord, error) {
 	}, nil
 }
 
-func (e *ConsulStore) SaveLayout(workspace, name string, layout map[string]interface{}, vars *types.Vars) error {
-	// 1. for every string in map, save the layout json value.
-	// 2. for range apply saveRevision() cmd.
+func (e *ConsulStore) SaveLayout(workspace, name string, plan map[string]interface{}, vars *types.Vars) error {
 
 	enc :=  json.NewEncoder(os.Stdout)
-	err := enc.Encode(layout)
+	err := enc.Encode(plan)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
-	e.saveRevision(workspace + "/layouts/" + name, "vars", "default", vars)
-	e.saveRevision(workspace, "layouts", name, layout)
+	// Save the vars for the layout.
+	e.saveRevision(workspace + path.Join(layout_dir, name), "vars", "default", vars)
+	// Save the status for the layout.
+	e.saveRevision(workspace, path.Join(layout_dir , name), "status", server.Status_ACTIVE.String())
+	// Save the layout plan.
+	e.saveRevision(workspace, layout_dir, name, plan)
 
 	return nil
+}
+
+func (e *ConsulStore) GetLayout(workspace, name string) (*types.LayoutRecord, error) {
+
+	// workspace-name/layouts/layout-name
+	id := path.Join(workspace, layout_dir, name)
+
+	// Get the versions.
+	versions, err := e.getRevisions(id, "vars", "default")
+	if err != nil {
+		return nil, errors.Wrapf(err, "Cannot fetch Revisions for %v", )
+	}
+
+	vars_key := path.Join(id, "vars", "default", "latest")
+	plan_key := path.Join(id, "status", "latest")
+
+	// Get the vars for the layout.
+	env, _, err := e.client.KV().Get(vars_key, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Cannot fetch latest vars for %v", id)
+	}
+
+	if env == nil {
+		return nil, errors.Errorf("Missing Key %v", vars_key)
+	}
+
+	// Get the latest plan for the layout.
+	plan, _, err := e.client.KV().Get(plan_key, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Cannot fetch latest plan for %v", id)
+	}
+
+	if plan == nil {
+		return nil, errors.Errorf("Missing Key %v", plan_key)
+	}
+
+	return &types.LayoutRecord{
+		Plan:     plan.Value,
+		Status:   string(plan.Value),
+		Version:  "latest",
+		Versions: versions,
+		Env:	  env.Value,
+	}, nil
+}
+
+func (e *ConsulStore) GetLayoutStatus(workspace, name string) (string, error) {
+	layout, err := e.GetLayout(workspace, name)
+	if err != nil {
+		return "", errors.Wrapf(err, "Cannot fetch status for Layout id: %v", name)
+	}
+
+	return string(layout.Status) , nil
+}
+
+func (e *ConsulStore) SetLayoutStatus(workspace, name, status string) error {
+
+	enc :=  json.NewEncoder(os.Stdout)
+	err := enc.Encode(name)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	// Save the status for the layout.
+	// todo talina: What if the layout doesn't exist. Log errors.
+	e.saveRevision(workspace, path.Join(layout_dir , name), "status", status)
+
+	return nil
+}
+
+// Gets all versions of all layouts of the workspace.
+func (e *ConsulStore) GetWorkspaceLayouts(workspace string) ([]map[string]interface{}, error) {
+
+	names, err := e.getRevisions(workspace, layout_dir, "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "Cannot fetch Layouts for %v", )
+	}
+
+	var layout_revisions map[string]interface{}
+	var layouts []map[string]interface{}
+	var id string
+
+
+	for _, name := range names {
+		versions, err := e.getRevisions(workspace, layout_dir, name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Cannot fetch versions for layout %v", name)
+		}
+
+		for _, ver := range versions {
+			id = path.Join(workspace, layout_dir, name, ver)
+
+			plan, _, err := e.client.KV().Get(id, nil)
+			if err != nil {
+				return nil, errors.Wrapf(err, "Cannot fetch Layouts for %v of version %v",
+					name, ver)
+			}
+
+			layout_revisions[name] = plan
+		}
+
+		layouts = append(layouts, layout_revisions)
+	}
+
+	return layouts, nil
 }
 
 func (e *ConsulStore) Setup() error {

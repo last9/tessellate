@@ -14,6 +14,9 @@ service Tessellate {
   rpc SaveLayout (SaveLayoutRequest) returns (Ok) {}
   rpc GetLayout (LayoutRequest) returns (Layout) {}
 
+  rpc SaveLayoutStatus (SaveLayoutStatusRequest) returns (Ok) {}
+  rpc GetLayoutStatus (LayoutRequest) returns (LayoutStatus) {}
+
   rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {}
   rpc DestroyLayout (LayoutRequest) returns (JobStatus) {}
 
@@ -33,7 +36,7 @@ enum Errors {
   MISSING_VALUE = 5;
 }
 
-enum LayoutStatus {
+enum Status {
   INACTIVE = 0;
   ACTIVE = 1;
 }
@@ -105,6 +108,16 @@ message SaveLayoutRequest {
   string Id = 2 [(validate.rules).string.min_len = 1];
   map<string, bytes> Plan = 3 [(validate.rules).map = {min_pairs: 1}];
   map<string, bytes> Vars = 4;
+}
+
+message SaveLayoutStatusRequest {
+  string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
+  string Id = 2 [(validate.rules).string.min_len = 1];
+  string Status = 3;
+}
+
+message LayoutStatus {
+  Status Status = 1;
 }
 
 message ApplyLayoutRequest {
