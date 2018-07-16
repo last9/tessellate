@@ -16,12 +16,15 @@ type VersionRecord struct {
 	Versions []string
 }
 
-// todo talina: would it be wise to add status and plan and env
-// for a layout in the same Data json?
-// For the moment, I've created another struct for a layout
+const (
+	INACTIVE = iota  // a == 1 (iota has been reset)
+	ACTIVE = iota  // b == 2
+)
+
 type LayoutRecord struct {
+	Id string
 	Plan json.RawMessage
-	Env json.RawMessage
+	Vars *Vars
 	Status string
 	Version string
 	Versions []string

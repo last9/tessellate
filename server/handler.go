@@ -26,7 +26,6 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 	return &Ok{}, nil
 }
 
-
 func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Workspace, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
@@ -47,15 +46,6 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 	return &w, err
 }
 
-func (s *Server) GetWorkspaceLayouts(
-	ctx context.Context, in *GetWorkspaceLayoutsRequest,
-) (*Layouts, error) {
-	if err := in.Validate(); err != nil {
-		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
-	}
-
-	return &Layouts{}, nil
-}
 
 func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
@@ -80,14 +70,41 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 
 	return &Ok{}, nil
 }
-
+/*
 func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return nil, nil
+	v, err := s.store.GetLayout(strings.ToLower(in.WorkspaceId), strings.ToLower(in.Id))
+	if err != nil {
+		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
+	}
+
+	status := LayoutStatus_ACTIVE
+	var plan []byte
+	var vars []byte
+	// todo: unmarshall v.Data["plan"]
+	json.Unmarshal(v.Data, &plan)
+	// todo: unmarshall v.Data["environment"]
+	json.Unmarshal(v.Data, &vars)
+
+	layout := Layout{Id: in.Id, Plan: plan, Status: status, Vars: nil}
+
+	return &layout, nil
 }
+
+func (s *Server) GetLayoutStatus(ctx context.Context, in *LayoutRequest) (string, error) {
+
+}
+
+func (s *Server) SaveLayoutStatus(ctx context.Context, in *SaveLayoutStatusRequest ) (*Ok, error) {
+
+}
+
+func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayoutsRequest) (*Layouts, error) {
+
+}*/
 
 func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobStatus, error) {
 	if err := in.Validate(); err != nil {

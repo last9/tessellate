@@ -13,7 +13,6 @@ import (
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/pkg/errors"
 	"os"
-	"github.com/tsocial/tessellate/server"
 )
 
 const layout_dir = "layouts"
@@ -125,20 +124,27 @@ func (e *ConsulStore) GetWorkspace(id string) (*types.VersionRecord, error) {
 	}, nil
 }
 
-func (e *ConsulStore) SaveLayout(workspace, name string, plan map[string]interface{}, vars *types.Vars) error {
+func (e *ConsulStore) SaveLayout(workspace string, layout *types.LayoutRecord) error {
 
 	enc :=  json.NewEncoder(os.Stdout)
-	err := enc.Encode(plan)
+	err := enc.Encode(layout.Plan)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
 	// Save the vars for the layout.
-	e.saveRevision(workspace + path.Join(layout_dir, name), "vars", "default", vars)
+	if err := e.saveRevision(workspace + path.Join(layout_dir, layout.Id), "vars", "default", layout.Vars); err != nil {
+		return errors.Wrap(err, "Cannot Save Layout Vars.")
+	}
 	// Save the status for the layout.
-	e.saveRevision(workspace, path.Join(layout_dir , name), "status", server.Status_ACTIVE.String())
+	if err := e.SetLayoutStatus(workspace, layout.Id, string(types.INACTIVE)); err != nil {
+		return errors.Wrap(err, "Cannot save Layout's status")
+	}
+
 	// Save the layout plan.
-	e.saveRevision(workspace, layout_dir, name, plan)
+	if err := e.saveRevision(workspace, layout_dir, layout.Id, layout.Plan); err != nil {
+		return errors.Wrap(err, "Cannot save Layout Plan")
+	}
 
 	return nil
 }
@@ -158,12 +164,12 @@ func (e *ConsulStore) GetLayout(workspace, name string) (*types.LayoutRecord, er
 	plan_key := path.Join(id, "status", "latest")
 
 	// Get the vars for the layout.
-	env, _, err := e.client.KV().Get(vars_key, nil)
+	envBytes, _, err := e.client.KV().Get(vars_key, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Cannot fetch latest vars for %v", id)
 	}
 
-	if env == nil {
+	if envBytes == nil {
 		return nil, errors.Errorf("Missing Key %v", vars_key)
 	}
 
@@ -177,22 +183,18 @@ func (e *ConsulStore) GetLayout(workspace, name string) (*types.LayoutRecord, er
 		return nil, errors.Errorf("Missing Key %v", plan_key)
 	}
 
+	var l types.Vars
+	if err := json.Unmarshal(envBytes.Value, &l); err != nil {
+		return nil, errors.Wrap(err, "Cannot unmarshal Vars")
+	}
+
 	return &types.LayoutRecord{
 		Plan:     plan.Value,
 		Status:   string(plan.Value),
 		Version:  "latest",
 		Versions: versions,
-		Env:	  env.Value,
+		Vars:	  &l,
 	}, nil
-}
-
-func (e *ConsulStore) GetLayoutStatus(workspace, name string) (string, error) {
-	layout, err := e.GetLayout(workspace, name)
-	if err != nil {
-		return "", errors.Wrapf(err, "Cannot fetch status for Layout id: %v", name)
-	}
-
-	return string(layout.Status) , nil
 }
 
 func (e *ConsulStore) SetLayoutStatus(workspace, name, status string) error {
@@ -204,8 +206,49 @@ func (e *ConsulStore) SetLayoutStatus(workspace, name, status string) error {
 	}
 
 	// Save the status for the layout.
-	// todo talina: What if the layout doesn't exist. Log errors.
-	e.saveRevision(workspace, path.Join(layout_dir , name), "status", status)
+	if err := e.saveRevision(workspace, path.Join(layout_dir , name), "status", status); err != nil {
+		return errors.Wrap(err, "Cannot save status of the layout.")
+	}
+
+	return nil
+}
+
+func (e *ConsulStore) GetVars(workspace, layout string) (*types.Vars, error) {
+	// workspace-name/layouts/layout-name
+	id := path.Join(workspace, layout_dir, layout)
+
+	// Get the vars.
+	vars_key := path.Join(id, "vars", "default", "latest")
+
+	// Get the vars for the layout.
+	envBytes, _, err := e.client.KV().Get(vars_key, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Cannot fetch latest vars for %v", id)
+	}
+
+	if envBytes == nil {
+		return nil, errors.Errorf("Missing Key %v", vars_key)
+	}
+
+	var vars types.Vars
+	if err := json.Unmarshal(envBytes.Value, &vars); err != nil {
+		return nil, errors.Wrap(err, "Cannot unmarshal Vars")
+	}
+
+	return &vars, nil
+}
+
+func (e *ConsulStore) SaveVars(workspace string, layout string, varmap map[string]interface{}) error {
+	enc :=  json.NewEncoder(os.Stdout)
+	err := enc.Encode(varmap)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	// Save the vars for the layout.
+	if err := e.saveRevision(workspace + path.Join(layout_dir, layout), "vars", "default", varmap); err != nil {
+		return errors.Wrap(err, "Cannot Save Layout Vars.")
+	}
 
 	return nil
 }

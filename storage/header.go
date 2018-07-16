@@ -19,14 +19,12 @@ type Storer interface {
 	SaveWorkspace(id string, vars *types.Vars) error
 	GetWorkspaceLayouts(workspace string) ([]map[string]interface{}, error)
 
-	//GetAllVars(workspace string) ([]map[string]interface{}, error)
-	//SaveVars(workspace string, name string, varmap map[string]interface{}) error
-	//GetVars(workspace, v string) (*types.VersionRecord, error)
+	SaveVars(workspace string, layout string, varmap map[string]interface{}) error
+	GetVars(workspace, layout string) (*types.Vars, error)
 
 	// Layout endpoints.
 	GetLayout(workspace, layout string) (*types.LayoutRecord, error)
-	SaveLayout(workspace, name string, layout map[string]interface{}, vars *types.Vars) error
-	GetLayoutStatus(workspace, name string) (string, error)
+	SaveLayout(workspace string, layout *types.LayoutRecord) error
 	SetLayoutStatus(workspace, layout, status string) error
 
 	//

@@ -14,9 +14,6 @@ service Tessellate {
   rpc SaveLayout (SaveLayoutRequest) returns (Ok) {}
   rpc GetLayout (LayoutRequest) returns (Layout) {}
 
-  rpc SetLayoutStatus (SetLayoutStatusRequest) returns (Ok) {}
-  rpc GetLayoutStatus (LayoutRequest) returns (LayoutStatus) {}
-
   rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {}
   rpc DestroyLayout (LayoutRequest) returns (JobStatus) {}
 
@@ -66,10 +63,11 @@ message Layouts {
 }
 
 message Layout {
-  string Id = 1;
-  bytes Plan = 2;
-  map<string, bytes> Vars = 3;
-  LayoutStatus Status = 4;
+  string Workspaceid = 1;
+  string Id = 2;
+  bytes Plan = 3;
+  map<string, bytes> Vars = 4;
+  LayoutStatus Status = 5;
 }
 
 message SaveWorkspaceRequest {

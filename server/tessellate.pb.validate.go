@@ -195,6 +195,8 @@ func (m *Layout) Validate() error {
 		return nil
 	}
 
+	// no validation rules for Workspaceid
+
 	// no validation rules for Id
 
 	// no validation rules for Plan
