@@ -295,15 +295,15 @@ func (e *ConsulStore) GetWorkspaceLayouts(workspace string) ([]map[string]interf
 	return layouts, nil
 }
 
-func CreateJob(id, workspace, origin_url, origin_method string) (*types.Job, error) {
+func (e *ConsulStore) CreateJob(id, workspace, origin_url, origin_method string) (*types.Job, error) {
 	return nil, nil
 }
 
-func UpdateJob(j *types.Job) error {
+func (e *ConsulStore) UpdateJob(j *types.Job) error {
 	return nil
 }
 
-func GetJob(workspace, jobId string) (*types.Job, error) {
+func (e *ConsulStore) GetJob(workspace, jobId string) (*types.Job, error) {
 	return nil, nil
 }
 
