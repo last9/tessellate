@@ -15,6 +15,8 @@ import (
 	"os"
 	"encoding/json"
 	"io/ioutil"
+	"fmt"
+	"github.com/tsocial/tessellate/server"
 )
 
 var store Storer
@@ -58,83 +60,40 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestLayout(t *testing.T) {
-	workspace := "testing/hello"
-	name := "layout1"
-
-	if err := store.SaveWorkspace(workspace, nil); err != nil{
-		t.Fatal(err)
-	}
-
-	_, err := store.GetWorkspace(workspace)
-	if err != nil{
-		t.Fatal(err)
-	}
-
-	layouts := make(map[string]interface{}, 2)
-
-	l := json.RawMessage{}
-	d, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
-	if err != nil {
-		t.Error(err)
-	}
-
-	v, err := ioutil.ReadFile("../runner/testdata/vars.json")
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err := json.Unmarshal(d, &l); err != nil {
-		t.Fatal(err)
-		return
-	}
-
-	l = json.RawMessage{}
-	if err := json.Unmarshal(v, &l); err != nil {
-		t.Fatal(err)
-		return
-	}
-
-	layouts["sleep"] = l
-	layouts["env"] = v
-
-	t.Run("Save Layouts within workspace test", func(t *testing.T) {
-		store.SaveLayout(workspace, name, layouts, nil)
-	})
-}
 
 func TestStorer(t *testing.T) {
-	workspace := "testing/hello"
+	workspace_id := "testing/workspace-1"
+	layout_id := "layout-1"
 
 	t.Run("Workspace tests", func(t *testing.T) {
 		t.Run("Workspace does not exist", func(t *testing.T) {
-			v, err := store.GetWorkspace(workspace)
+			v, err := store.GetWorkspace(workspace_id)
 			if err == nil {
 				t.Fatal("Should have failed with an Error")
 			}
 			assert.Nil(t, v)
 		})
 
-		t.Run("Get an Workspace after creation", func(t *testing.T) {
-			err := store.SaveWorkspace(workspace, nil)
+		t.Run("Get a Workspace after creation", func(t *testing.T) {
+			err := store.SaveWorkspace(workspace_id, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			val, err := store.GetWorkspace(workspace)
+			val, err := store.GetWorkspace(workspace_id)
 			if err != nil {
 				t.Fatal(err)
 			}
 			assert.Equal(t, "latest", val.Version)
 		})
 
-		t.Run("Resaving a Workspace doesn't raise Error", func(t *testing.T) {
+		t.Run("Resaving a Workspace doesn't raise an Error", func(t *testing.T) {
 			vars := types.Vars(map[string]interface{}{"key": 1})
-			if err := store.SaveWorkspace(workspace, &vars); err != nil {
+			if err := store.SaveWorkspace(workspace_id, &vars); err != nil {
 				t.Fatal(err)
 			}
 
-			val, err := store.GetWorkspace(workspace)
+			val, err := store.GetWorkspace(workspace_id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -142,29 +101,68 @@ func TestStorer(t *testing.T) {
 		})
 	})
 
+	t.Run("Layout tests", func(t *testing.T) {
+		layouts, err := getLayouts()
+		if err != nil {
+			t.Fatal(err)
+			return
+		}
 
+		t.Run("Save Layouts within workspace test", func(t *testing.T) {
+			store.SaveLayout(workspace_id, layout_id, layouts, nil)
+		})
 
-	//
-	//t.Run("Vars tests", func(t *testing.T) {
-	//	d := map[string]interface{}{"ok": "1", "world": "2"}
-	//
-	//	t.Run("Get Vars that don't exist", func(t *testing.T) {
-	//		_, err := store.GetVars(workspace, "var1")
-	//		assert.Error(t, err)
-	//		assert.Contains(t, err.Error(), "key has not been set")
-	//	})
-	//
-	//	t.Run("Save Vars", func(t *testing.T) {
-	//		err := store.SaveVars(workspace, "var1", d)
-	//		assert.NoError(t, err)
-	//	})
-	//
-	//	t.Run("Get saved vars", func(t *testing.T) {
-	//		out, err := store.GetVars(workspace, "var1")
-	//		assert.NoError(t, err)
-	//		assert.Equal(t, out.Data, d)
-	//		assert.True(t, strings.HasSuffix(out.Version, "latest"))
-	//		assert.Equal(t, len(out.Versions), 2)
-	//	})
-	//})
+		t.Run(" Get the layout for the mentioned workspace and name", func(t *testing.T) {
+			layout, _ := store.GetLayout(workspace_id, layout_id)
+			fmt.Println(layout.Plan)
+		})
+
+		t.Run("Get all the layouts and all the versioned plans in the given layout", func(t *testing.T) {
+			layouts, _ := store.GetWorkspaceLayouts(workspace_id)
+			for k, v := range layouts {
+				fmt.Println(k, v)
+			}
+		})
+
+		t.Run("Set layout status to inactive", func(t *testing.T) {
+			store.SetLayoutStatus(workspace_id, layout_id, server.Status_INACTIVE.String())
+		})
+
+		t.Run("Get the layout status which should be inactive", func(t *testing.T) {
+			status, _ := store.GetLayoutStatus(workspace_id, layout_id)
+
+			assert.Equal(t, server.Status_INACTIVE.String(), status)
+		})
+	})
+
+}
+
+// read tf.json files and form a map of key-value
+func getLayouts() (map[string]interface{}, error) {
+	layouts := make(map[string]interface{}, 2)
+
+	l := json.RawMessage{}
+	d, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
+	if err != nil {
+		return nil, errors.Wrap(err, server.Errors_INTERNAL_ERROR.String())
+	}
+
+	v, err := ioutil.ReadFile("../runner/testdata/vars.json")
+	if err != nil {
+		return nil, errors.Wrap(err, server.Errors_INTERNAL_ERROR.String())
+	}
+
+	if err := json.Unmarshal(d, &l); err != nil {
+		return nil, errors.Wrap(err, server.Errors_INVALID_VALUE.String())
+	}
+
+	l = json.RawMessage{}
+	if err := json.Unmarshal(v, &l); err != nil {
+		return nil, errors.Wrap(err, server.Errors_INVALID_VALUE.String())
+	}
+
+	layouts["sleep"] = l
+	layouts["env"] = v
+
+	return layouts, nil
 }
