@@ -7,15 +7,15 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/tsocial/tessellate/storage/consul"
-	"github.com/tsocial/tessellate/storage/types"
-	"github.com/stretchr/testify/assert"
+	"os"
+
+	"strings"
+
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
-	"os"
-	"encoding/json"
-	"io/ioutil"
-	"fmt"
+	"github.com/stretchr/testify/assert"
+	"github.com/tsocial/tessellate/storage/consul"
+	"github.com/tsocial/tessellate/storage/types"
 )
 
 var store Storer
@@ -48,120 +48,54 @@ func TestMain(m *testing.M) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	store = consul.MakeConsulStore("127.0.0.1:8500")
 	store.Setup()
-/*
-	os.Exit(func () int {
+
+	os.Exit(func() int {
 		defer deleteTree(store.GetClient())
 
 		y := m.Run()
 		return y
 	}())
-	*/
-	os.Exit(m.Run())
 }
 
-
 func TestStorer(t *testing.T) {
-	workspace_id := "testing/workspace-1"
-	layout_id := "layout-1"
+	t.Run("Storage tests", func(t *testing.T) {
+		tree := &types.Tree{Name: "store_test", TreeType: "testing"}
 
-	t.Run("Workspace tests", func(t *testing.T) {
+		workspace := types.Workspace("alibaba")
+
 		t.Run("Workspace does not exist", func(t *testing.T) {
-			v, err := store.GetWorkspace(workspace_id)
-			if err == nil {
+			if err := store.Get(&workspace, tree); err == nil {
 				t.Fatal("Should have failed with an Error")
 			}
-			assert.Nil(t, v)
 		})
 
 		t.Run("Get a Workspace after creation", func(t *testing.T) {
-			err := store.SaveWorkspace(workspace_id, nil)
+			err := store.Save(&workspace, tree)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			val, err := store.GetWorkspace(workspace_id)
-			if err != nil {
+			if err := store.Get(&workspace, tree); err != nil {
 				t.Fatal(err)
 			}
-			assert.Equal(t, "latest", val.Version)
 		})
 
 		t.Run("Resaving a Workspace doesn't raise an Error", func(t *testing.T) {
-			vars := types.Vars(map[string]interface{}{"key": 1})
-			if err := store.SaveWorkspace(workspace_id, &vars); err != nil {
+			if err := store.Save(&workspace, tree); err != nil {
 				t.Fatal(err)
 			}
 
-			val, err := store.GetWorkspace(workspace_id)
+			if err := store.Get(&workspace, tree); err != nil {
+				t.Fatal(err)
+			}
+
+			v, err := store.GetVersions(&workspace, tree)
 			if err != nil {
 				t.Fatal(err)
 			}
-			assert.Equal(t, "latest", val.Version)
+
+			assert.Equal(t, len(v), 3)
+			assert.Contains(t, strings.Join(v, ""), "latest")
 		})
 	})
-
-	t.Run("Layout tests", func(t *testing.T) {
-		layouts, err := getLayouts()
-		if err != nil {
-			t.Fatal(err)
-			return
-		}
-
-		t.Run("Save Layouts within workspace test", func(t *testing.T) {
-			store.SaveLayout(workspace_id, layout_id, layouts, nil)
-		})
-
-		t.Run(" Get the layout for the mentioned workspace and name", func(t *testing.T) {
-			layout, _ := store.GetLayout(workspace_id, layout_id)
-			fmt.Println(layout.Plan)
-		})
-
-		t.Run("Get all the layouts and all the versioned plans in the given layout", func(t *testing.T) {
-			layouts, _ := store.GetWorkspaceLayouts(workspace_id)
-			for k, v := range layouts {
-				fmt.Println(k, v)
-			}
-		})
-
-		t.Run("Set layout status to inactive", func(t *testing.T) {
-			store.SetLayoutStatus(workspace_id, layout_id, string(types.INACTIVE))
-		})
-
-		t.Run("Get the layout status which should be inactive", func(t *testing.T) {
-			status, _ := store.GetLayoutStatus(workspace_id, layout_id)
-
-			assert.Equal(t, types.INACTIVE, status)
-		})
-	})
-
-}
-
-// read tf.json files and form a map of key-value
-func getLayouts() (map[string]interface{}, error) {
-	layouts := make(map[string]interface{}, 2)
-
-	l := json.RawMessage{}
-	d, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
-	if err != nil {
-		return nil, errors.Wrap(err, "Cannot read tf.json file")
-	}
-
-	v, err := ioutil.ReadFile("../runner/testdata/vars.json")
-	if err != nil {
-		return nil, errors.Wrap(err, "Cannot read tf.json file")
-	}
-
-	if err := json.Unmarshal(d, &l); err != nil {
-		return nil, errors.Wrap(err, "Cannot unmarshal json.")
-	}
-
-	l = json.RawMessage{}
-	if err := json.Unmarshal(v, &l); err != nil {
-		return nil, errors.Wrap(err, "Cannot unmarshal json")
-	}
-
-	layouts["sleep"] = l
-	layouts["env"] = v
-
-	return layouts, nil
 }

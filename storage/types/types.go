@@ -3,6 +3,8 @@ package types
 import (
 	"path"
 
+	"encoding/json"
+
 	"github.com/satori/go.uuid"
 )
 
@@ -22,18 +24,36 @@ func (n *Tree) MakePath() string {
 
 type ReaderWriter interface {
 	MakePath(tree *Tree) string
+	Marshal() ([]byte, error)
+	Unmarshal([]byte) error
 }
 
 type Workspace string
 
-func (w Workspace) Path(_ *Tree) string {
-	return path.Join("workspace", string(w))
+func (w *Workspace) MakePath(_ *Tree) string {
+	return path.Join("workspace", string(*w))
+}
+
+func (w *Workspace) Unmarshal(b []byte) error {
+	return json.Unmarshal(b, w)
+}
+
+func (w *Workspace) Marshal() ([]byte, error) {
+	return json.Marshal(w)
 }
 
 type Vars map[string]interface{}
 
-func (v *Vars) Path(n *Tree) string {
+func (v *Vars) MakePath(n *Tree) string {
 	return path.Join(n.MakePath(), "vars")
+}
+
+func (w *Vars) Unmarshal(b []byte) error {
+	return json.Unmarshal(b, w)
+}
+
+func (w *Vars) Marshal() ([]byte, error) {
+	return json.Marshal(w)
 }
 
 type Layout struct {
@@ -42,8 +62,16 @@ type Layout struct {
 	Status string
 }
 
-func (l *Layout) Path(n *Tree) string {
+func (l *Layout) MakePath(n *Tree) string {
 	return path.Join(n.MakePath(), "layout", l.Id)
+}
+
+func (w *Layout) Unmarshal(b []byte) error {
+	return json.Unmarshal(b, w)
+}
+
+func (w *Layout) Marshal() ([]byte, error) {
+	return json.Marshal(w)
 }
 
 func MakeVersion() string {
@@ -63,4 +91,16 @@ type Job struct {
 	Status   string
 	VarsId   string
 	Op       string
+}
+
+func (v *Job) MakePath(n *Tree) string {
+	return path.Join(n.MakePath(), "jobs", v.Id)
+}
+
+func (w *Job) Unmarshal(b []byte) error {
+	return json.Unmarshal(b, w)
+}
+
+func (w *Job) Marshal() ([]byte, error) {
+	return json.Marshal(w)
 }

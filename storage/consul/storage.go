@@ -3,8 +3,6 @@ package consul
 import (
 	"path"
 
-	"encoding/json"
-
 	"time"
 
 	"fmt"
@@ -54,7 +52,7 @@ func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, ve
 		return errors.Errorf("Missing Key %v", path)
 	}
 
-	if err := json.Unmarshal(bytes.Value, &reader); err != nil {
+	if err := reader.Unmarshal(bytes.Value); err != nil {
 		return errors.Wrap(err, "Cannot unmarshal data into Reader")
 	}
 
@@ -69,7 +67,7 @@ func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, ve
 // NOTE: This is an atomic operation, so either everything is written or nothing is.
 // The operation may take its own sweet time before a quorum write is guaranteed.
 func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
-	b, err := json.Marshal(source)
+	b, err := source.Marshal()
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal vars")
 	}
