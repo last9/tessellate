@@ -10,12 +10,9 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
-	"github.com/tsocial/tessellate/storage/types"
 	"github.com/pkg/errors"
-	"os"
+	"github.com/tsocial/tessellate/storage/types"
 )
-
-const layout_dir = "layouts"
 
 func MakeConsulStore(addr ...string) *ConsulStore {
 	return &ConsulStore{addr: addr}
@@ -26,8 +23,8 @@ type ConsulStore struct {
 	client *api.Client
 }
 
-func (e *ConsulStore) getRevisions(workspace, dir, name string) ([]string, error) {
-	key := path.Join(workspace, dir, name)
+func (e *ConsulStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) ([]string, error) {
+	key := reader.MakePath(tree)
 	l, _, err := e.client.KV().List(key, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Cannot list %v", key)
@@ -41,6 +38,29 @@ func (e *ConsulStore) getRevisions(workspace, dir, name string) ([]string, error
 	return v, nil
 }
 
+func (e *ConsulStore) Get(reader types.ReaderWriter, tree *types.Tree) error {
+	return e.GetVersion(reader, tree, "latest")
+}
+
+func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error {
+	path := path.Join(reader.MakePath(tree), version)
+	// Get the vars for the layout.
+	bytes, _, err := e.client.KV().Get(path, nil)
+	if err != nil {
+		return errors.Wrapf(err, "Cannot fetch object for %v", path)
+	}
+
+	if bytes == nil {
+		return errors.Errorf("Missing Key %v", path)
+	}
+
+	if err := json.Unmarshal(bytes.Value, &reader); err != nil {
+		return errors.Wrap(err, "Cannot unmarshal data into Reader")
+	}
+
+	return nil
+}
+
 // Internal method to save Any data under a hierarchy that follows revision control.
 // Example: In a workspace staging, you wish to save a new layout called dc1
 // saveRevision("staging", "layout", "dc1", {....}) will try to save the following structure
@@ -48,14 +68,14 @@ func (e *ConsulStore) getRevisions(workspace, dir, name string) ([]string, error
 // workspace/layouts/dc1/new_timestamp
 // NOTE: This is an atomic operation, so either everything is written or nothing is.
 // The operation may take its own sweet time before a quorum write is guaranteed.
-func (e *ConsulStore) saveRevision(workspace, dir, name string, data interface{}) error {
-	b, err := json.Marshal(data)
+func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
+	b, err := json.Marshal(source)
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal vars")
 	}
 
 	ts := time.Now().UnixNano()
-	key := path.Join(workspace, dir, name)
+	key := source.MakePath(tree)
 
 	latestKey := path.Join(key, "latest")
 	timestampKey := path.Join(key, fmt.Sprintf("%+v", ts))
@@ -95,216 +115,6 @@ func (e *ConsulStore) saveRevision(workspace, dir, name string, data interface{}
 	}
 
 	return nil
-}
-
-func (e *ConsulStore) SaveWorkspace(id string, vars *types.Vars) error {
-	return e.saveRevision(id, "vars", "default", vars)
-}
-
-func (e *ConsulStore) GetWorkspace(id string) (*types.VersionRecord, error) {
-	versions, err := e.getRevisions(id, "vars", "default")
-	if err != nil {
-		return nil, errors.Wrapf(err, "Cannot fetch Revisions for %v", id)
-	}
-
-	key := path.Join(id, "vars", "default", "latest")
-	kp, _, err := e.client.KV().Get(key, nil)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Cannot fetch latest vars for %v", id)
-	}
-
-	if kp == nil {
-		return nil, errors.Errorf("Missing Key %v", key)
-	}
-
-	return &types.VersionRecord{
-		Data:     kp.Value,
-		Version:  "latest",
-		Versions: versions,
-	}, nil
-}
-
-func (e *ConsulStore) SaveLayout(workspace string, layout *types.LayoutRecord) error {
-
-	enc :=  json.NewEncoder(os.Stdout)
-	err := enc.Encode(layout.Plan)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	// Save the vars for the layout.
-	if err := e.saveRevision(workspace + path.Join(layout_dir, layout.Id), "vars", "default", layout.Vars); err != nil {
-		return errors.Wrap(err, "Cannot Save Layout Vars.")
-	}
-	// Save the status for the layout.
-	if err := e.SetLayoutStatus(workspace, layout.Id, string(types.INACTIVE)); err != nil {
-		return errors.Wrap(err, "Cannot save Layout's status")
-	}
-
-	// Save the layout plan.
-	if err := e.saveRevision(workspace, layout_dir, layout.Id, layout.Plan); err != nil {
-		return errors.Wrap(err, "Cannot save Layout Plan")
-	}
-
-	return nil
-}
-
-func (e *ConsulStore) GetLayout(workspace, name string) (*types.LayoutRecord, error) {
-
-	// workspace-name/layouts/layout-name
-	id := path.Join(workspace, layout_dir, name)
-
-	// Get the versions.
-	versions, err := e.getRevisions(id, "vars", "default")
-	if err != nil {
-		return nil, errors.Wrapf(err, "Cannot fetch Revisions for %v", )
-	}
-
-	vars_key := path.Join(id, "vars", "default", "latest")
-	plan_key := path.Join(id, "status", "latest")
-
-	// Get the vars for the layout.
-	envBytes, _, err := e.client.KV().Get(vars_key, nil)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Cannot fetch latest vars for %v", id)
-	}
-
-	if envBytes == nil {
-		return nil, errors.Errorf("Missing Key %v", vars_key)
-	}
-
-	// Get the latest plan for the layout.
-	plan, _, err := e.client.KV().Get(plan_key, nil)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Cannot fetch latest plan for %v", id)
-	}
-
-	if plan == nil {
-		return nil, errors.Errorf("Missing Key %v", plan_key)
-	}
-
-	var l types.Vars
-	if err := json.Unmarshal(envBytes.Value, &l); err != nil {
-		return nil, errors.Wrap(err, "Cannot unmarshal Vars")
-	}
-
-	var p map[string]interface{}
-	if err := json.Unmarshal(plan.Value, &p); err != nil {
-		return nil, errors.Wrap(err, "Cannot unmarshal Vars")
-	}
-
-	return &types.LayoutRecord{
-		Plan:     p,
-		Status:   string(plan.Value),
-		Version:  "latest",
-		Versions: versions,
-		Vars:	  &l,
-	}, nil
-}
-
-func (e *ConsulStore) SetLayoutStatus(workspace, name, status string) error {
-
-	enc :=  json.NewEncoder(os.Stdout)
-	err := enc.Encode(name)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	// Save the status for the layout.
-	if err := e.saveRevision(workspace, path.Join(layout_dir , name), "status", status); err != nil {
-		return errors.Wrap(err, "Cannot save status of the layout.")
-	}
-
-	return nil
-}
-
-func (e *ConsulStore) GetVars(workspace, layout string) (*types.Vars, error) {
-	// workspace-name/layouts/layout-name
-	id := path.Join(workspace, layout_dir, layout)
-
-	// Get the vars.
-	vars_key := path.Join(id, "vars", "default", "latest")
-
-	// Get the vars for the layout.
-	envBytes, _, err := e.client.KV().Get(vars_key, nil)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Cannot fetch latest vars for %v", id)
-	}
-
-	if envBytes == nil {
-		return nil, errors.Errorf("Missing Key %v", vars_key)
-	}
-
-	var vars types.Vars
-	if err := json.Unmarshal(envBytes.Value, &vars); err != nil {
-		return nil, errors.Wrap(err, "Cannot unmarshal Vars")
-	}
-
-	return &vars, nil
-}
-
-func (e *ConsulStore) SaveVars(workspace string, layout string, varmap map[string]interface{}) error {
-	enc :=  json.NewEncoder(os.Stdout)
-	err := enc.Encode(varmap)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	// Save the vars for the layout.
-	if err := e.saveRevision(workspace + path.Join(layout_dir, layout), "vars", "default", varmap); err != nil {
-		return errors.Wrap(err, "Cannot Save Layout Vars.")
-	}
-
-	return nil
-}
-
-// Gets all versions of all layouts of the workspace.
-func (e *ConsulStore) GetWorkspaceLayouts(workspace string) ([]map[string]interface{}, error) {
-
-	names, err := e.getRevisions(workspace, layout_dir, "")
-	if err != nil {
-		return nil, errors.Wrapf(err, "Cannot fetch Layouts for %v", )
-	}
-
-	var layout_revisions map[string]interface{}
-	var layouts []map[string]interface{}
-	var id string
-
-
-	for _, name := range names {
-		versions, err := e.getRevisions(workspace, layout_dir, name)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Cannot fetch versions for layout %v", name)
-		}
-
-		for _, ver := range versions {
-			id = path.Join(workspace, layout_dir, name, ver)
-
-			plan, _, err := e.client.KV().Get(id, nil)
-			if err != nil {
-				return nil, errors.Wrapf(err, "Cannot fetch Layouts for %v of version %v",
-					name, ver)
-			}
-
-			layout_revisions[name] = plan
-		}
-
-		layouts = append(layouts, layout_revisions)
-	}
-
-	return layouts, nil
-}
-
-func (e *ConsulStore) CreateJob(id, workspace, origin_url, origin_method string) (*types.Job, error) {
-	return nil, nil
-}
-
-func (e *ConsulStore) UpdateJob(j *types.Job) error {
-	return nil
-}
-
-func (e *ConsulStore) GetJob(workspace, jobId string) (*types.Job, error) {
-	return nil, nil
 }
 
 func (e *ConsulStore) Setup() error {
