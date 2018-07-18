@@ -7,5 +7,5 @@ services:
   - docker
 
 script:
-  - docker-compose -f docker-compose.yaml up consul -d
+  - docker-compose -f docker-compose.yaml up -d consul
   - make test
