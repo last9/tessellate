@@ -96,7 +96,7 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 		}
 	}
 
-	layout := types.Layout{Id: in.Id, Plan: plan, Status: Status_INACTIVE}
+	layout := types.Layout{Id: in.Id, Plan: plan, Status: types.Status_INACTIVE}
 
 	if err := s.store.Save(&layout, tree); err != nil {
 		return nil, err
@@ -146,7 +146,14 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		}
 	}
 
-	lay := Layout{Workspaceid: in.WorkspaceId, Id: layout.Id, Plan: p, Vars: l, Status: layout.Status}
+	lay := Layout{Workspaceid: in.WorkspaceId, Id: layout.Id, Plan: p, Vars: l}
+
+	switch layout.Status {
+	case types.Status_INACTIVE:
+		lay.Status = Status_INACTIVE
+	case types.Status_ACTIVE:
+		lay.Status = Status_ACTIVE
+	}
 
 	return &lay, err
 }
@@ -182,14 +189,29 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 		return nil, err
 	}
 
-	j := types.Job{LayoutId: lyt.Id, LayoutVersion: versions[1], Status: JobState_PENDING, VarsVersion: varsVersions[1],
-		Op: Operation_APPLY, Dry: false}
+	j := types.Job{LayoutId: lyt.Id, LayoutVersion: versions[1], Status: types.JobState_PENDING, VarsVersion: varsVersions[1],
+		Op: types.Operation_APPLY, Dry: false}
 
 	if err := s.store.Save(&j, tree); err != nil {
 		return nil, err
 	}
 
-	job := JobStatus{Id: j.Id, Status: j.Status}
+	job := JobStatus{Id: j.Id}
+
+	switch j.Status {
+	case types.JobState_PENDING:
+		job.Status = JobState_PENDING
+	case types.JobState_ABORTED:
+		job.Status = JobState_ABORTED
+	case types.JobState_DONE:
+		job.Status = JobState_DONE
+	case types.JobState_ERROR:
+		job.Status = JobState_ERROR
+	case types.JobState_FAILED:
+		job.Status = JobState_FAILED
+	case types.JobState_RUNNING:
+		job.Status = JobState_RUNNING
+	}
 
 	return &job, nil
 }
@@ -218,14 +240,29 @@ func (s *Server) DestroyLayout(ctx context.Context, in *LayoutRequest) (*JobStat
 		return nil, err
 	}
 
-	j := types.Job{LayoutId: lyt.Id, LayoutVersion: versions[1], Status: JobState_PENDING, VarsVersion: varsVersions[1],
-		Op: Operation_DESTROY, Dry: false}
+	j := types.Job{LayoutId: lyt.Id, LayoutVersion: versions[1], Status: types.JobState_PENDING, VarsVersion: varsVersions[1],
+		Op: types.Operation_DESTROY, Dry: false}
 
 	if err := s.store.Save(&j, tree); err != nil {
 		return nil, err
 	}
 
-	job := JobStatus{Id: j.Id, Status: j.Status}
+	job := JobStatus{Id: j.Id}
+
+	switch j.Status {
+	case types.JobState_PENDING:
+		job.Status = JobState_PENDING
+	case types.JobState_ABORTED:
+		job.Status = JobState_ABORTED
+	case types.JobState_DONE:
+		job.Status = JobState_DONE
+	case types.JobState_ERROR:
+		job.Status = JobState_ERROR
+	case types.JobState_FAILED:
+		job.Status = JobState_FAILED
+	case types.JobState_RUNNING:
+		job.Status = JobState_RUNNING
+	}
 
 	return &job, nil
 }
