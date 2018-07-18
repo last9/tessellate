@@ -38,15 +38,15 @@ func makeDir(dir string) error {
 }
 
 type Cmd struct {
-	key       string
-	skipInit  bool
-	op        []string
-	layout    map[string]json.RawMessage
-	vars      map[string]interface{}
-	stdout    OutWriteCloser
-	stderr    OutWriteCloser
-	dir       string
-	logPrefix string
+	key        string
+	skipInit   bool
+	op         []string
+	layout     map[string]json.RawMessage
+	vars       map[string]interface{}
+	stdout     OutWriteCloser
+	stderr     OutWriteCloser
+	dir        string
+	logPrefix  string
 	remoteAddr string
 }
 
