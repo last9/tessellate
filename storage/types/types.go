@@ -81,17 +81,10 @@ func (w *Vars) Marshal() ([]byte, error) {
 	return json.Marshal(w)
 }
 
-type Status int32
-
-const (
-	Status_INACTIVE Status = 0
-	Status_ACTIVE   Status = 1
-)
-
 type Layout struct {
 	Id     string                     `json:"id"`
 	Plan   map[string]json.RawMessage `json:"plan"`
-	Status string                     `json:"status"`
+	Status int32                      `json:"status"`
 }
 
 func (l *Layout) MakePath(n *Tree) string {
@@ -110,31 +103,13 @@ func MakeVersion() string {
 	return uuid.NewV4().String()
 }
 
-type JobState int32
-
-const (
-	JobState_PENDING JobState = 0
-	JobState_RUNNING JobState = 1
-	JobState_FAILED  JobState = 2
-	JobState_ABORTED JobState = 3
-	JobState_DONE    JobState = 4
-	JobState_ERROR   JobState = 5
-)
-
-type Operation int32
-
-const (
-	Operation_APPLY   Operation = 0
-	Operation_DESTROY Operation = 1
-)
-
 type Job struct {
 	Id            string `json:"id"`
 	LayoutId      string `json:"layout_id"`
 	LayoutVersion string `json:"layout_version"`
-	Status        string `json:"status"`
+	Status        int32  `json:"status"`
 	VarsVersion   string `json:"vars_version"`
-	Op            string `json:"op"`
+	Op            int32  `json:"op"`
 	Dry           bool   `json:"dry"`
 }
 
