@@ -17,8 +17,7 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 
 	workspace := types.Workspace(in.Id)
 
-	var values types.Vars
-
+	values := types.Vars{}
 	for k, v := range in.Vars {
 		values[k] = v
 	}
@@ -57,8 +56,7 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 		return nil, err
 	}
 
-	var l map[string][]byte
-
+	l := map[string][]byte{}
 	for k, v := range vars {
 		l[k], err = json.Marshal(v)
 		if err != nil {
@@ -75,25 +73,24 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
-	var values types.Vars
 
+	values := types.Vars{}
 	for k, v := range in.Vars {
 		values[k] = v
 	}
 
-	var plan map[string]json.RawMessage
+	plan := map[string]json.RawMessage{}
 
 	tree := types.MakeTree(in.WorkspaceId, in.Id)
 
-	var err error
 	for k, v := range in.Plan {
 		var value json.RawMessage
-		err = json.Unmarshal(v, &value)
-		plan[k] = value
-
-		if err != nil {
+		if err := json.Unmarshal(v, &value); err != nil {
 			return nil, err
 		}
+
+		plan[k] = value
+
 	}
 
 	layout := types.Layout{Id: in.Id, Plan: plan, Status: int32(Status_INACTIVE)}
@@ -122,7 +119,6 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 	}
 
 	vars := types.Vars{}
-
 	if err := s.store.Get(&vars, tree); err != nil {
 		return nil, err
 	}
@@ -137,8 +133,7 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		}
 	}
 
-	var p map[string][]byte
-
+	p := map[string][]byte{}
 	for k, v := range layout.Plan {
 		p[k], err = json.Marshal(v)
 		if err != nil {
@@ -155,10 +150,8 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
-	var values types.Vars
 
-	// todo merge vars of in.Vars and the job Vars.
-
+	values := types.Vars{}
 	for k, v := range in.Vars {
 		values[k] = v
 	}
