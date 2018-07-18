@@ -82,9 +82,9 @@ func (w *Vars) Marshal() ([]byte, error) {
 }
 
 type Layout struct {
-	Id     string
-	Plan   map[string]interface{}
-	Status string
+	Id     string                     `json:"id"`
+	Plan   map[string]json.RawMessage `json:"plan"`
+	Status string                     `json:"status"`
 }
 
 func (l *Layout) MakePath(n *Tree) string {
@@ -103,21 +103,13 @@ func MakeVersion() string {
 	return uuid.NewV4().String()
 }
 
-/*
-const (
-	INACTIVE = iota // a == 1 (iota has been reset)
-	ACTIVE   = iota // b == 2
-)
-*/
-
 type Job struct {
 	Id            string
-	LayoutId      string
-	LayoutVersion string
-	Status        string
-	VarsId        string
-	VarsVersion   string
-	Op            string
+	LayoutId      string `json:"layout_id"`
+	LayoutVersion string `json:"layout_version"`
+	Status        string `json:"status"`
+	VarsVersion   string `json:"vars_version"`
+	Op            string `json:"op"`
 }
 
 func (v *Job) MakePath(n *Tree) string {
