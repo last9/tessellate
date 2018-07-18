@@ -164,19 +164,20 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 	}
 
 	lyt := types.Layout{}
-	tree := types.MakeTree(in.WorkspaceId, in.Id)
+	layout_tree := types.MakeTree(in.WorkspaceId, in.Id)
+	tree := types.MakeTree(in.WorkspaceId)
 
-	versions, err := s.store.GetVersions(&lyt, tree)
+	versions, err := s.store.GetVersions(&lyt, layout_tree)
 	if err != nil {
 		return nil, err
 	}
 
 	vars := types.Vars{}
-	if s.store.Get(&vars, tree); err != nil {
+	if s.store.Get(&vars, layout_tree); err != nil {
 		return nil, err
 	}
 
-	varsVersions, err := s.store.GetVersions(&lyt, tree)
+	varsVersions, err := s.store.GetVersions(&lyt, layout_tree)
 	if err != nil {
 		return nil, err
 	}
@@ -199,19 +200,20 @@ func (s *Server) DestroyLayout(ctx context.Context, in *LayoutRequest) (*JobStat
 	}
 
 	lyt := types.Layout{}
-	tree := types.MakeTree(in.WorkspaceId, in.Id)
+	layout_tree := types.MakeTree(in.WorkspaceId, in.Id)
+	tree := types.MakeTree(in.WorkspaceId)
 
-	versions, err := s.store.GetVersions(&lyt, tree)
+	versions, err := s.store.GetVersions(&lyt, layout_tree)
 	if err != nil {
 		return nil, err
 	}
 
 	vars := types.Vars{}
-	if s.store.Get(&vars, tree); err != nil {
+	if s.store.Get(&vars, layout_tree); err != nil {
 		return nil, err
 	}
 
-	varsVersions, err := s.store.GetVersions(&lyt, tree)
+	varsVersions, err := s.store.GetVersions(&lyt, layout_tree)
 	if err != nil {
 		return nil, err
 	}
@@ -226,14 +228,6 @@ func (s *Server) DestroyLayout(ctx context.Context, in *LayoutRequest) (*JobStat
 	job := JobStatus{Id: j.Id, Status: j.Status}
 
 	return &job, nil
-}
-
-func (s *Server) GetJob(ctx context.Context, in *JobRequest) (*JobStatus, error) {
-	if err := in.Validate(); err != nil {
-		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
-	}
-
-	return nil, nil
 }
 
 func (s *Server) AbortJob(ctx context.Context, in *JobRequest) (*Ok, error) {

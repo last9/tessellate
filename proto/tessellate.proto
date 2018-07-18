@@ -17,7 +17,6 @@ service Tessellate {
   rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {}
   rpc DestroyLayout (LayoutRequest) returns (JobStatus) {}
 
-  rpc GetJob (JobRequest) returns (JobStatus) {}
   rpc AbortJob (JobRequest) returns (Ok) {}
 
   rpc StartWatch (StartWatchRequest) returns (Ok) {}
