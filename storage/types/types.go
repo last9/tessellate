@@ -8,16 +8,41 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+const (
+	WORKSPACE = "workspace"
+	LAYOUT    = "layout"
+)
+
+// MakeTree populates a Tree based on Input.
+// Tree in itself is quite vague (read generic), but consumption is specific to workspace
+// and layouts.
+// Example: MakeTRee(workspace_id) returns a tree for a Workspace
+// whereas MakeTree(worksapce_id, layout_id) returns a tree for a Workspace and a Layout{.
+func MakeTree(nodes ...string) *Tree {
+	if len(nodes) < 1 {
+		return &Tree{Name: "unknown", TreeType: "unknown"}
+	}
+
+	workspace := nodes[0]
+	t := Tree{Name: workspace, TreeType: WORKSPACE}
+	if len(nodes) > 1 {
+		t.Child = &Tree{Name: nodes[1], TreeType: LAYOUT}
+	}
+
+	return &t
+}
+
+// Tree is a Hierarchial representation of a Path at which a node is expcted to be found.
 type Tree struct {
 	Name     string
 	TreeType string
-	child    *Tree
+	Child    *Tree
 }
 
 func (n *Tree) MakePath() string {
 	d := path.Join(n.TreeType, n.Name)
-	if n.child != nil {
-		d = path.Join(d, n.child.MakePath())
+	if n.Child != nil {
+		d = path.Join(d, n.Child.MakePath())
 	}
 	return d
 }
@@ -86,11 +111,13 @@ const (
 */
 
 type Job struct {
-	Id       string
-	LayoutId string
-	Status   string
-	VarsId   string
-	Op       string
+	Id            string
+	LayoutId      string
+	LayoutVersion string
+	Status        string
+	VarsId        string
+	VarsVersion   string
+	Op            string
 }
 
 func (v *Job) MakePath(n *Tree) string {
