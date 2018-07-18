@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
+	"encoding/json"
+
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/storage/types"
-	"encoding/json"
-	"strings"
 )
 
 func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*Ok, error) {
@@ -13,13 +13,21 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
+	tree := types.MakeTree(in.Id)
+
+	workspace := types.Workspace(in.Id)
+
 	var values types.Vars
 
 	for k, v := range in.Vars {
 		values[k] = v
 	}
 
-	if err := s.store.SaveWorkspace(strings.ToLower(in.Id), &values); err != nil {
+	if err := s.store.Save(&workspace, tree); err != nil {
+		return nil, err
+	}
+
+	if err := s.store.Save(&values, tree); err != nil {
 		return nil, err
 	}
 
@@ -31,21 +39,37 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	versionRecord, err := s.store.GetWorkspace(in.Id)
+	tree := types.MakeTree(in.Id)
+	workspace := types.Workspace(in.Id)
 
-	w := Workspace{}
-
-	w.Version = versionRecord.Version
-	w.Versions = versionRecord.Versions
-	if w.Vars["Data"], err = json.Marshal(&versionRecord.Data); err != nil{
-		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
+	if err := s.store.Get(&workspace, tree); err != nil {
+		return nil, err
 	}
 
-	w.Name = in.Id
+	vars := types.Vars{}
+
+	versions, err := s.store.GetVersions(&vars, tree)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.store.Get(&vars, tree); err != nil {
+		return nil, err
+	}
+
+	var l map[string][]byte
+
+	for k, v := range vars {
+		l[k], err = json.Marshal(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	w := Workspace{Name: string(workspace), Vars: l, Version: versions[1], Versions: versions}
 
 	return &w, err
 }
-
 
 func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
@@ -57,15 +81,28 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 		values[k] = v
 	}
 
-	plan := make(map[string]interface{}, 2)
+	var plan map[string]interface{}
 
+	tree := types.MakeTree(in.WorkspaceId, in.Id)
+
+	var err error
 	for k, v := range in.Plan {
-		plan[k] = v
+		var value interface{}
+		err = json.Unmarshal(v, &value)
+		plan[k] = value
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	layout := types.LayoutRecord{Id: in.Id, Plan: in.Plan , Vars: &values}
+	layout := types.Layout{Id: in.Id, Plan: plan, Status: Status_INACTIVE.String()}
 
-	if err := s.store.SaveLayout(in.WorkspaceId, layout); err != nil {
+	if err := s.store.Save(&layout, tree); err != nil {
+		return nil, err
+	}
+
+	if err := s.store.Save(&values, tree); err != nil {
 		return nil, err
 	}
 
