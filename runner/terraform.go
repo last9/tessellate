@@ -11,6 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+const ApplyOp = 0
+const DestroyOp = 1
+
+var opMap = map[int32]string{
+	ApplyOp: "apply",
+	DestroyOp: "destroy",
+}
+
 func remoteLayout(addr string) map[string]interface{} {
 	return map[string]interface{}{
 		"terraform": map[string]interface{}{
@@ -88,8 +96,13 @@ func (p *Cmd) GetStderr() OutWriteCloser {
 }
 
 // Command Setter
-func (p *Cmd) SetOp(op ...string) {
-	p.op = op
+func (p *Cmd) SetOp(op int32) {
+	o, ok := opMap[op]
+	if !ok {
+		o = opMap[ApplyOp]
+	}
+
+	p.op = []string{o}
 }
 
 // Base-Directory Setter.

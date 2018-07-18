@@ -12,7 +12,7 @@ import (
 var cmd *Cmd
 
 func TestCmd_SetOp(t *testing.T) {
-	cmd.SetOp("apply", "-auto-approve=true")
+	cmd.SetOp(ApplyOp)
 }
 
 func TestCmd_SetDir(t *testing.T) {
