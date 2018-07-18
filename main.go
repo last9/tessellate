@@ -29,6 +29,7 @@ func main() {
 	s := grpcServer()
 	defer s.GracefulStop()
 
+	// Inititalize Storage engine
 	store := consul.MakeConsulStore()
 	store.Setup()
 

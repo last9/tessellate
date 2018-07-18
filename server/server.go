@@ -7,5 +7,5 @@ type Server struct {
 }
 
 func New(store storage.Storer) TessellateServer {
-	return &Server{}
+	return &Server{store: store}
 }

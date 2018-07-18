@@ -94,6 +94,8 @@ func (m *Workspace) Validate() error {
 
 	// no validation rules for Vars
 
+	// no validation rules for Version
+
 	return nil
 }
 
@@ -138,7 +140,9 @@ func (m *Layouts) Validate() error {
 	for idx, item := range m.GetLayouts() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		if v, ok := interface{}(item).(interface {
+			Validate() error
+		}); ok {
 			if err := v.Validate(); err != nil {
 				return LayoutsValidationError{
 					Field:  fmt.Sprintf("Layouts[%v]", idx),
@@ -190,6 +194,8 @@ func (m *Layout) Validate() error {
 	if m == nil {
 		return nil
 	}
+
+	// no validation rules for Workspaceid
 
 	// no validation rules for Id
 
@@ -588,12 +594,7 @@ func (m *SaveLayoutRequest) Validate() error {
 		}
 	}
 
-	if len(m.GetPlan()) < 1 {
-		return SaveLayoutRequestValidationError{
-			Field:  "Plan",
-			Reason: "value must contain at least 1 pair(s)",
-		}
-	}
+	// no validation rules for Plan
 
 	// no validation rules for Vars
 
@@ -630,6 +631,64 @@ func (e SaveLayoutRequestValidationError) Error() string {
 }
 
 var _ error = SaveLayoutRequestValidationError{}
+
+// Validate checks the field values on SetLayoutStatusRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *SetLayoutStatusRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
+		return SetLayoutStatusRequestValidationError{
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
+		}
+	}
+
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		return SetLayoutStatusRequestValidationError{
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
+		}
+	}
+
+	// no validation rules for Status
+
+	return nil
+}
+
+// SetLayoutStatusRequestValidationError is the validation error returned by
+// SetLayoutStatusRequest.Validate if the designated constraints aren't met.
+type SetLayoutStatusRequestValidationError struct {
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
+}
+
+// Error satisfies the builtin error interface
+func (e SetLayoutStatusRequestValidationError) Error() string {
+	cause := ""
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
+	}
+
+	key := ""
+	if e.Key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSetLayoutStatusRequest.%s: %s%s",
+		key,
+		e.Field,
+		e.Reason,
+		cause)
+}
+
+var _ error = SetLayoutStatusRequestValidationError{}
 
 // Validate checks the field values on ApplyLayoutRequest with the rules
 // defined in the proto definition for this message. If any rules are

@@ -6,3 +6,11 @@ services:
       - 8500:8500
       - 8600:8600
       - 8400:8400
+  worker:
+    build:
+      context: .
+      dockerfile: WorkerDockerfile
+    image: tessellate/worker
+    entrypoint:
+      - /app/worker
+    command: --job=123 --workspace=123 --consul-host=consul:8500

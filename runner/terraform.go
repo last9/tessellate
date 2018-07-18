@@ -11,6 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+const ApplyOp = 0
+const DestroyOp = 1
+
+var opMap = map[int32]string{
+	ApplyOp: "apply",
+	DestroyOp: "destroy",
+}
+
 func remoteLayout(addr string) map[string]interface{} {
 	return map[string]interface{}{
 		"terraform": map[string]interface{}{
@@ -30,15 +38,16 @@ func makeDir(dir string) error {
 }
 
 type Cmd struct {
-	key       string
-	skipInit  bool
-	op        []string
-	layout    map[string]json.RawMessage
-	vars      map[string]interface{}
-	stdout    OutWriteCloser
-	stderr    OutWriteCloser
-	dir       string
-	logPrefix string
+	key        string
+	skipInit   bool
+	op         []string
+	layout     map[string]json.RawMessage
+	vars       map[string]interface{}
+	stdout     OutWriteCloser
+	stderr     OutWriteCloser
+	dir        string
+	logPrefix  string
+	remoteAddr string
 }
 
 // - Prepares the Basic Directories.
@@ -64,7 +73,7 @@ func (p *Cmd) Run() error {
 		return errors.Wrap(err, "Cannot save vars")
 	}
 
-	if err := p.saveRemote(); err != nil {
+	if err := p.saveRemote(p.remoteAddr); err != nil {
 		return errors.Wrap(err, "Cannot save Remote")
 	}
 
@@ -87,8 +96,13 @@ func (p *Cmd) GetStderr() OutWriteCloser {
 }
 
 // Command Setter
-func (p *Cmd) SetOp(op ...string) {
-	p.op = op
+func (p *Cmd) SetOp(op int32) {
+	o, ok := opMap[op]
+	if !ok {
+		o = opMap[ApplyOp]
+	}
+
+	p.op = []string{o}
 }
 
 // Base-Directory Setter.
@@ -99,6 +113,10 @@ func (p *Cmd) SetDir(name string) {
 // Layout Setter.
 func (p *Cmd) SetLayout(v map[string]json.RawMessage) {
 	p.layout = v
+}
+
+func (p *Cmd) SetRemote(addr string) {
+	p.remoteAddr = addr
 }
 
 // SetVars is vars Setter.
@@ -119,10 +137,10 @@ func (p *Cmd) ClearDir(path string) error {
 }
 
 // Save the remote layout in a directory called .terraform.
-func (p *Cmd) saveRemote() error {
+func (p *Cmd) saveRemote(addr string) error {
 	lPath := fmt.Sprintf("%v/state.tf.json", p.dir)
 	p.stdout.Output("Saving Remote state file")
-	lData, err := json.Marshal(remoteLayout("127.0.0.1:8500"))
+	lData, err := json.Marshal(remoteLayout(addr))
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal remote State")
 	}

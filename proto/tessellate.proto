@@ -9,7 +9,7 @@ option go_package = "github.com/tsocial/tessellate/server";
 service Tessellate {
   rpc SaveWorkspace (SaveWorkspaceRequest) returns (Ok) {}
   rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {}
-  rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
+ // rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
 
   rpc SaveLayout (SaveLayoutRequest) returns (Ok) {}
   rpc GetLayout (LayoutRequest) returns (Layout) {}
@@ -17,7 +17,6 @@ service Tessellate {
   rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {}
   rpc DestroyLayout (LayoutRequest) returns (JobStatus) {}
 
-  rpc GetJob (JobRequest) returns (JobStatus) {}
   rpc AbortJob (JobRequest) returns (Ok) {}
 
   rpc StartWatch (StartWatchRequest) returns (Ok) {}
@@ -33,7 +32,7 @@ enum Errors {
   MISSING_VALUE = 5;
 }
 
-enum LayoutStatus {
+enum Status {
   INACTIVE = 0;
   ACTIVE = 1;
 }
@@ -47,6 +46,11 @@ enum JobState {
   ERROR = 5;
 }
 
+enum Operation {
+  APPLY = 0;
+  DESTROY = 1;
+}
+
 message GetWorkspaceRequest {
   string Id = 1 [(validate.rules).string.min_len = 1];
 }
@@ -54,6 +58,8 @@ message GetWorkspaceRequest {
 message Workspace {
   string Name = 1;
   map<string, bytes> Vars = 2;
+  string Version = 3;
+  repeated string Versions = 4;
 }
 
 message Layouts {
@@ -61,10 +67,11 @@ message Layouts {
 }
 
 message Layout {
-  string Id = 1;
-  bytes Plan = 2;
-  map<string, bytes> Vars = 3;
-  LayoutStatus Status = 4;
+  string Workspaceid = 1;
+  string Id = 2;
+  map<string, bytes> Plan = 3;
+  map<string, bytes> Vars = 4;
+  Status Status = 5;
 }
 
 message SaveWorkspaceRequest {
@@ -79,8 +86,8 @@ message GetWorkspaceLayoutsRequest {
 message JobStatus {
   string Id = 1;
   JobState status = 2;
-  repeated bytes output = 3;
-  repeated bytes error = 4;
+  // repeated bytes output = 3;
+  // repeated bytes error = 4;
 }
 
 message Vars {
@@ -101,8 +108,14 @@ message LayoutRequest {
 message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
-  map<string, bytes> Plan = 3 [(validate.rules).map = {min_pairs: 1}];
+  map<string, bytes> Plan = 3;
   map<string, bytes> Vars = 4;
+}
+
+message SetLayoutStatusRequest {
+  string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
+  string Id = 2 [(validate.rules).string.min_len = 1];
+  string Status = 3;
 }
 
 message ApplyLayoutRequest {
