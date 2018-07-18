@@ -30,15 +30,15 @@ func makeDir(dir string) error {
 }
 
 type Cmd struct {
-	key       string
-	skipInit  bool
-	op        []string
-	layout    map[string]json.RawMessage
-	vars      map[string]interface{}
-	stdout    OutWriteCloser
-	stderr    OutWriteCloser
-	dir       string
-	logPrefix string
+	key        string
+	skipInit   bool
+	op         []int32
+	layout     map[string]json.RawMessage
+	vars       map[string]interface{}
+	stdout     OutWriteCloser
+	stderr     OutWriteCloser
+	dir        string
+	logPrefix  string
 	remoteAddr string
 }
 
@@ -88,7 +88,7 @@ func (p *Cmd) GetStderr() OutWriteCloser {
 }
 
 // Command Setter
-func (p *Cmd) SetOp(op ...string) {
+func (p *Cmd) SetOp(op ...int32) {
 	p.op = op
 }
 
