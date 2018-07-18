@@ -89,15 +89,9 @@ const (
 )
 
 type Layout struct {
-<<<<<<< HEAD
-	Id     string
-	Plan   map[string]interface{}
-	Status Status
-=======
 	Id     string                     `json:"id"`
 	Plan   map[string]json.RawMessage `json:"plan"`
 	Status string                     `json:"status"`
->>>>>>> 052be6968c949e19b6492b25c536cbc3724ab1a7
 }
 
 func (l *Layout) MakePath(n *Tree) string {
