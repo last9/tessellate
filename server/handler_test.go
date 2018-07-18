@@ -6,11 +6,12 @@ import (
 
 	"github.com/tsocial/tessellate/storage/consul"
 
-	"github.com/pkg/errors"
-	"fmt"
 	"context"
-	"io/ioutil"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+
+	"github.com/pkg/errors"
 )
 
 var server TessellateServer
@@ -49,12 +50,10 @@ func TestServer_SaveAndGetWorkspace(t *testing.T) {
 	})
 }
 
-
 func TestServer_SaveLayout(t *testing.T) {
 	workspace_id := "workspace-1"
 	layout_id := "layout-1"
 	plan := make(map[string][]byte, 2)
-
 
 	l := json.RawMessage{}
 	d, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
@@ -79,7 +78,7 @@ func TestServer_SaveLayout(t *testing.T) {
 	}
 
 	plan["sleep"] = l
-	plan["env"] = v
+	plan["env"] = l
 
 	t.Run("Should create a layout in the workspace", func(t *testing.T) {
 		req := &SaveLayoutRequest{Id: layout_id, WorkspaceId: workspace_id, Plan: plan}

@@ -203,17 +203,7 @@ func (m *Layout) Validate() error {
 
 	// no validation rules for Vars
 
-	if v, ok := interface{}(m.GetStatus()).(interface {
-		Validate() error
-	}); ok {
-		if err := v.Validate(); err != nil {
-			return LayoutValidationError{
-				Field:  "Status",
-				Reason: "embedded message failed validation",
-				Cause:  err,
-			}
-		}
-	}
+	// no validation rules for Status
 
 	return nil
 }
@@ -699,50 +689,6 @@ func (e SetLayoutStatusRequestValidationError) Error() string {
 }
 
 var _ error = SetLayoutStatusRequestValidationError{}
-
-// Validate checks the field values on LayoutStatus with the rules defined in
-// the proto definition for this message. If any rules are violated, an error
-// is returned.
-func (m *LayoutStatus) Validate() error {
-	if m == nil {
-		return nil
-	}
-
-	// no validation rules for Status
-
-	return nil
-}
-
-// LayoutStatusValidationError is the validation error returned by
-// LayoutStatus.Validate if the designated constraints aren't met.
-type LayoutStatusValidationError struct {
-	Field  string
-	Reason string
-	Cause  error
-	Key    bool
-}
-
-// Error satisfies the builtin error interface
-func (e LayoutStatusValidationError) Error() string {
-	cause := ""
-	if e.Cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
-	}
-
-	key := ""
-	if e.Key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sLayoutStatus.%s: %s%s",
-		key,
-		e.Field,
-		e.Reason,
-		cause)
-}
-
-var _ error = LayoutStatusValidationError{}
 
 // Validate checks the field values on ApplyLayoutRequest with the rules
 // defined in the proto definition for this message. If any rules are

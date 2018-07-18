@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/satori/go.uuid"
+	"github.com/tsocial/tessellate/server"
 )
 
 const (
@@ -84,7 +85,7 @@ func (w *Vars) Marshal() ([]byte, error) {
 type Layout struct {
 	Id     string
 	Plan   map[string]interface{}
-	Status string
+	Status server.Status
 }
 
 func (l *Layout) MakePath(n *Tree) string {
@@ -103,21 +104,14 @@ func MakeVersion() string {
 	return uuid.NewV4().String()
 }
 
-/*
-const (
-	INACTIVE = iota // a == 1 (iota has been reset)
-	ACTIVE   = iota // b == 2
-)
-*/
-
 type Job struct {
 	Id            string
 	LayoutId      string
 	LayoutVersion string
-	Status        string
-	VarsId        string
+	Status        server.JobState
 	VarsVersion   string
-	Op            string
+	Op            server.Operation
+	Dry           bool
 }
 
 func (v *Job) MakePath(n *Tree) string {
