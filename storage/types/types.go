@@ -104,12 +104,13 @@ func MakeVersion() string {
 }
 
 type Job struct {
-	Id            string
+	Id            string `json:"id"`
 	LayoutId      string `json:"layout_id"`
 	LayoutVersion string `json:"layout_version"`
 	Status        string `json:"status"`
 	VarsVersion   string `json:"vars_version"`
 	Op            string `json:"op"`
+	Dry           bool   `json:"dry"`
 }
 
 func (v *Job) MakePath(n *Tree) string {
