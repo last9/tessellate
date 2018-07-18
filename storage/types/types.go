@@ -89,9 +89,15 @@ const (
 )
 
 type Layout struct {
+<<<<<<< HEAD
 	Id     string
 	Plan   map[string]interface{}
 	Status Status
+=======
+	Id     string                     `json:"id"`
+	Plan   map[string]json.RawMessage `json:"plan"`
+	Status string                     `json:"status"`
+>>>>>>> 052be6968c949e19b6492b25c536cbc3724ab1a7
 }
 
 func (l *Layout) MakePath(n *Tree) string {
@@ -129,14 +135,13 @@ const (
 )
 
 type Job struct {
-	Id            string
-	LayoutId      string
-	LayoutVersion string
-	Status        JobState
-	VarsId        string
-	VarsVersion   string
-	Op            Operation
-	Dry           bool
+	Id            string `json:"id"`
+	LayoutId      string `json:"layout_id"`
+	LayoutVersion string `json:"layout_version"`
+	Status        string `json:"status"`
+	VarsVersion   string `json:"vars_version"`
+	Op            string `json:"op"`
+	Dry           bool   `json:"dry"`
 }
 
 func (v *Job) MakePath(n *Tree) string {

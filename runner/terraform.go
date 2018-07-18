@@ -39,6 +39,7 @@ type Cmd struct {
 	stderr    OutWriteCloser
 	dir       string
 	logPrefix string
+	remoteAddr string
 }
 
 // - Prepares the Basic Directories.
@@ -64,7 +65,7 @@ func (p *Cmd) Run() error {
 		return errors.Wrap(err, "Cannot save vars")
 	}
 
-	if err := p.saveRemote(); err != nil {
+	if err := p.saveRemote(p.remoteAddr); err != nil {
 		return errors.Wrap(err, "Cannot save Remote")
 	}
 
@@ -101,6 +102,10 @@ func (p *Cmd) SetLayout(v map[string]json.RawMessage) {
 	p.layout = v
 }
 
+func (p *Cmd) SetRemote(addr string) {
+	p.remoteAddr = addr
+}
+
 // SetVars is vars Setter.
 func (p *Cmd) SetVars(v map[string]interface{}) {
 	p.vars = v
@@ -119,10 +124,10 @@ func (p *Cmd) ClearDir(path string) error {
 }
 
 // Save the remote layout in a directory called .terraform.
-func (p *Cmd) saveRemote() error {
+func (p *Cmd) saveRemote(addr string) error {
 	lPath := fmt.Sprintf("%v/state.tf.json", p.dir)
 	p.stdout.Output("Saving Remote state file")
-	lData, err := json.Marshal(remoteLayout("127.0.0.1:8500"))
+	lData, err := json.Marshal(remoteLayout(addr))
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal remote State")
 	}

@@ -1,6 +1,7 @@
 package consul
 
 import (
+	"log"
 	"path"
 
 	"time"
@@ -42,6 +43,7 @@ func (e *ConsulStore) Get(reader types.ReaderWriter, tree *types.Tree) error {
 
 func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error {
 	path := path.Join(reader.MakePath(tree), version)
+	log.Println(path)
 	// Get the vars for the layout.
 	bytes, _, err := e.client.KV().Get(path, nil)
 	if err != nil {
