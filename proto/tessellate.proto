@@ -8,7 +8,12 @@ import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 option go_package = "github.com/tsocial/tessellate/server";
 
 service Tessellate {
-  rpc SaveWorkspace (SaveWorkspaceRequest) returns (Ok) {}
+  rpc SaveWorkspace (SaveWorkspaceRequest) returns (Ok) {
+    option (google.api.http) = {
+      post: "/v1/workspace"
+      body: "*"
+    };
+  }
   rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {
     option (google.api.http) = {
       get: "/v1/workspace"
@@ -16,11 +21,30 @@ service Tessellate {
   }
  // rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
 
-  rpc SaveLayout (SaveLayoutRequest) returns (Ok) {}
-  rpc GetLayout (LayoutRequest) returns (Layout) {}
+  rpc SaveLayout (SaveLayoutRequest) returns (Ok) {
+    option (google.api.http) = {
+      post: "/v1/layout"
+      body: "*"
+    };
+  }
+  rpc GetLayout (LayoutRequest) returns (Layout) {
+    option (google.api.http) = {
+      get: "/v1/layout"
+    };
+  }
 
-  rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {}
-  rpc DestroyLayout (LayoutRequest) returns (JobStatus) {}
+  rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {
+    option (google.api.http) = {
+      post: "/v1/layout/apply"
+      body: "*"
+    };
+  }
+  rpc DestroyLayout (LayoutRequest) returns (JobStatus) {
+    option (google.api.http) = {
+      post: "/v1/layout/destroy"
+      body: "*"
+    };
+  }
 
   rpc AbortJob (JobRequest) returns (Ok) {}
 

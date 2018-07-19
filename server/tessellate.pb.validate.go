@@ -140,7 +140,9 @@ func (m *Layouts) Validate() error {
 	for idx, item := range m.GetLayouts() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		if v, ok := interface{}(item).(interface {
+			Validate() error
+		}); ok {
 			if err := v.Validate(); err != nil {
 				return LayoutsValidationError{
 					Field:  fmt.Sprintf("Layouts[%v]", idx),
