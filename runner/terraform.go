@@ -9,6 +9,8 @@ import (
 	"os/exec"
 
 	"github.com/pkg/errors"
+	"github.com/tsocial/tessellate/tmpl"
+	"github.com/flosch/pongo2"
 )
 
 func remoteLayout(addr string) map[string]interface{} {
@@ -22,6 +24,24 @@ func remoteLayout(addr string) map[string]interface{} {
 			},
 		},
 	}
+}
+
+func tmplVars(m interface{}) (map[string]pongo2.Context, error) {
+	if m == nil {
+		return nil, nil
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	x := map[string]pongo2.Context{}
+	if err := json.Unmarshal(b, &x); err != nil {
+		return nil, err
+	}
+
+	return x, nil
 }
 
 // Just a wrapper around Make Directory.
@@ -144,7 +164,7 @@ func (p *Cmd) saveLayout() error {
 
 	fn := func(data json.RawMessage, name string) error {
 		p.stdout.Output(fmt.Sprintf("Saving Layout %v", name))
-		layout, err := parseLayout(data, tv[name])
+		layout, err := tmpl.ParseLayout(data, tv[name])
 		if err != nil {
 			return errors.Wrap(err, "Invalid Layout template")
 		}
