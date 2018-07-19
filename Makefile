@@ -19,7 +19,7 @@ proto: protodep
 		--validate_out="lang=go:${GOPATH}/src" \
 		proto/tessellate.proto
 
-http: protodep
+http: proto deps
 	protoc -I. \
 		-I${GOPATH}/src \
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
