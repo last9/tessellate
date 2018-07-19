@@ -41,6 +41,9 @@ build_images: worker tessellate
 	docker-compose -f docker-compose.yaml build worker
 	docker-compose -f docker-compose.yaml build tessellate
 
-upload_images: build_images
+upload_images: build_images docker_login
 	docker push worker
 	docker push tessellate
+
+docker_login:
+	echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin
