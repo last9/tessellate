@@ -124,3 +124,24 @@ func (w *Job) Unmarshal(b []byte) error {
 func (w *Job) Marshal() ([]byte, error) {
 	return json.Marshal(w)
 }
+
+type Watch struct {
+	Id string `json:"id"`
+	LayoutId string `json:"layout_id"`
+	LayoutVersion string `json:"layout_version"`
+	SuccessURL	string 	`json:"success_url"`
+	FailureURL	string `json:failure_url`
+}
+
+func (w *Watch) MakePath(n *Tree) string {
+	return path.Join(n.MakePath(), "watch", w.Id)
+}
+
+func (w *Watch) Unmarshal(b []byte) error {
+	return json.Unmarshal(b, w)
+}
+
+func (w *Watch) Marshal() ([]byte, error) {
+	return json.Marshal(w)
+}
+
