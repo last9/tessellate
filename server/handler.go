@@ -71,7 +71,7 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 
 	plan := map[string]json.RawMessage{}
 
-	tree := types.MakeTree(in.WorkspaceId, in.Id)
+	tree := types.MakeTree(in.WorkspaceId)
 
 	for k, v := range in.Plan {
 		var value json.RawMessage
@@ -84,8 +84,12 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 	}
 
 	layout := types.Layout{Id: in.Id, Plan: plan, Status: int32(Status_INACTIVE)}
-
 	if err := s.store.Save(&layout, tree); err != nil {
+		return nil, err
+	}
+
+	lTree := types.MakeTree(in.WorkspaceId, in.Id)
+	if err := s.store.Save(&vars, lTree); err != nil {
 		return nil, err
 	}
 
@@ -97,10 +101,11 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
+	wTree := types.MakeTree(in.WorkspaceId)
 	tree := types.MakeTree(in.WorkspaceId, in.Id)
 	layout := types.Layout{Id: in.Id}
 
-	if err := s.store.Get(&layout, tree); err != nil {
+	if err := s.store.Get(&layout, wTree); err != nil {
 		return nil, err
 	}
 

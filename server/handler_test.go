@@ -101,9 +101,6 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, resp.Workspaceid, workspaceId)
 		assert.Equal(t, resp.Plan, plan)
 
-		t.Log(string(resp.Vars))
-		t.Log(string(vBytes))
-
 		assert.Equal(t, resp.Vars, vBytes)
 	})
 }

@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	WORKSPACE = "workspace"
-	LAYOUT    = "layout"
+	WORKSPACE = "workspaces"
+	LAYOUT    = "layouts"
+	JOB       = "jobs"
+	VAR       = "vars"
 )
 
 // MakeTree populates a Tree based on Input.
@@ -56,7 +58,7 @@ type ReaderWriter interface {
 type Workspace string
 
 func (w *Workspace) MakePath(_ *Tree) string {
-	return path.Join("workspace", string(*w))
+	return path.Join(WORKSPACE, string(*w))
 }
 
 func (w *Workspace) Unmarshal(b []byte) error {
@@ -70,7 +72,7 @@ func (w *Workspace) Marshal() ([]byte, error) {
 type Vars map[string]interface{}
 
 func (v *Vars) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "vars")
+	return path.Join(n.MakePath(), VAR)
 }
 
 func (w *Vars) Unmarshal(b []byte) error {
@@ -88,7 +90,7 @@ type Layout struct {
 }
 
 func (l *Layout) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "layout", l.Id)
+	return path.Join(n.MakePath(), LAYOUT, l.Id)
 }
 
 func (w *Layout) Unmarshal(b []byte) error {
@@ -114,7 +116,7 @@ type Job struct {
 }
 
 func (v *Job) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "jobs", v.Id)
+	return path.Join(n.MakePath(), JOB, v.Id)
 }
 
 func (w *Job) Unmarshal(b []byte) error {
