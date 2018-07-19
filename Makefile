@@ -31,10 +31,10 @@ http: proto deps
 test: proto deps
 	go test -v ./...
 
-worker:
+worker: deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o worker -a -installsuffix cgo github.com/tsocial/tessellate/commands/worker
 
-tessellate:
+tessellate: deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix cgo github.com/tsocial/tessellate/
 
 build_images: worker tessellate
