@@ -1,9 +1,15 @@
 package main
 
 import (
+	"bytes"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"strings"
+	"time"
 
+	"github.com/meson10/pester"
 	"github.com/tsocial/tessellate/runner"
 	"github.com/tsocial/tessellate/storage/consul"
 	"github.com/tsocial/tessellate/storage/types"
@@ -18,6 +24,31 @@ var (
 	workspaceID = kingpin.Flag("workspace", "Workspace ID").Short('w').String()
 	consulIP    = kingpin.Flag("consul-host", "Consul IP").Short('c').String()
 )
+
+func makeCall(req *http.Request) error {
+	log.Println("Making rqeuest", req)
+	client := pester.New()
+	client.Concurrency = 3
+	client.MaxRetries = 3
+	client.Backoff = pester.ExponentialBackoff
+	client.KeepLog = true
+	client.Timeout = time.Duration(5 * time.Second)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	log.Println("Response from callback", string(b))
+	return nil
+}
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -42,7 +73,7 @@ func main() {
 
 	// Get Layout
 	l := types.Layout{Id: j.LayoutId}
-	if err := store.GetVersion(&l, t2, j.LayoutVersion); err != nil {
+	if err := store.GetVersion(&l, t, j.LayoutVersion); err != nil {
 		log.Println(err)
 		os.Exit(127)
 	}
@@ -51,7 +82,9 @@ func main() {
 	var v types.Vars
 	if err := store.GetVersion(&v, t2, j.VarsVersion); err != nil {
 		log.Println(err)
-		os.Exit(127)
+		if !strings.Contains(err.Error(), "Missing") {
+			os.Exit(127)
+		}
 	}
 
 	cmd := runner.Cmd{}
@@ -62,8 +95,35 @@ func main() {
 	cmd.SetVars(v)
 	cmd.SetLogPrefix(j.Id)
 
-	if err := cmd.Run();err != nil {
+	var w types.Watch
+	if err := store.GetVersion(&w, t2, "latest"); err != nil {
 		log.Println(err)
-		os.Exit(127)
 	}
+
+	var req *http.Request
+	var err2 error
+
+	status := 0
+
+	if err := cmd.Run(); err != nil {
+		status = 127
+		log.Println(err)
+		if w.FailureURL != "" {
+			req, err2 = http.NewRequest(http.MethodPost, w.FailureURL, bytes.NewBuffer(nil))
+		}
+	} else {
+		if w.SuccessURL != "" {
+			req, err2 = http.NewRequest(http.MethodPost, w.SuccessURL, bytes.NewBuffer(nil))
+		}
+	}
+
+	if err2 != nil {
+		log.Println(err2)
+	}
+
+	if req != nil {
+		makeCall(req)
+	}
+
+	os.Exit(status)
 }

@@ -1,4 +1,4 @@
-package runner
+package tmpl
 
 import (
 	"testing"
@@ -21,7 +21,7 @@ func TestTmpl(t *testing.T) {
 		err2 := json.Unmarshal(vars, &y)
 		assert.Nil(t, err2)
 
-		out, err := parseLayout(d, y)
+		out, err := ParseLayout(d, y)
 		assert.Nil(t, err)
 
 		assert.Equal(t, true, strings.Contains(string(out), "012"))
@@ -33,7 +33,7 @@ func TestTmpl(t *testing.T) {
 
 		y := pongo2.Context{}
 
-		out, err := parseLayout(d, y)
+		out, err := ParseLayout(d, y)
 		assert.Nil(t, err)
 
 		assert.Equal(t, false, strings.Contains(string(out), "012"))

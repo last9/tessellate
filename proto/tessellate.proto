@@ -2,20 +2,48 @@ syntax = "proto3";
 
 package tsocial.tessellate.server;
 
+import "google/api/annotations.proto";
 import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 
 option go_package = "github.com/tsocial/tessellate/server";
 
 service Tessellate {
-  rpc SaveWorkspace (SaveWorkspaceRequest) returns (Ok) {}
-  rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {}
+  rpc SaveWorkspace (SaveWorkspaceRequest) returns (Ok) {
+    option (google.api.http) = {
+      post: "/v1/workspace"
+      body: "*"
+    };
+  }
+  rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {
+    option (google.api.http) = {
+      get: "/v1/workspace/{Id}",
+    };
+  }
  // rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
 
-  rpc SaveLayout (SaveLayoutRequest) returns (Ok) {}
-  rpc GetLayout (LayoutRequest) returns (Layout) {}
+  rpc SaveLayout (SaveLayoutRequest) returns (Ok) {
+    option (google.api.http) = {
+      post: "/v1/workspace/{WorkspaceId}/layout/{Id}"
+      body: "*"
+    };
+  }
+  rpc GetLayout (LayoutRequest) returns (Layout) {
+    option (google.api.http) = {
+      get: "/v1/workspace/{WorkspaceId}/layout/{Id}"
+    };
+  }
 
-  rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {}
-  rpc DestroyLayout (LayoutRequest) returns (JobStatus) {}
+  rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {
+    option (google.api.http) = {
+      post: "/v1/workspace/{WorkspaceId}/layout/{Id}/apply"
+      body: "*"
+    };
+  }
+  rpc DestroyLayout (ApplyLayoutRequest) returns (JobStatus) {
+    option (google.api.http) = {
+      delete: "/v1/workspace/{WorkspaceId}/layout/{Id}/apply"
+    };
+  }
 
   rpc AbortJob (JobRequest) returns (Ok) {}
 
@@ -57,7 +85,7 @@ message GetWorkspaceRequest {
 
 message Workspace {
   string Name = 1;
-  map<string, bytes> Vars = 2;
+  bytes Vars = 2;
   string Version = 3;
   repeated string Versions = 4;
 }
@@ -70,13 +98,13 @@ message Layout {
   string Workspaceid = 1;
   string Id = 2;
   map<string, bytes> Plan = 3;
-  map<string, bytes> Vars = 4;
+  bytes Vars = 4;
   Status Status = 5;
 }
 
 message SaveWorkspaceRequest {
   string Id = 1 [(validate.rules).string.min_len = 1];
-  map<string, bytes> Vars = 2;
+  bytes Vars = 2;
 }
 
 message GetWorkspaceLayoutsRequest {
@@ -91,7 +119,7 @@ message JobStatus {
 }
 
 message Vars {
-  map<string, bytes> Vars = 1;
+  bytes Vars = 1;
 }
 
 message JobRequest {
@@ -109,7 +137,7 @@ message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
   map<string, bytes> Plan = 3;
-  map<string, bytes> Vars = 4;
+  bytes Vars = 4;
 }
 
 message SetLayoutStatusRequest {
@@ -121,7 +149,7 @@ message SetLayoutStatusRequest {
 message ApplyLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
-  map<string, bytes> Vars = 3 [(validate.rules).map = {min_pairs: 1}];
+  bytes Vars = 3;
   bool dry = 4;
 }
 

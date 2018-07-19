@@ -60,3 +60,11 @@
 [[constraint]]
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/hashicorp/nomad"
+  version = "0.8.4"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/meson10/pester"
