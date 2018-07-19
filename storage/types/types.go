@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	WORKSPACE = "workspace"
-	LAYOUT    = "layout"
+	WORKSPACE = "workspaces"
+	LAYOUT    = "layouts"
+	JOB       = "jobs"
+	VAR       = "vars"
 	WATCH     = "watch"
 )
 
@@ -57,7 +59,7 @@ type ReaderWriter interface {
 type Workspace string
 
 func (w *Workspace) MakePath(_ *Tree) string {
-	return path.Join("workspace", string(*w))
+	return path.Join(WORKSPACE, string(*w))
 }
 
 func (w *Workspace) Unmarshal(b []byte) error {
@@ -71,7 +73,7 @@ func (w *Workspace) Marshal() ([]byte, error) {
 type Vars map[string]interface{}
 
 func (v *Vars) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "vars")
+	return path.Join(n.MakePath(), VAR)
 }
 
 func (w *Vars) Unmarshal(b []byte) error {
@@ -89,7 +91,11 @@ type Layout struct {
 }
 
 func (l *Layout) MakePath(n *Tree) string {
+<<<<<<< HEAD
 	return path.Join(n.MakePath(), "layouts", l.Id)
+=======
+	return path.Join(n.MakePath(), LAYOUT, l.Id)
+>>>>>>> 4a2c5b03c263c5cd3d22e071197a55f294db2e2b
 }
 
 func (w *Layout) Unmarshal(b []byte) error {
@@ -115,7 +121,7 @@ type Job struct {
 }
 
 func (v *Job) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "jobs", v.Id)
+	return path.Join(n.MakePath(), JOB, v.Id)
 }
 
 func (w *Job) Unmarshal(b []byte) error {

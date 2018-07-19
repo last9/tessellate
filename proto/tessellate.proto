@@ -39,7 +39,7 @@ service Tessellate {
       body: "*"
     };
   }
-  rpc DestroyLayout (LayoutRequest) returns (JobStatus) {
+  rpc DestroyLayout (ApplyLayoutRequest) returns (JobStatus) {
     option (google.api.http) = {
       post: "/v1/layout/destroy"
       body: "*"
@@ -86,7 +86,7 @@ message GetWorkspaceRequest {
 
 message Workspace {
   string Name = 1;
-  map<string, bytes> Vars = 2;
+  bytes Vars = 2;
   string Version = 3;
   repeated string Versions = 4;
 }
@@ -99,13 +99,13 @@ message Layout {
   string Workspaceid = 1;
   string Id = 2;
   map<string, bytes> Plan = 3;
-  map<string, bytes> Vars = 4;
+  bytes Vars = 4;
   Status Status = 5;
 }
 
 message SaveWorkspaceRequest {
   string Id = 1 [(validate.rules).string.min_len = 1];
-  map<string, bytes> Vars = 2;
+  bytes Vars = 2;
 }
 
 message GetWorkspaceLayoutsRequest {
@@ -120,7 +120,7 @@ message JobStatus {
 }
 
 message Vars {
-  map<string, bytes> Vars = 1;
+  bytes Vars = 1;
 }
 
 message JobRequest {
@@ -138,7 +138,7 @@ message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
   map<string, bytes> Plan = 3;
-  map<string, bytes> Vars = 4;
+  bytes Vars = 4;
 }
 
 message SetLayoutStatusRequest {
@@ -150,7 +150,7 @@ message SetLayoutStatusRequest {
 message ApplyLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
-  map<string, bytes> Vars = 3 [(validate.rules).map = {min_pairs: 1}];
+  bytes Vars = 3;
   bool dry = 4;
 }
 
