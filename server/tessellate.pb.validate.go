@@ -140,9 +140,7 @@ func (m *Layouts) Validate() error {
 	for idx, item := range m.GetLayouts() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface {
-			Validate() error
-		}); ok {
+		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return LayoutsValidationError{
 					Field:  fmt.Sprintf("Layouts[%v]", idx),
@@ -712,12 +710,7 @@ func (m *ApplyLayoutRequest) Validate() error {
 		}
 	}
 
-	if len(m.GetVars()) < 1 {
-		return ApplyLayoutRequestValidationError{
-			Field:  "Vars",
-			Reason: "value must contain at least 1 pair(s)",
-		}
-	}
+	// no validation rules for Vars
 
 	// no validation rules for Dry
 

@@ -1,13 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
 	"github.com/tsocial/tessellate/storage/consul"
 
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -25,6 +25,13 @@ func TestMain(m *testing.M) {
 	server = New(store)
 
 	os.Exit(m.Run())
+}
+
+func uglyJson(b []byte) []byte {
+	var t map[string]interface{}
+	json.Unmarshal(b, &t)
+	b2, _ := json.Marshal(t)
+	return b2
 }
 
 func TestServer_SaveAndGetWorkspace(t *testing.T) {
@@ -56,38 +63,29 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	layoutId := "layout-1"
 	plan := map[string][]byte{}
 
-	l := json.RawMessage{}
 	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
 	if err != nil {
 		t.Error(err)
 	}
-	if err := json.Unmarshal(lBytes, &l); err != nil {
-		t.Fatal(err)
-		return
-	}
 
-	plan["sleep"] = l
+	plan["sleep"] = uglyJson(lBytes)
 
 	vBytes, err := ioutil.ReadFile("../runner/testdata/vars.json")
 	if err != nil {
 		t.Error(err)
 	}
 
-	vars := map[string][]byte{}
-	if err := json.Unmarshal(vBytes, &vars); err != nil {
-		t.Fatal(err)
-		return
-	}
+	vBytes = uglyJson(vBytes)
 
 	t.Run("Should create a layout in the workspace", func(t *testing.T) {
-		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: plan, Vars: vars}
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: plan, Vars: vBytes}
 		resp, err := server.SaveLayout(context.Background(), req)
 
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assert.Equal(t, resp, Ok{})
+		assert.Equal(t, resp, &Ok{})
 	})
 
 	t.Run("Should get the layout that was created", func(t *testing.T) {
@@ -102,6 +100,10 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, resp.Status, Status_INACTIVE)
 		assert.Equal(t, resp.Workspaceid, workspaceId)
 		assert.Equal(t, resp.Plan, plan)
-		assert.Equal(t, resp.Vars, vars)
+
+		t.Log(string(resp.Vars))
+		t.Log(string(vBytes))
+
+		assert.Equal(t, resp.Vars, vBytes)
 	})
 }

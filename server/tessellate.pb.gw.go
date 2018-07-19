@@ -102,7 +102,7 @@ func request_Tessellate_ApplyLayout_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func request_Tessellate_DestroyLayout_0(ctx context.Context, marshaler runtime.Marshaler, client TessellateClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq LayoutRequest
+	var protoReq ApplyLayoutRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
