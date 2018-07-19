@@ -130,10 +130,10 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 
 	lay := Layout{
 		Workspaceid: in.WorkspaceId,
-		Id: layout.Id,
-		Plan: p,
-		Vars: b,
-		Status: Status(layout.Status),
+		Id:          layout.Id,
+		Plan:        p,
+		Vars:        b,
+		Status:      Status(layout.Status),
 	}
 
 	return &lay, err
@@ -160,12 +160,12 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	}
 
 	j := types.Job{
-		LayoutId: lID,
+		LayoutId:      lID,
 		LayoutVersion: versions[len(versions)-2],
-		Status: int32(JobState_PENDING),
-		VarsVersion: varsVersions[len(versions)-2],
-		Op: op,
-		Dry: dry,
+		Status:        int32(JobState_PENDING),
+		VarsVersion:   varsVersions[len(versions)-2],
+		Op:            op,
+		Dry:           dry,
 	}
 
 	if err := s.store.Save(&j, tree); err != nil {
@@ -204,7 +204,31 @@ func (s *Server) StartWatch(ctx context.Context, in *StartWatchRequest) (*Ok, er
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return nil, nil
+	tree := types.MakeTree(in.WorkspaceId, in.Id)
+	layout := types.Layout{Id: in.Id}
+
+	if err := s.store.Get(&layout, tree); err != nil {
+		return nil, err
+	}
+
+	vars := types.Vars{}
+	if err := s.store.Get(&vars, tree); err != nil {
+		return nil, err
+	}
+
+	varsVersions, err := s.store.GetVersions(&layout, tree)
+	if err != nil {
+		return nil, err
+	}
+
+	watch := types.Watch{LayoutId: layout.Id, LayoutVersion: varsVersions[len(varsVersions)-2],
+		SuccessURL: in.SuccessCallback, FailureURL: in.FailureCallback}
+
+	if err := s.store.Save(&watch, tree); err != nil {
+		return nil, err
+	}
+
+	return &Ok{}, nil
 }
 
 func (s *Server) StopWatch(ctx context.Context, in *StopWatchRequest) (*Ok, error) {
@@ -212,5 +236,19 @@ func (s *Server) StopWatch(ctx context.Context, in *StopWatchRequest) (*Ok, erro
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return nil, nil
+	tree := types.MakeTree(in.WorkspaceId, in.Id)
+	watch := types.Watch{LayoutId: in.Id}
+
+	if err := s.store.Get(&watch, tree); err != nil {
+		return nil, err
+	}
+
+	watch = types.Watch{LayoutId: watch.Id, LayoutVersion: watch.LayoutVersion,
+		SuccessURL: "", FailureURL: ""}
+
+	if err := s.store.Save(&watch, tree); err != nil {
+		return nil, err
+	}
+
+	return &Ok{}, nil
 }

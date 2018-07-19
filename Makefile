@@ -8,7 +8,7 @@ protodep:
 
 deps:
 	dep version || (curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh)
-	dep ensure
+	dep ensure -v
 
 proto: protodep
 	protoc \

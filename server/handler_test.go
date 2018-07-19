@@ -13,6 +13,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/tsocial/tessellate/utils"
 )
 
 var server TessellateServer
@@ -35,7 +36,7 @@ func uglyJson(b []byte) []byte {
 }
 
 func TestServer_SaveAndGetWorkspace(t *testing.T) {
-	id := "workspace-1"
+	id := fmt.Sprintf("workspace-%s", utils.RandString(8))
 
 	t.Run("Should save a workspace.", func(t *testing.T) {
 		req := &SaveWorkspaceRequest{Id: id}
@@ -59,8 +60,8 @@ func TestServer_SaveAndGetWorkspace(t *testing.T) {
 }
 
 func TestServer_SaveAndGetLayout(t *testing.T) {
-	workspaceId := "workspace-1"
-	layoutId := "layout-1"
+	workspaceId := fmt.Sprintf("workspace-%s", utils.RandString(8))
+	layoutId := fmt.Sprintf("layout-%s", utils.RandString(8))
 	plan := map[string][]byte{}
 
 	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
@@ -70,7 +71,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 
 	plan["sleep"] = uglyJson(lBytes)
 
-	vBytes, err := ioutil.ReadFile("../runner/testdata/vars.json")
+	vBytes, err := ioutil.ReadFile("../tmpl/testdata/vars.json")
 	if err != nil {
 		t.Error(err)
 	}
