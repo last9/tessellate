@@ -21,13 +21,15 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 		return nil, err
 	}
 
-	vars := types.Vars{}
-	if err := json.Unmarshal(in.Vars, &vars); err != nil {
-		return nil, err
-	}
+	if len(in.Vars) > 0 {
+		vars := types.Vars{}
+		if err := json.Unmarshal(in.Vars, &vars); err != nil {
+			return nil, err
+		}
 
-	if err := s.store.Save(&vars, tree); err != nil {
-		return nil, err
+		if err := s.store.Save(&vars, tree); err != nil {
+			return nil, err
+		}
 	}
 
 	return &Ok{}, nil

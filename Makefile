@@ -1,4 +1,4 @@
-.PHONY: worker
+.PHONY: worker tessellate http
 
 protodep:
 	go get -v github.com/golang/protobuf/protoc-gen-go
