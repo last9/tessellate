@@ -10,7 +10,15 @@ services:
     build:
       context: .
       dockerfile: WorkerDockerfile
-    image: tessellate/worker
-    entrypoint:
-      - /app/worker
+    image: tsl8/worker
     command: --job=123 --workspace=123 --consul-host=consul:8500
+  tessellate:
+    build:
+      context: .
+      dockerfile: ServerDockerfile
+    image: tsl8/grpc-api
+  http:
+    build:
+      context: .
+      dockerfile: HttpDockerfile
+    image: tsl8/api

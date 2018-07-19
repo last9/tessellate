@@ -11,24 +11,17 @@ import (
 
 	"os"
 
+	"fmt"
+
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/storage/consul"
 	"github.com/tsocial/tessellate/storage/types"
+	"github.com/tsocial/tessellate/utils"
 )
 
 var store Storer
-
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func randStringBytes(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-	return string(b)
-}
 
 // Deletes all the keys in the prefix / on Consul.
 func deleteTree(client *api.Client) error {
@@ -49,21 +42,19 @@ func TestMain(m *testing.M) {
 	store = consul.MakeConsulStore("127.0.0.1:8500")
 	store.Setup()
 
-	/*os.Exit(func() int {
+	os.Exit(func() int {
 		defer deleteTree(store.GetClient())
 
 		y := m.Run()
 		return y
-	}())*/
-
-	os.Exit(m.Run())
+	}())
 }
 
 func TestStorer(t *testing.T) {
 	t.Run("Storage tests", func(t *testing.T) {
 		tree := &types.Tree{Name: "store_test", TreeType: "testing"}
 
-		workspace := types.Workspace("alibaba")
+		workspace := types.Workspace(fmt.Sprintf("alibaba-%s", utils.RandString(8)))
 
 		t.Run("Workspace does not exist", func(t *testing.T) {
 			if err := store.Get(&workspace, tree); err == nil {
@@ -96,7 +87,7 @@ func TestStorer(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			assert.Equal(t, len(v), 3)
+			assert.Equal(t, 3, len(v))
 			assert.Contains(t, strings.Join(v, ""), "latest")
 		})
 	})

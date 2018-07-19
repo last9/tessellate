@@ -9,8 +9,11 @@ import (
 )
 
 const (
-	WORKSPACE = "workspace"
-	LAYOUT    = "layout"
+	WORKSPACE = "workspaces"
+	LAYOUT    = "layouts"
+	JOB       = "jobs"
+	VAR       = "vars"
+	WATCH     = "watch"
 )
 
 // MakeTree populates a Tree based on Input.
@@ -32,6 +35,10 @@ func MakeTree(nodes ...string) *Tree {
 	return &t
 }
 
+type BaseType struct {}
+
+func (b *BaseType) SaveId(string) {}
+
 // Tree is a Hierarchial representation of a Path at which a node is expcted to be found.
 type Tree struct {
 	Name     string
@@ -51,12 +58,15 @@ type ReaderWriter interface {
 	MakePath(tree *Tree) string
 	Marshal() ([]byte, error)
 	Unmarshal([]byte) error
+	SaveId(string)
 }
 
 type Workspace string
 
+func (w *Workspace) SaveId(string) {}
+
 func (w *Workspace) MakePath(_ *Tree) string {
-	return path.Join("workspace", string(*w))
+	return path.Join(WORKSPACE, string(*w))
 }
 
 func (w *Workspace) Unmarshal(b []byte) error {
@@ -69,8 +79,10 @@ func (w *Workspace) Marshal() ([]byte, error) {
 
 type Vars map[string]interface{}
 
+func (v *Vars) SaveId(string) {}
+
 func (v *Vars) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "vars")
+	return path.Join(n.MakePath(), VAR)
 }
 
 func (w *Vars) Unmarshal(b []byte) error {
@@ -85,10 +97,13 @@ type Layout struct {
 	Id     string                     `json:"id"`
 	Plan   map[string]json.RawMessage `json:"plan"`
 	Status int32                      `json:"status"`
+	*BaseType
 }
 
+func (l *Layout) SaveId(string) {}
+
 func (l *Layout) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "layout", l.Id)
+	return path.Join(n.MakePath(), LAYOUT, l.Id)
 }
 
 func (w *Layout) Unmarshal(b []byte) error {
@@ -113,8 +128,12 @@ type Job struct {
 	Dry           bool   `json:"dry"`
 }
 
+func (v *Job) SaveId(id string) {
+	v.Id = id
+}
+
 func (v *Job) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "jobs", v.Id)
+	return path.Join(n.MakePath(), JOB, v.Id)
 }
 
 func (w *Job) Unmarshal(b []byte) error {
@@ -122,5 +141,27 @@ func (w *Job) Unmarshal(b []byte) error {
 }
 
 func (w *Job) Marshal() ([]byte, error) {
+	return json.Marshal(w)
+}
+
+type Watch struct {
+	Id string
+	SuccessURL string `json:"success_url"`
+	FailureURL string `json:"failure_url"`
+}
+
+func (v *Watch) SaveId(id string) {
+	v.Id = id
+}
+
+func (w *Watch) MakePath(n *Tree) string {
+	return path.Join(n.MakePath(), WATCH)
+}
+
+func (w *Watch) Unmarshal(b []byte) error {
+	return json.Unmarshal(b, w)
+}
+
+func (w *Watch) Marshal() ([]byte, error) {
 	return json.Marshal(w)
 }

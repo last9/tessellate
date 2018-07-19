@@ -3,9 +3,19 @@ language: go
 go:
   - "1.10"
 
+before_install:
+  - export PROTO_VERSION=3.5.1
+  - export PATH="/tmp/proto/${PROTO_VERSION}/bin/":$PATH
+
 services:
   - docker
 
 script:
   - docker-compose -f docker-compose.yaml up -d consul
   - make test
+
+deploy:
+  - provider: script
+    script: make upload_docker_images
+    on:
+      branch: master

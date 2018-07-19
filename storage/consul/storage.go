@@ -114,6 +114,7 @@ func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
 		return errors.New("Txn was rolled back. Weird, huh!")
 	}
 
+	source.SaveId(fmt.Sprintf("%v", ts))
 	return nil
 }
 
