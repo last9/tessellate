@@ -25,6 +25,7 @@ http: protodep
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 		--grpc-gateway_out=logtostderr=true:${GOPATH}/src \
 		proto/tessellate.proto
+	go build github.com/tsocial/tessellate/commands/http
 
 test: protodep deps
 	go test -v ./...
