@@ -20,13 +20,10 @@ import (
 var server TessellateServer
 
 func TestMain(m *testing.M) {
-
 	store := consul.MakeConsulStore()
 	store.Setup()
 
 	server = New(store)
-	dispatcher.Set(dispatcher.NewInMemory())
-
 	os.Exit(m.Run())
 }
 
@@ -64,6 +61,10 @@ func TestServer_SaveAndGetWorkspace(t *testing.T) {
 func TestServer_SaveAndGetLayout(t *testing.T) {
 	workspaceId := fmt.Sprintf("workspace-%s", utils.RandString(8))
 	layoutId := fmt.Sprintf("layout-%s", utils.RandString(8))
+
+	jobQueue := dispatcher.NewInMemory()
+	dispatcher.Set(jobQueue)
+
 	plan := map[string][]byte{}
 
 	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
@@ -135,5 +136,41 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		}
 
 		assert.Equal(t, resp, &Ok{})
+	})
+
+	t.Run("Should apply a layout", func(t *testing.T) {
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id: layoutId,
+			Dry: true,
+		}
+
+		resp, err := server.ApplyLayout(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, JobState_PENDING, resp.Status)
+		assert.NotEmpty(t, resp.Id)
+
+		assert.Equal(t, jobQueue.Store, []string{resp.Id})
+	})
+
+	t.Run("Should Destroy a layout", func(t *testing.T) {
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id: layoutId,
+			Dry: true,
+		}
+
+		resp, err := server.DestroyLayout(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, JobState_PENDING, resp.Status)
+		assert.NotEmpty(t, resp.Id)
+
+		assert.Equal(t, jobQueue.Store[1], resp.Id)
 	})
 }

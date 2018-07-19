@@ -145,7 +145,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	tree := types.MakeTree(wID)
 	layoutTree := types.MakeTree(wID, lID)
 
-	versions, err := s.store.GetVersions(&lyt, layoutTree)
+	versions, err := s.store.GetVersions(&lyt, tree)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		return nil, err
 	}
 
-	varsVersions, err := s.store.GetVersions(&lyt, layoutTree)
+	varsVersions, err := s.store.GetVersions(&v, layoutTree)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		LayoutId:      lID,
 		LayoutVersion: versions[len(versions)-2],
 		Status:        int32(JobState_PENDING),
-		VarsVersion:   varsVersions[len(versions)-2],
+		VarsVersion:   varsVersions[len(varsVersions)-2],
 		Op:            op,
 		Dry:           dry,
 	}

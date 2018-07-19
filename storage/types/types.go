@@ -35,6 +35,10 @@ func MakeTree(nodes ...string) *Tree {
 	return &t
 }
 
+type BaseType struct {}
+
+func (b *BaseType) SaveId(string) {}
+
 // Tree is a Hierarchial representation of a Path at which a node is expcted to be found.
 type Tree struct {
 	Name     string
@@ -54,9 +58,12 @@ type ReaderWriter interface {
 	MakePath(tree *Tree) string
 	Marshal() ([]byte, error)
 	Unmarshal([]byte) error
+	SaveId(string)
 }
 
 type Workspace string
+
+func (w *Workspace) SaveId(string) {}
 
 func (w *Workspace) MakePath(_ *Tree) string {
 	return path.Join(WORKSPACE, string(*w))
@@ -71,6 +78,8 @@ func (w *Workspace) Marshal() ([]byte, error) {
 }
 
 type Vars map[string]interface{}
+
+func (v *Vars) SaveId(string) {}
 
 func (v *Vars) MakePath(n *Tree) string {
 	return path.Join(n.MakePath(), VAR)
@@ -88,7 +97,10 @@ type Layout struct {
 	Id     string                     `json:"id"`
 	Plan   map[string]json.RawMessage `json:"plan"`
 	Status int32                      `json:"status"`
+	*BaseType
 }
+
+func (l *Layout) SaveId(string) {}
 
 func (l *Layout) MakePath(n *Tree) string {
 	return path.Join(n.MakePath(), LAYOUT, l.Id)
@@ -116,6 +128,10 @@ type Job struct {
 	Dry           bool   `json:"dry"`
 }
 
+func (v *Job) SaveId(id string) {
+	v.Id = id
+}
+
 func (v *Job) MakePath(n *Tree) string {
 	return path.Join(n.MakePath(), JOB, v.Id)
 }
@@ -129,8 +145,13 @@ func (w *Job) Marshal() ([]byte, error) {
 }
 
 type Watch struct {
+	Id string
 	SuccessURL string `json:"success_url"`
 	FailureURL string `json:"failure_url"`
+}
+
+func (v *Watch) SaveId(id string) {
+	v.Id = id
 }
 
 func (w *Watch) MakePath(n *Tree) string {

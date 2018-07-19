@@ -1,11 +1,20 @@
 package dispatcher
 
-type mem struct{}
+import "sync"
 
-func (c *mem) Dispatch(j, w string) error {
+type Mem struct {
+	Store []string
+	sync.Mutex
+}
+
+func (c *Mem) Dispatch(j, w string) error {
+	c.Lock()
+	defer c.Unlock()
+
+	c.Store = append(c.Store, j)
 	return nil
 }
 
-func NewInMemory() *mem {
-	return &mem{}
+func NewInMemory() *Mem {
+	return &Mem{Store: []string{}}
 }
