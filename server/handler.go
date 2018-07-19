@@ -206,31 +206,7 @@ func (s *Server) StartWatch(ctx context.Context, in *StartWatchRequest) (*Ok, er
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	tree := types.MakeTree(in.WorkspaceId, in.Id)
-	layout := types.Layout{Id: in.Id}
-
-	if err := s.store.Get(&layout, tree); err != nil {
-		return nil, err
-	}
-
-	vars := types.Vars{}
-	if err := s.store.Get(&vars, tree); err != nil {
-		return nil, err
-	}
-
-	varsVersions, err := s.store.GetVersions(&layout, tree)
-	if err != nil {
-		return nil, err
-	}
-
-	watch := types.Watch{LayoutId: layout.Id, LayoutVersion: varsVersions[len(varsVersions)-2],
-		SuccessURL: in.SuccessCallback, FailureURL: in.FailureCallback}
-
-	if err := s.store.Save(&watch, tree); err != nil {
-		return nil, err
-	}
-
-	return &Ok{}, nil
+	return s.saveWatch(in.WorkspaceId, in.Id, in.SuccessCallback, in.FailureCallback)
 }
 
 func (s *Server) StopWatch(ctx context.Context, in *StopWatchRequest) (*Ok, error) {
@@ -238,15 +214,16 @@ func (s *Server) StopWatch(ctx context.Context, in *StopWatchRequest) (*Ok, erro
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	tree := types.MakeTree(in.WorkspaceId, in.Id)
-	watch := types.Watch{LayoutId: in.Id}
+	return s.saveWatch(in.WorkspaceId, in.Id, "", "")
+}
 
-	if err := s.store.Get(&watch, tree); err != nil {
-		return nil, err
+func (s *Server) saveWatch(wid, id, success, failure string) (*Ok, error) {
+	tree := types.MakeTree(wid, id)
+
+	watch := types.Watch{
+		SuccessURL: success,
+		FailureURL: failure,
 	}
-
-	watch = types.Watch{LayoutId: watch.Id, LayoutVersion: watch.LayoutVersion,
-		SuccessURL: "", FailureURL: ""}
 
 	if err := s.store.Save(&watch, tree); err != nil {
 		return nil, err
