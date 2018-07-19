@@ -188,6 +188,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/meson10/pester"
+  packages = ["."]
+  revision = "9c8497d2b7d89b5ffb4e6bdde01fe76c1121fbd6"
+
+[[projects]]
+  branch = "master"
   name = "github.com/mitchellh/copystructure"
   packages = ["."]
   revision = "d23ffcb85de31694d6ccaa23ccb4a03e55c1303f"
@@ -345,6 +351,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7ad3a961e0514fa9c440589ae5853971d14fd813ff429a5d82b87058748b523d"
+  inputs-digest = "fadd6ee0ed1b70a88259e56c0ca5a080a6be821c25ec37498fe6b1463cc286e1"
   solver-name = "gps-cdcl"
   solver-version = 1
