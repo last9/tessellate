@@ -9,6 +9,7 @@ protodep:
 deps:
 	dep version || (curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh)
 	dep ensure -v
+	rm -rf vendor/github.com/hashicorp/nomad/nomad/structs/structs.generated.go
 
 clean:
 	rm -rf vendor/github.com/hashicorp/nomad/nomad/structs/structs.generated.go
