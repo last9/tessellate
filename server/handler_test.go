@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 
 	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 var server TessellateServer
@@ -50,43 +51,57 @@ func TestServer_SaveAndGetWorkspace(t *testing.T) {
 	})
 }
 
-func TestServer_SaveLayout(t *testing.T) {
-	workspace_id := "workspace-1"
-	layout_id := "layout-1"
-	plan := make(map[string][]byte, 2)
+func TestServer_SaveAndGetLayout(t *testing.T) {
+	workspaceId := "workspace-1"
+	layoutId := "layout-1"
+	plan := map[string][]byte{}
 
 	l := json.RawMessage{}
-	d, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
+	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
 	if err != nil {
 		t.Error(err)
 	}
-
-	v, err := ioutil.ReadFile("../runner/testdata/vars.json")
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err := json.Unmarshal(d, &l); err != nil {
-		t.Fatal(err)
-		return
-	}
-
-	l = json.RawMessage{}
-	if err := json.Unmarshal(v, &l); err != nil {
+	if err := json.Unmarshal(lBytes, &l); err != nil {
 		t.Fatal(err)
 		return
 	}
 
 	plan["sleep"] = l
-	plan["env"] = l
+
+	vBytes, err := ioutil.ReadFile("../runner/testdata/vars.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	vars := map[string][]byte{}
+	if err := json.Unmarshal(vBytes, &vars); err != nil {
+		t.Fatal(err)
+		return
+	}
 
 	t.Run("Should create a layout in the workspace", func(t *testing.T) {
-		req := &SaveLayoutRequest{Id: layout_id, WorkspaceId: workspace_id, Plan: plan}
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: plan, Vars: vars}
 		resp, err := server.SaveLayout(context.Background(), req)
 
 		if err != nil {
-			errors.Wrap(err, Errors_INVALID_VALUE.String())
+			t.Fatal(err)
 		}
-		fmt.Print(resp.String())
+
+		assert.Equal(t, resp, Ok{})
+	})
+
+	t.Run("Should get the layout that was created", func(t *testing.T) {
+		req := &LayoutRequest{WorkspaceId: workspaceId, Id: layoutId}
+		resp, err := server.GetLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp.Id, layoutId)
+		assert.Equal(t, resp.Status, Status_INACTIVE)
+		assert.Equal(t, resp.Workspaceid, workspaceId)
+		assert.Equal(t, resp.Plan, plan)
+		assert.Equal(t, resp.Vars, vars)
 	})
 }

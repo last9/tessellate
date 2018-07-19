@@ -49,14 +49,12 @@ func TestMain(m *testing.M) {
 	store = consul.MakeConsulStore("127.0.0.1:8500")
 	store.Setup()
 
-	/*os.Exit(func() int {
+	os.Exit(func() int {
 		defer deleteTree(store.GetClient())
 
 		y := m.Run()
 		return y
-	}())*/
-
-	os.Exit(m.Run())
+	}())
 }
 
 func TestStorer(t *testing.T) {

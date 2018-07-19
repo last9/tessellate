@@ -56,15 +56,15 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 		return nil, err
 	}
 
-	l := map[string][]byte{}
+	mapVars := map[string][]byte{}
 	for k, v := range vars {
-		l[k], err = json.Marshal(v)
+		mapVars[k], err = json.Marshal(v)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	w := Workspace{Name: string(workspace), Vars: l, Version: versions[1], Versions: versions}
+	w := Workspace{Name: string(workspace), Vars: mapVars, Version: versions[1], Versions: versions}
 
 	return &w, err
 }
@@ -123,11 +123,11 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		return nil, err
 	}
 
-	var l map[string][]byte
+	var mapVars map[string][]byte
 
 	var err error
 	for k, v := range vars {
-		l[k], err = json.Marshal(v)
+		mapVars[k], err = json.Marshal(v)
 		if err != nil {
 			return nil, err
 		}
@@ -141,7 +141,7 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		}
 	}
 
-	lay := Layout{Workspaceid: in.WorkspaceId, Id: layout.Id, Plan: p, Vars: l, Status: Status(layout.Status)}
+	lay := Layout{Workspaceid: in.WorkspaceId, Id: layout.Id, Plan: p, Vars: mapVars, Status: Status(layout.Status)}
 
 	return &lay, err
 }
