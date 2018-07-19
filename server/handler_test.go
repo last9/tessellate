@@ -13,6 +13,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/tsocial/tessellate/dispatcher"
 	"github.com/tsocial/tessellate/utils"
 )
 
@@ -24,6 +25,7 @@ func TestMain(m *testing.M) {
 	store.Setup()
 
 	server = New(store)
+	dispatcher.Set(dispatcher.NewInMemory())
 
 	os.Exit(m.Run())
 }

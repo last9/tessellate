@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
+	"github.com/tsocial/tessellate/dispatcher"
 	"github.com/tsocial/tessellate/storage/types"
 )
 
@@ -172,7 +173,8 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		return nil, err
 	}
 
-	return &JobStatus{Id: j.Id, Status: JobState(j.Status)}, nil
+	job := &JobStatus{Id: j.Id, Status: JobState(j.Status)}
+	return job, dispatcher.Get().Dispatch(j.Id, wID)
 }
 
 func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobStatus, error) {

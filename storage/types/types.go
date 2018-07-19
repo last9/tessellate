@@ -91,11 +91,7 @@ type Layout struct {
 }
 
 func (l *Layout) MakePath(n *Tree) string {
-<<<<<<< HEAD
-	return path.Join(n.MakePath(), "layouts", l.Id)
-=======
 	return path.Join(n.MakePath(), LAYOUT, l.Id)
->>>>>>> 4a2c5b03c263c5cd3d22e071197a55f294db2e2b
 }
 
 func (w *Layout) Unmarshal(b []byte) error {
