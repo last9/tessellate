@@ -9,6 +9,7 @@ protodep:
 deps:
 	dep version || (curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh)
 	dep ensure -v
+	rm -rf vendor/github.com/hashicorp/nomad/nomad/structs/structs.generated.go
 
 proto: protodep
 	protoc \
@@ -32,4 +33,14 @@ test: http deps
 
 worker:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o worker -a -installsuffix cgo github.com/tsocial/tessellate/commands/worker
+
+tessellate:
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix cgo github.com/tsocial/tessellate/
+
+build_images: worker tessellate
 	docker-compose -f docker-compose.yaml build worker
+	docker-compose -f docker-compose.yaml build tessellate
+
+upload_images: build_images
+	docker push worker
+	docker push tessellate

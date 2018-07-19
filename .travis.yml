@@ -9,3 +9,9 @@ services:
 script:
   - docker-compose -f docker-compose.yaml up -d consul
   - make test
+
+deploy:
+  - provider: script
+    script: make upload_docker_images
+    on:
+      branch: master

@@ -1,24 +1,24 @@
 package dispatcher
 
 import (
-	"github.com/flosch/pongo2"
 	"log"
+
+	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
 	"github.com/tsocial/tessellate/tmpl"
 )
 
-type client struct{
+type client struct {
 	cfg NomadConfig
 }
 
 type NomadConfig struct {
-	Address string
+	Address    string
 	Datacenter string
-	Image string
-	CPU string
-	Memory string
+	Image      string
+	CPU        string
+	Memory     string
 	ConsulAddr string
-
 }
 
 func NewNomadClient(cfg NomadConfig) *client {
@@ -40,7 +40,7 @@ job "{{ job_id }}" {
 
       config {
         image = "{{ image }}"
-        entrypoint = ["worker", "-j", "{{ job_id }}", "-w", "{{ workspace_id }}", "--consul-addr", "{{ consul_addr }}"]
+        entrypoint = ["./tsl8", "-j", "{{ job_id }}", "-w", "{{ workspace_id }}", "--consul-addr", "{{ consul_addr }}"]
       }
 
       resources {
@@ -52,11 +52,11 @@ job "{{ job_id }}" {
 }
 `
 	cfg := pongo2.Context{
-		"job_id": j,
-		"datacenter": c.cfg.Datacenter,
-		"image": c.cfg.Image,
-		"cpu": c.cfg.CPU,
-		"memory": c.cfg.Memory,
+		"job_id":      j,
+		"datacenter":  c.cfg.Datacenter,
+		"image":       c.cfg.Image,
+		"cpu":         c.cfg.CPU,
+		"memory":      c.cfg.Memory,
 		"consul_addr": c.cfg.ConsulAddr,
 	}
 

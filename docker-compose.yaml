@@ -12,3 +12,8 @@ services:
       dockerfile: WorkerDockerfile
     image: tsl8/worker
     command: --job=123 --workspace=123 --consul-host=consul:8500
+  tessellate:
+    build:
+      context: .
+      dockerfile: ServerDockerfile
+    image: tsl8/api
