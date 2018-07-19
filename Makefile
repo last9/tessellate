@@ -27,7 +27,7 @@ http: proto deps
 		proto/tessellate.proto
 	go build github.com/tsocial/tessellate/commands/http
 
-test: http deps
+test: proto deps
 	go test -v ./...
 
 worker:
