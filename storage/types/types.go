@@ -11,6 +11,7 @@ import (
 const (
 	WORKSPACE = "workspace"
 	LAYOUT    = "layout"
+	WATCH     = "watch"
 )
 
 // MakeTree populates a Tree based on Input.
@@ -88,7 +89,7 @@ type Layout struct {
 }
 
 func (l *Layout) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "layout", l.Id)
+	return path.Join(n.MakePath(), "layouts", l.Id)
 }
 
 func (w *Layout) Unmarshal(b []byte) error {
@@ -126,15 +127,15 @@ func (w *Job) Marshal() ([]byte, error) {
 }
 
 type Watch struct {
-	Id string `json:"id"`
-	LayoutId string `json:"layout_id"`
+	Id            string `json:"id"`
+	LayoutId      string `json:"layout_id"`
 	LayoutVersion string `json:"layout_version"`
-	SuccessURL	string 	`json:"success_url"`
-	FailureURL	string `json:failure_url`
+	SuccessURL    string `json:"success_url"`
+	FailureURL    string `json:failure_url`
 }
 
 func (w *Watch) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), "watch", w.Id)
+	return path.Join(n.MakePath(), WATCH, w.Id)
 }
 
 func (w *Watch) Unmarshal(b []byte) error {
@@ -144,4 +145,3 @@ func (w *Watch) Unmarshal(b []byte) error {
 func (w *Watch) Marshal() ([]byte, error) {
 	return json.Marshal(w)
 }
-

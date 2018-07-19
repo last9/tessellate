@@ -82,7 +82,7 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 
 	plan := map[string]json.RawMessage{}
 
-	tree := types.MakeTree(in.WorkspaceId, in.Id)
+	tree := types.MakeTree(in.WorkspaceId)
 
 	for k, v := range in.Plan {
 		var value json.RawMessage
