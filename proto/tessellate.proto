@@ -16,33 +16,32 @@ service Tessellate {
   }
   rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {
     option (google.api.http) = {
-      get: "/v1/workspace"
+      get: "/v1/workspace/{Id}",
     };
   }
  // rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
 
   rpc SaveLayout (SaveLayoutRequest) returns (Ok) {
     option (google.api.http) = {
-      post: "/v1/layout"
+      post: "/v1/workspace/{WorkspaceId}/layout/{Id}"
       body: "*"
     };
   }
   rpc GetLayout (LayoutRequest) returns (Layout) {
     option (google.api.http) = {
-      get: "/v1/layout"
+      get: "/v1/workspace/{WorkspaceId}/layout/{Id}"
     };
   }
 
   rpc ApplyLayout (ApplyLayoutRequest) returns (JobStatus) {
     option (google.api.http) = {
-      post: "/v1/layout/apply"
+      post: "/v1/workspace/{WorkspaceId}/layout/{Id}/apply"
       body: "*"
     };
   }
   rpc DestroyLayout (ApplyLayoutRequest) returns (JobStatus) {
     option (google.api.http) = {
-      post: "/v1/layout/destroy"
-      body: "*"
+      delete: "/v1/workspace/{WorkspaceId}/layout/{Id}/apply"
     };
   }
 
