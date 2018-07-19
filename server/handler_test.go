@@ -104,4 +104,34 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 
 		assert.Equal(t, resp.Vars, vBytes)
 	})
+
+	t.Run("Should save a watch", func(t *testing.T) {
+		req := &StartWatchRequest{
+			WorkspaceId: workspaceId,
+			Id: layoutId,
+			SuccessCallback: "http://google.com",
+			FailureCallback: "http://yahoo.com",
+		}
+
+		resp, err := server.StartWatch(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp, &Ok{})
+	})
+
+	t.Run("Should unset a watch", func(t *testing.T) {
+		req := &StopWatchRequest{
+			WorkspaceId: workspaceId,
+			Id: layoutId,
+		}
+
+		resp, err := server.StopWatch(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp, &Ok{})
+	})
 }
