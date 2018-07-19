@@ -3,6 +3,7 @@
 protodep:
 	go get -v github.com/golang/protobuf/protoc-gen-go
 	go get -v github.com/lyft/protoc-gen-validate
+	go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	protoc --version || /bin/bash install_protobuf.sh
 
 deps:
@@ -13,8 +14,16 @@ proto: protodep
 	protoc \
 		-I. \
 		-I${GOPATH}/src \
+		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 		--go_out=plugins=grpc:${GOPATH}/src \
 		--validate_out="lang=go:${GOPATH}/src" \
+		proto/tessellate.proto
+
+http: protodep
+	protoc -I. \
+		-I${GOPATH}/src \
+		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+		--grpc-gateway_out=logtostderr=true:${GOPATH}/src \
 		proto/tessellate.proto
 
 test: protodep deps

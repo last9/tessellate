@@ -2,13 +2,18 @@ syntax = "proto3";
 
 package tsocial.tessellate.server;
 
+import "google/api/annotations.proto";
 import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 
 option go_package = "github.com/tsocial/tessellate/server";
 
 service Tessellate {
   rpc SaveWorkspace (SaveWorkspaceRequest) returns (Ok) {}
-  rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {}
+  rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {
+    option (google.api.http) = {
+      get: "/v1/workspace"
+    };
+  }
  // rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
 
   rpc SaveLayout (SaveLayoutRequest) returns (Ok) {}
