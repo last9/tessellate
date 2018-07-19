@@ -37,13 +37,15 @@ worker: deps
 tessellate: deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix cgo github.com/tsocial/tessellate/
 
-build_images: worker tessellate
+build_images: worker tessellate http
 	docker-compose -f docker-compose.yaml build worker
 	docker-compose -f docker-compose.yaml build tessellate
+	docker-compose -f docker-compose.yaml build http
 
 upload_images: build_images docker_login
 	docker push worker
 	docker push tessellate
+	docker push http
 
 docker_login:
 	echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin

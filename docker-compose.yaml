@@ -16,4 +16,9 @@ services:
     build:
       context: .
       dockerfile: ServerDockerfile
+    image: tsl8/grpc-api
+  http:
+    build:
+      context: .
+      dockerfile: HttpDockerfile
     image: tsl8/api
