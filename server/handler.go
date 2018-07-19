@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
+	"github.com/tsocial/tessellate/dispatcher"
 	"github.com/tsocial/tessellate/storage/types"
 )
 
@@ -157,20 +158,20 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 	}
 
 	lyt := types.Layout{}
-	layout_tree := types.MakeTree(in.WorkspaceId, in.Id)
+	layoutTree := types.MakeTree(in.WorkspaceId, in.Id)
 	tree := types.MakeTree(in.WorkspaceId)
 
-	versions, err := s.store.GetVersions(&lyt, layout_tree)
+	versions, err := s.store.GetVersions(&lyt, layoutTree)
 	if err != nil {
 		return nil, err
 	}
 
 	vars := types.Vars{}
-	if s.store.Get(&vars, layout_tree); err != nil {
+	if s.store.Get(&vars, layoutTree); err != nil {
 		return nil, err
 	}
 
-	varsVersions, err := s.store.GetVersions(&lyt, layout_tree)
+	varsVersions, err := s.store.GetVersions(&lyt, layoutTree)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +185,7 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 
 	job := JobStatus{Id: j.Id, Status: JobState(j.Status)}
 
-	return &job, nil
+	return &job, dispatcher.Get().Dispatch(j.Id, in.WorkspaceId)
 }
 
 func (s *Server) DestroyLayout(ctx context.Context, in *LayoutRequest) (*JobStatus, error) {
@@ -193,20 +194,20 @@ func (s *Server) DestroyLayout(ctx context.Context, in *LayoutRequest) (*JobStat
 	}
 
 	lyt := types.Layout{}
-	layout_tree := types.MakeTree(in.WorkspaceId, in.Id)
+	layoutTree := types.MakeTree(in.WorkspaceId, in.Id)
 	tree := types.MakeTree(in.WorkspaceId)
 
-	versions, err := s.store.GetVersions(&lyt, layout_tree)
+	versions, err := s.store.GetVersions(&lyt, layoutTree)
 	if err != nil {
 		return nil, err
 	}
 
 	vars := types.Vars{}
-	if s.store.Get(&vars, layout_tree); err != nil {
+	if s.store.Get(&vars, layoutTree); err != nil {
 		return nil, err
 	}
 
-	varsVersions, err := s.store.GetVersions(&lyt, layout_tree)
+	varsVersions, err := s.store.GetVersions(&lyt, layoutTree)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +221,7 @@ func (s *Server) DestroyLayout(ctx context.Context, in *LayoutRequest) (*JobStat
 
 	job := JobStatus{Id: j.Id, Status: JobState(j.Status)}
 
-	return &job, nil
+	return &job, dispatcher.Get().Dispatch(j.Id, in.WorkspaceId)
 }
 
 func (s *Server) AbortJob(ctx context.Context, in *JobRequest) (*Ok, error) {

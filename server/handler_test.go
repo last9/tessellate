@@ -61,7 +61,7 @@ func TestServer_SaveLayout(t *testing.T) {
 		t.Error(err)
 	}
 
-	v, err := ioutil.ReadFile("../runner/testdata/vars.json")
+	v, err := ioutil.ReadFile("../tmpl/testdata/vars.json")
 	if err != nil {
 		t.Error(err)
 	}
