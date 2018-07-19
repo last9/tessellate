@@ -23,7 +23,7 @@ service Tessellate {
 
   rpc SaveLayout (SaveLayoutRequest) returns (Ok) {
     option (google.api.http) = {
-      post: "/v1/workspace/{WorkspaceId}/layout/{Id}"
+      post: "/v1/workspace/{WorkspaceId}/layout"
       body: "*"
     };
   }
