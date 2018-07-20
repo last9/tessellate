@@ -35,7 +35,7 @@ func MakeTree(nodes ...string) *Tree {
 	return &t
 }
 
-type BaseType struct {}
+type BaseType struct{}
 
 func (b *BaseType) SaveId(string) {}
 
@@ -145,7 +145,7 @@ func (w *Job) Marshal() ([]byte, error) {
 }
 
 type Watch struct {
-	Id string
+	Id         string
 	SuccessURL string `json:"success_url"`
 	FailureURL string `json:"failure_url"`
 }
