@@ -9,7 +9,6 @@ protodep:
 deps:
 	dep version || (curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh)
 	dep ensure -v
-	rm -rf vendor/github.com/hashicorp/nomad/nomad/structs/structs.generated.go
 
 clean:
 	rm -rf vendor/github.com/hashicorp/nomad/nomad/structs/structs.generated.go
@@ -23,7 +22,12 @@ proto: protodep
 		--validate_out="lang=go:${GOPATH}/src" \
 		proto/tessellate.proto
 
-http: proto deps clean
+build_deps: proto deps clean
+
+test: build_deps
+	go test -v ./...
+
+http_build:
 	protoc -I. \
 		-I${GOPATH}/src \
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
@@ -31,16 +35,17 @@ http: proto deps clean
 		proto/tessellate.proto
 	go build github.com/tsocial/tessellate/commands/http
 
-test: proto deps clean
-	go test -v ./...
-
-worker: deps clean
+worker_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o worker -a -installsuffix cgo github.com/tsocial/tessellate/commands/worker
 
-tessellate: deps clean
+tessellate_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix cgo github.com/tsocial/tessellate/
 
-build_images: worker tessellate http
+tessellate: build_deps tessellate_build
+worker: build_deps worker_build
+http: build_deps http_build
+
+build_images: worker_build tessellate_build http_build
 	docker-compose -f docker-compose.yaml build worker
 	docker-compose -f docker-compose.yaml build tessellate
 	docker-compose -f docker-compose.yaml build http
