@@ -119,6 +119,41 @@ func (cm *layout) layoutGet(c *kingpin.ParseContext) error {
 	return nil
 }
 
+func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
+	req := &server.ApplyLayoutRequest{
+		Id:          cm.id,
+		WorkspaceId: cm.workspaceId,
+		Dry:         false,
+	}
+
+	resp, err := getClient().ApplyLayout(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	state := resp.Status
+
+	prettyPrint(state)
+	return nil
+}
+
+func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
+	req := &server.ApplyLayoutRequest{
+		Id:          cm.id,
+		WorkspaceId: cm.workspaceId,
+	}
+
+	resp, err := getClient().DestroyLayout(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	state := resp.Status
+
+	prettyPrint(state)
+	return nil
+}
+
 func addLayoutCommands(app *kingpin.Application) {
 	lCLI := app.Command("layout", "Commands for layout")
 
@@ -133,6 +168,10 @@ func addLayoutCommands(app *kingpin.Application) {
 
 	gl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
 	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
+
+	al := lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
+
+	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 }
 
 func mergeMaps(maps ...interface{}) interface{} {
