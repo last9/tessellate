@@ -16,9 +16,9 @@ import (
 const ApplyOp = 0
 const DestroyOp = 1
 
-var opMap = map[int32]string{
-	ApplyOp:   "apply",
-	DestroyOp: "destroy",
+var opMap = map[int32][]string{
+	ApplyOp:   []string{"apply", "-auto-approve"},
+	DestroyOp: []string{"destroy", "-auto-approve"},
 }
 
 func remoteLayout(addr, path string) map[string]interface{} {
@@ -129,7 +129,7 @@ func (p *Cmd) SetOp(op int32) {
 		o = opMap[ApplyOp]
 	}
 
-	p.op = []string{o}
+	p.op = o
 }
 
 // Base-Directory Setter.
