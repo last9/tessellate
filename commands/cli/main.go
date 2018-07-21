@@ -35,8 +35,7 @@ func main() {
 	app := kingpin.New("tessellate", "Tessellate CLI")
 	app.Version(version)
 
-	// Add your subcommand methods here.
 	addWorkspaceCommand(app)
-
+	addLayoutCommand(app)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
