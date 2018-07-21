@@ -155,30 +155,62 @@ func (e *ConsulStore) Setup() error {
 }
 
 func (e *ConsulStore) Lock(key string) error {
-	kv := api.KVPair{
-		Key:   key,
-		Value: []byte{},
+	lock, err := e.client.LockKey(path.Join(key, "lock"))
+	if err != nil {
+		return errors.Wrap(err, "Cannot Lock key")
 	}
-	status, _, err := e.client.KV().CAS(&kv, nil)
 
-	if status == false {
-		return errors.New("Cannot take lock.")
+	defer lock.Unlock()
+
+	// Create a Tx Chain of Ops.
+	ops := api.KVTxnOps{
+		&api.KVTxnOp{
+			Verb:    api.KVLock,
+			Key:     key,
+			Value:   []byte{1},
+			Session: session,
+		},
+	}
+
+	ok, _, _, err := e.client.KV().Txn(ops, nil)
+
+	if err != nil {
+		return errors.Wrap(err, "Cannot save Consul Transaction")
+	}
+
+	if !ok {
+		return errors.New("Txn was rolled back. Weird, huh!")
 	}
 
 	return err
 }
 
 func (e *ConsulStore) Unlock(key string) error {
-
-	kv := api.KVPair{
-		Key:   key,
-		Value: []byte{},
+	lock, err := e.client.LockKey(path.Join(key, "lock"))
+	if err != nil {
+		return errors.Wrap(err, "Cannot Lock key")
 	}
 
-	status, _, err := e.client.KV().DeleteCAS(&kv, nil)
+	defer lock.Unlock()
 
-	if status == false {
-		return errors.New("Cannot delete a lock. Doesn't exist")
+	// Create a Tx Chain of Ops.
+	ops := api.KVTxnOps{
+		&api.KVTxnOp{
+			Verb:    api.KVUnlock,
+			Key:     key,
+			Value:   []byte{1},
+			Session: session,
+		},
+	}
+
+	ok, _, _, err := e.client.KV().Txn(ops, nil)
+
+	if err != nil {
+		return errors.Wrap(err, "Cannot save Consul Transaction")
+	}
+
+	if !ok {
+		return errors.New("Txn was rolled back. Weird, huh!")
 	}
 
 	return err
