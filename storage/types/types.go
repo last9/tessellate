@@ -133,7 +133,7 @@ func (v *Job) SaveId(id string) {
 }
 
 func (v *Job) MakePath(n *Tree) string {
-	return path.Join(n.MakePath(), JOB, v.Id, "default")
+	return path.Join(n.MakePath(), JOB, v.LayoutId)
 }
 
 func (w *Job) Unmarshal(b []byte) error {
