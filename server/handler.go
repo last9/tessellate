@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"log"
-
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/dispatcher"
 	"github.com/tsocial/tessellate/storage/types"
@@ -85,7 +83,6 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 
 	// Marshal vars for layout.
 	vars := types.Vars{}
-	log.Println(in.Vars)
 	if len(in.Vars) > 0 {
 		if err := vars.Unmarshal(in.Vars); err != nil {
 			return nil, err

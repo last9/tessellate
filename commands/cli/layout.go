@@ -23,6 +23,7 @@ type layout struct {
 	id          string
 	workspaceId string
 	dirName     string
+	dry         bool
 }
 
 func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
@@ -165,7 +166,8 @@ func addLayoutCommands(app *kingpin.Application) {
 	gl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
 	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
 
-	lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
+	la := lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
+	la.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
 
 	lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 }
