@@ -3,31 +3,26 @@ package main
 import (
 	"log"
 
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
-	"github.com/tsocial/tessellate/server"
-	"strings"
 	"context"
+	"strings"
+
+	"github.com/tsocial/tessellate/server"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 type watch struct {
 	workspaceID string
-	layoutID string
-	sURL string
-	fURL string
+	layoutID    string
+	sURL        string
+	fURL        string
 }
 
 func (w *watch) watchStart(c *kingpin.ParseContext) error {
-
-	log.Println(w.workspaceID)
-	log.Println(w.layoutID)
-	log.Println(w.sURL)
-	log.Println(w.fURL)
-
-	log.Println("Watch command: Creating watch for given workspace and layout.")
+	log.Println("watch start -w " + w.workspaceID + " -l " + w.layoutID + " -s " + w.sURL + " -f " + w.fURL)
 
 	client := getClient()
 	req := server.StartWatchRequest{WorkspaceId: strings.ToLower(w.workspaceID), Id: strings.ToLower(w.layoutID),
-	SuccessCallback: w.sURL, FailureCallback: w.fURL }
+		SuccessCallback: w.sURL, FailureCallback: w.fURL}
 
 	ctx := context.Background()
 	if _, err := client.StartWatch(ctx, &req); err != nil {
@@ -39,12 +34,7 @@ func (w *watch) watchStart(c *kingpin.ParseContext) error {
 }
 
 func (w *watch) watchStop(c *kingpin.ParseContext) error {
-	log.Println(w.workspaceID)
-	log.Println(w.layoutID)
-	log.Println(w.sURL)
-	log.Println(w.fURL)
-
-	log.Println("Watch command: Get vars for given layout's job.")
+	log.Println("watch stop -w " + w.workspaceID + " -l " + w.layoutID)
 
 	client := getClient()
 	req := server.StopWatchRequest{WorkspaceId: strings.ToLower(w.workspaceID), Id: strings.ToLower(w.layoutID)}
@@ -65,7 +55,7 @@ func addWatchCommand(app *kingpin.Application) {
 	wCLI := &watch{}
 
 	// Sub commands : start and stop.
-	wStart := wApp.Command("start", "Start the watch for the given workspace and layout," +
+	wStart := wApp.Command("start", "Start the watch for the given workspace and layout,"+
 		" which triggers an http call on success or failure of the job.").Action(wCLI.watchStart)
 	wApp.Command("stop", "Stop the watch for the given workspace and layout ID.").Action(wCLI.watchStop)
 
@@ -73,6 +63,6 @@ func addWatchCommand(app *kingpin.Application) {
 	wApp.Flag("workspace_id", "Workspace ID").Required().Short('w').StringVar(&wCLI.workspaceID)
 	wApp.Flag("layout_id", "Layout ID").Required().Short('l').StringVar(&wCLI.layoutID)
 
-	wStart.Flag("success_url", "URL to trigger on success of job.").Short('s').StringVar(&wCLI.sURL)
-	wStart.Flag("failure_url", "URL to trigger on failure of job.").Short('f').StringVar(&wCLI.fURL)
+	wStart.Arg("success_callback", "URL to trigger on success of job.").StringVar(&wCLI.sURL)
+	wStart.Arg("failure_callback", "URL to trigger on failure of job.").StringVar(&wCLI.fURL)
 }
