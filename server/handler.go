@@ -24,10 +24,13 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 		return nil, err
 	}
 
-	// Create vars instance.
 	vars := types.Vars{}
-	if err := vars.Unmarshal(in.Vars); err != nil {
-		return nil, err
+
+	if in.Vars != nil {
+		// Create vars instance.
+		if err := vars.Unmarshal(in.Vars); err != nil {
+			return nil, err
+		}
 	}
 
 	// Save the workspace and the vars.
