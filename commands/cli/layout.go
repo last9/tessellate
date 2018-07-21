@@ -15,6 +15,7 @@ import (
 
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -24,6 +25,7 @@ type layout struct {
 	workspaceId string
 	dirName     string
 	dry         bool
+	varsPath    string
 }
 
 func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
@@ -117,9 +119,15 @@ func (cm *layout) layoutGet(c *kingpin.ParseContext) error {
 }
 
 func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
+	vars, err := getVars(cm.varsPath)
+	if err != nil {
+		return err
+	}
+
 	req := &server.ApplyLayoutRequest{
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
+		Vars:        vars,
 		Dry:         false,
 	}
 
@@ -135,9 +143,16 @@ func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
 }
 
 func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
+	vars, err := getVars(cm.varsPath)
+	if err != nil {
+		return err
+	}
+
 	req := &server.ApplyLayoutRequest{
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
+		Vars:        vars,
+		Dry:         false,
 	}
 
 	resp, err := getClient().DestroyLayout(context.Background(), req)
@@ -151,25 +166,37 @@ func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
 	return nil
 }
 
+func getVars(path string) ([]byte, error) {
+	if path == "" {
+		return []byte{}, nil
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, errors.Wrap(err, "Cannot read vars file.")
+	}
+
+	return b, nil
+}
+
 func addLayoutCommands(app *kingpin.Application) {
 	lCLI := app.Command("layout", "Commands for layout")
 
 	clm := &layout{}
 	cl := lCLI.Command("create", "Create Layout").Action(clm.layoutCreate)
 
-	cl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
-	cl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
+	lCLI.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
+	lCLI.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
 	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().StringVar(&clm.dirName)
 
-	gl := lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
+	lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
 
-	gl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
-	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
+	al := lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
+	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 
-	la := lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
-	la.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
-
-	lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
+	al.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
+	al.Flag("vars", "Path of vars file.").StringVar(&clm.varsPath)
+	dl.Flag("vars", "Path of vars file.").StringVar(&clm.varsPath)
 }
 
 func mergeMaps(maps ...interface{}) interface{} {
