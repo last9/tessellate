@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"log"
+
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/dispatcher"
 	"github.com/tsocial/tessellate/storage/types"
@@ -83,7 +85,17 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 
 	// Marshal vars for layout.
 	vars := types.Vars{}
-	if err := vars.Unmarshal(in.Vars); err != nil {
+	log.Println(in.Vars)
+	if len(in.Vars) > 0 {
+		if err := vars.Unmarshal(in.Vars); err != nil {
+			return nil, err
+		}
+	}
+	// Make tree for layout inside the workspace.
+	lTree := types.MakeTree(in.WorkspaceId, in.Id)
+
+	// Save vars in the layout tree.
+	if err := s.store.Save(&vars, lTree); err != nil {
 		return nil, err
 	}
 
@@ -101,13 +113,6 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 
 	// Save the layout.
 	if err := s.store.Save(&layout, tree); err != nil {
-		return nil, err
-	}
-
-	// Make tree for layout inside the workspace.
-	lTree := types.MakeTree(in.WorkspaceId, in.Id)
-	// Save vars in the layout tree.
-	if err := s.store.Save(&vars, lTree); err != nil {
 		return nil, err
 	}
 

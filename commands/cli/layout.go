@@ -19,17 +19,13 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-type createLayoutCommand struct {
+type layout struct {
 	id          string
 	workspaceId string
 	dirName     string
 }
 
-func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
-	log.Println("Directory = ", cm.dirName)
-	log.Println("Name = ", cm.id)
-	log.Println("Workspace = ", cm.workspaceId)
-
+func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 	if _, err := os.Stat(cm.dirName); err != nil {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)
 	}
@@ -42,7 +38,7 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 		}
 
 		if filepath.Ext(path) != ".json" || strings.Contains(path, "tfvars") {
-			log.Printf("skipping %s : %s", path, filepath.Ext(path))
+			log.Printf("skipping %s", path)
 			return nil
 		}
 
@@ -66,7 +62,7 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 			return err
 		}
 
-		var fObj map[string]interface{}
+		var fObj interface{}
 		if err := json.Unmarshal(fBytes, &fObj); err != nil {
 			log.Printf("invald json file: %s", f)
 			return err
@@ -76,6 +72,7 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 	}
 
 	finalMap := mergeMaps(maps...)
+
 	layoutBytes, err := json.Marshal(finalMap)
 	if err != nil {
 		log.Println(err)
@@ -88,26 +85,89 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 		Plan:        layoutBytes,
 	}
 
-	resp, err := getClient().SaveLayout(context.Background(), req)
+	_, err = getClient().SaveLayout(context.Background(), req)
 
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	log.Println(resp.String())
 	return nil
 }
 
-func addLayoutCommand(app *kingpin.Application) {
-	layout := app.Command("layout", "Commands for layout")
+func (cm *layout) layoutGet(c *kingpin.ParseContext) error {
+	req := &server.LayoutRequest{
+		Id:          cm.id,
+		WorkspaceId: cm.workspaceId,
+	}
 
-	clm := &createLayoutCommand{}
-	cl := layout.Command("create", "Create Layout").Action(clm.run)
+	resp, err := getClient().GetLayout(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	var plan interface{}
+	if err := json.Unmarshal(resp.Plan, &plan); err != nil {
+		return err
+	}
+
+	prettyPrint(plan)
+	return nil
+}
+
+func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
+	req := &server.ApplyLayoutRequest{
+		Id:          cm.id,
+		WorkspaceId: cm.workspaceId,
+		Dry:         false,
+	}
+
+	resp, err := getClient().ApplyLayout(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	state := resp.Status
+
+	prettyPrint(state)
+	return nil
+}
+
+func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
+	req := &server.ApplyLayoutRequest{
+		Id:          cm.id,
+		WorkspaceId: cm.workspaceId,
+	}
+
+	resp, err := getClient().DestroyLayout(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	state := resp.Status
+
+	prettyPrint(state)
+	return nil
+}
+
+func addLayoutCommands(app *kingpin.Application) {
+	lCLI := app.Command("layout", "Commands for layout")
+
+	clm := &layout{}
+	cl := lCLI.Command("create", "Create Layout").Action(clm.layoutCreate)
 
 	cl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
 	cl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
 	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().StringVar(&clm.dirName)
+
+	gl := lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
+
+	gl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
+	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
+
+	lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
+
+	lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 }
 
 func mergeMaps(maps ...interface{}) interface{} {
@@ -120,10 +180,11 @@ func mergeMaps(maps ...interface{}) interface{} {
 	}
 
 	merged := merge(maps[0], maps[1])
-	return mergeMaps(merged, maps[2:])
+	return mergeMaps(append(maps[2:], merged)...)
 }
 
 func merge(x1, x2 interface{}) interface{} {
+
 	switch x1 := x1.(type) {
 	case map[string]interface{}:
 		x2, ok := x2.(map[string]interface{})

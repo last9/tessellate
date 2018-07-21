@@ -19,7 +19,7 @@ var client server.TessellateClient
 
 func getClient() server.TessellateClient {
 	once.Do(func() {
-		conn, err := grpc.Dial(*endpoint, grpc.WithInsecure())
+		conn, err := grpc.Dial(*endpoint, grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
 			panic(err)
 		}
@@ -33,12 +33,12 @@ func getClient() server.TessellateClient {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	app := kingpin.New("tessellate", "Tessellate CLI")
-	endpoint = kingpin.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
+	endpoint = app.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
 	app.Version(version)
 
 	// Add your command methods here.
 	addWorkspaceCommand(app)
-	addLayoutCommand(app)
+	addLayoutCommands(app)
 	addVarsCommand(app)
 	addWatchCommand(app)
 
