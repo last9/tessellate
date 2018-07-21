@@ -62,12 +62,14 @@ build_images: worker_build tessellate_build
 upload_worker: docker_login
 	docker tag $(WORKER_REPO):latest $(WORKER_REPO):$(TRAVIS_BRANCH)-latest
 	docker tag $(WORKER_REPO):latest $(WORKER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
+	docker push $(SERVER_REPO):latest
 	docker push $(WORKER_REPO):$(TRAVIS_BRANCH)-latest
 	docker push $(WORKER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
 
 upload_server: docker_login
 	docker tag $(SERVER_REPO):latest $(SERVER_REPO):$(TRAVIS_BRANCH)-latest
 	docker tag $(SERVER_REPO):latest $(SERVER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
+	docker push $(SERVER_REPO):latest
 	docker push $(SERVER_REPO):$(TRAVIS_BRANCH)-latest
 	docker push $(SERVER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
 
