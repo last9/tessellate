@@ -23,7 +23,7 @@ service Tessellate {
 
   rpc SaveLayout (SaveLayoutRequest) returns (Ok) {
     option (google.api.http) = {
-      post: "/v1/workspace/{WorkspaceId}/layout/{Id}"
+      post: "/v1/workspace/{WorkspaceId}/layout"
       body: "*"
     };
   }
@@ -97,7 +97,7 @@ message Layouts {
 message Layout {
   string Workspaceid = 1;
   string Id = 2;
-  map<string, bytes> Plan = 3;
+  bytes Plan = 3;
   bytes Vars = 4;
   Status Status = 5;
 }
@@ -136,7 +136,7 @@ message LayoutRequest {
 message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
-  map<string, bytes> Plan = 3;
+  bytes Plan = 3;
   bytes Vars = 4;
 }
 

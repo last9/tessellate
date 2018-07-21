@@ -16,4 +16,6 @@ script:
 
 deploy:
   - provider: script
-    script: make upload_docker_images
+    script: make upload_images
+    on:
+      branch: master

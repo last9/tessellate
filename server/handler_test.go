@@ -65,7 +65,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	jobQueue := dispatcher.NewInMemory()
 	dispatcher.Set(jobQueue)
 
-	plan := map[string][]byte{}
+	plan := map[string]json.RawMessage{}
 
 	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
 	if err != nil {
@@ -79,10 +79,11 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		t.Error(err)
 	}
 
+	pBytes, _ := json.Marshal(plan)
 	vBytes = uglyJson(vBytes)
 
 	t.Run("Should create a layout in the workspace", func(t *testing.T) {
-		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: plan, Vars: vBytes}
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Vars: vBytes}
 		resp, err := server.SaveLayout(context.Background(), req)
 
 		if err != nil {
@@ -103,15 +104,15 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, resp.Id, layoutId)
 		assert.Equal(t, resp.Status, Status_INACTIVE)
 		assert.Equal(t, resp.Workspaceid, workspaceId)
-		assert.Equal(t, resp.Plan, plan)
+		assert.Equal(t, resp.Plan, pBytes)
 
 		assert.Equal(t, resp.Vars, vBytes)
 	})
 
 	t.Run("Should save a watch", func(t *testing.T) {
 		req := &StartWatchRequest{
-			WorkspaceId: workspaceId,
-			Id: layoutId,
+			WorkspaceId:     workspaceId,
+			Id:              layoutId,
 			SuccessCallback: "http://google.com",
 			FailureCallback: "http://yahoo.com",
 		}
@@ -127,7 +128,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	t.Run("Should unset a watch", func(t *testing.T) {
 		req := &StopWatchRequest{
 			WorkspaceId: workspaceId,
-			Id: layoutId,
+			Id:          layoutId,
 		}
 
 		resp, err := server.StopWatch(context.Background(), req)
@@ -141,8 +142,8 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	t.Run("Should apply a layout", func(t *testing.T) {
 		req := &ApplyLayoutRequest{
 			WorkspaceId: workspaceId,
-			Id: layoutId,
-			Dry: true,
+			Id:          layoutId,
+			Dry:         true,
 		}
 
 		resp, err := server.ApplyLayout(context.Background(), req)
@@ -159,8 +160,8 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	t.Run("Should Destroy a layout", func(t *testing.T) {
 		req := &ApplyLayoutRequest{
 			WorkspaceId: workspaceId,
-			Id: layoutId,
-			Dry: true,
+			Id:          layoutId,
+			Dry:         true,
 		}
 
 		resp, err := server.DestroyLayout(context.Background(), req)

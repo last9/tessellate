@@ -14,6 +14,8 @@ type client struct {
 
 type NomadConfig struct {
 	Address    string
+	Username   string
+	Password   string
 	Datacenter string
 	Image      string
 	CPU        string
@@ -70,6 +72,13 @@ job "{{ job_id }}" {
 
 	nConfig := api.DefaultConfig()
 	nConfig.Address = c.cfg.Address
+
+	if c.cfg.Username != "" {
+		nConfig.HttpAuth = &api.HttpBasicAuth{
+			Username: c.cfg.Username,
+			Password: c.cfg.Password,
+		}
+	}
 
 	cl, err := api.NewClient(nConfig)
 	if err != nil {

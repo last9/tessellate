@@ -22,7 +22,7 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 	}
 
 	vars := types.Vars{}
-	if err := json.Unmarshal(in.Vars, &vars); err != nil {
+	if err := vars.Unmarshal(in.Vars); err != nil {
 		return nil, err
 	}
 
@@ -56,6 +56,7 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 	}
 
 	bytes, _ := vars.Marshal()
+
 	w := Workspace{Name: string(workspace), Vars: bytes, Version: versions[1], Versions: versions}
 	return &w, err
 }
@@ -66,25 +67,18 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 	}
 
 	vars := types.Vars{}
-	if err := json.Unmarshal(in.Vars, &vars); err != nil {
+	if err := vars.Unmarshal(in.Vars); err != nil {
 		return nil, err
 	}
 
-	plan := map[string]json.RawMessage{}
-
 	tree := types.MakeTree(in.WorkspaceId)
 
-	for k, v := range in.Plan {
-		var value json.RawMessage
-		if err := json.Unmarshal(v, &value); err != nil {
-			return nil, err
-		}
-
-		plan[k] = value
-
+	p := map[string]json.RawMessage{}
+	if err := json.Unmarshal(in.Plan, &p); err != nil {
+		return nil, err
 	}
 
-	layout := types.Layout{Id: in.Id, Plan: plan, Status: int32(Status_INACTIVE)}
+	layout := types.Layout{Id: in.Id, Plan: p, Status: int32(Status_INACTIVE)}
 	if err := s.store.Save(&layout, tree); err != nil {
 		return nil, err
 	}
@@ -115,32 +109,21 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		return nil, err
 	}
 
-	p := map[string][]byte{}
-	var err error
-	for k, v := range layout.Plan {
-		p[k], err = json.Marshal(v)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	b, err := vars.Marshal()
-	if err != nil {
-		return nil, err
-	}
+	pBytes, _ := json.Marshal(layout.Plan)
+	vBytes, _ := vars.Marshal()
 
 	lay := Layout{
 		Workspaceid: in.WorkspaceId,
 		Id:          layout.Id,
-		Plan:        p,
-		Vars:        b,
 		Status:      Status(layout.Status),
+		Plan:        pBytes,
+		Vars:        vBytes,
 	}
 
-	return &lay, err
+	return &lay, nil
 }
 
-func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*JobStatus, error) {
+func (s *Server) opLayout(wID, lID string, op int32, vars interface{}, dry bool) (*JobStatus, error) {
 	lyt := types.Layout{}
 	tree := types.MakeTree(wID)
 	layoutTree := types.MakeTree(wID, lID)
