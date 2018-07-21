@@ -11,9 +11,7 @@ import (
 
 const version = "0.0.1"
 
-var (
-	endpoint = kingpin.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
-)
+var endpoint *string
 
 var once sync.Once
 var client server.TessellateClient
@@ -33,6 +31,7 @@ func getClient() server.TessellateClient {
 
 func main() {
 	app := kingpin.New("tessellate", "Tessellate CLI")
+	endpoint = kingpin.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
 	app.Version(version)
 
 	// Add your command methods here.
@@ -41,11 +40,5 @@ func main() {
 	addVarsCommand(app)
 	addWatchCommand(app)
 
-	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
-	// Start watch
-
-	case wStart.FullCommand():
-		println("Watch started.")
-
-	}
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 }

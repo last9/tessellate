@@ -24,10 +24,13 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 		return nil, err
 	}
 
-	// Create vars instance.
 	vars := types.Vars{}
-	if err := vars.Unmarshal(in.Vars); err != nil {
-		return nil, err
+
+	if in.Vars != nil {
+		// Create vars instance.
+		if err := vars.Unmarshal(in.Vars); err != nil {
+			return nil, err
+		}
 	}
 
 	// Save the workspace and the vars.
@@ -163,17 +166,20 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 
 	v := types.Vars{}
 
-	// Unmarshal in vars in v.
-	if err := v.Unmarshal(vars); err != nil {
-		return nil, err
-	}
+	// todo check if vars are empty.
+	if vars != nil {
+		// Unmarshal in vars in v.
+		if err := v.Unmarshal(vars); err != nil {
+			return nil, err
+		}
 
-	// Make tree for layout.
-	lTree := types.MakeTree(wID, lID)
+		// Make tree for layout.
+		lTree := types.MakeTree(wID, lID)
 
-	// Save the vars for apply op, in the layout tree.
-	if err := s.store.Save(&v, lTree); err != nil {
-		return nil, err
+		// Save the vars for apply op, in the layout tree.
+		if err := s.store.Save(&v, lTree); err != nil {
+			return nil, err
+		}
 	}
 
 	// GET the version for vars.
