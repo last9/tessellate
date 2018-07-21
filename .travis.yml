@@ -7,6 +7,7 @@ services:
   - docker
 
 script:
+  - make protodep
   - export PROTO_VERSION=3.5.1
   - export PATH="/tmp/proto/${PROTO_VERSION}/bin/":$PATH
   - docker-compose -f docker-compose.yaml up -d consul
