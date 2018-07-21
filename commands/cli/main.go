@@ -39,7 +39,6 @@ func main() {
 	// Add your command methods here.
 	addWorkspaceCommand(app)
 	addLayoutCommands(app)
-	addVarsCommand(app)
 	addWatchCommand(app)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
