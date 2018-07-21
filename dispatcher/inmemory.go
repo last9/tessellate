@@ -7,7 +7,7 @@ type Mem struct {
 	sync.Mutex
 }
 
-func (c *Mem) Dispatch(j, w string) error {
+func (c *Mem) Dispatch(j, w, l string) error {
 	c.Lock()
 	defer c.Unlock()
 

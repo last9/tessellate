@@ -27,7 +27,7 @@ func NewNomadClient(cfg NomadConfig) *client {
 	return &client{cfg}
 }
 
-func (c *client) Dispatch(j, w string) error {
+func (c *client) Dispatch(j, w, l string) error {
 	// Create a nomad job using go template
 	var tmplStr = `
 job "{{ job_id }}" {
@@ -42,7 +42,7 @@ job "{{ job_id }}" {
 
       config {
         image = "{{ image }}"
-        entrypoint = ["./tsl8", "-j", "{{ job_id }}", "-w", "{{ workspace_id }}", "--consul-addr", "{{ consul_addr }}"]
+        entrypoint = ["./tsl8", "-j", "{{ job_id }}", "-w", "{{ workspace_id }}", "-l", "{{ layout_id }}", "--consul-host", "{{ consul_addr }}"]
       }
 
       resources {
@@ -55,6 +55,8 @@ job "{{ job_id }}" {
 `
 	cfg := pongo2.Context{
 		"job_id":      j,
+		"workspace_id": w,
+		"layout_id": l,
 		"datacenter":  c.cfg.Datacenter,
 		"image":       c.cfg.Image,
 		"cpu":         c.cfg.CPU,

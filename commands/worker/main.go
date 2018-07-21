@@ -24,11 +24,12 @@ const Version = "0.0.1"
 var (
 	jobID       = kingpin.Flag("job", "Job ID").Short('j').String()
 	workspaceID = kingpin.Flag("workspace", "Workspace ID").Short('w').String()
+	layoutID    = kingpin.Flag("layout", "Layout ID").Short('l').String()
 	consulIP    = kingpin.Flag("consul-host", "Consul IP").Short('c').String()
 )
 
 func makeCall(req *http.Request) error {
-	log.Println("Making rqeuest", req)
+	log.Println("Making request", req)
 	client := pester.New()
 	client.Concurrency = 3
 	client.MaxRetries = 3
@@ -63,7 +64,7 @@ func main() {
 	store.Setup()
 
 	// Create Job Struct to Load Job into.
-	j := types.Job{Id: *jobID}
+	j := types.Job{Id: *jobID, LayoutId: *layoutID}
 	t := types.MakeTree(*workspaceID)
 	if err := store.Get(&j, t); err != nil {
 		log.Println(err)
