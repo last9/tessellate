@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"sync"
 
@@ -30,6 +31,7 @@ func getClient() server.TessellateClient {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	app := kingpin.New("tessellate", "Tessellate CLI")
 	endpoint = app.Flag("address", "endpoint of YourService").Short('a').Default("localhost:9977").String()
 	app.Version(version)

@@ -13,6 +13,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"strings"
+
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -39,7 +41,8 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 			return nil
 		}
 
-		if filepath.Ext(path) != "json" {
+		if filepath.Ext(path) != ".json" || strings.Contains(path, "tfvars") {
+			log.Printf("skipping %s : %s", path, filepath.Ext(path))
 			return nil
 		}
 
@@ -59,11 +62,13 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 	for _, f := range files {
 		fBytes, err := ioutil.ReadFile(f)
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 
-		var fObj interface{}
+		var fObj map[string]interface{}
 		if err := json.Unmarshal(fBytes, &fObj); err != nil {
+			log.Printf("invald json file: %s", f)
 			return err
 		}
 
@@ -73,6 +78,7 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 	finalMap := mergeMaps(maps...)
 	layoutBytes, err := json.Marshal(finalMap)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -85,6 +91,7 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 	resp, err := getClient().SaveLayout(context.Background(), req)
 
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
