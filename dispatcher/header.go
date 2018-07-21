@@ -1,7 +1,7 @@
 package dispatcher
 
 type Dispatcher interface {
-	Dispatch(jobID, workspaceID string) error
+	Dispatch(jobID, workspaceID, layoutID string) error
 }
 
 var instance Dispatcher

@@ -24,5 +24,5 @@ func TestMain(m *testing.M) {
 }
 
 func TestClient_Dispatch(t *testing.T) {
-	assert.Nil(t, Get().Dispatch("job", "workspace"))
+	assert.Nil(t, Get().Dispatch("job", "workspace", "layout"))
 }

@@ -206,7 +206,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	}
 
 	job := &JobStatus{Id: j.Id, Status: JobState(j.Status)}
-	return job, dispatcher.Get().Dispatch(j.Id, wID)
+	return job, dispatcher.Get().Dispatch(j.Id, wID, j.LayoutId)
 }
 
 // Apply layout job.
