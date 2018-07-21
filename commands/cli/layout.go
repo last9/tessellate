@@ -24,6 +24,7 @@ type layout struct {
 	id          string
 	workspaceId string
 	dirName     string
+	dry         bool
 	varsPath    string
 }
 
@@ -193,6 +194,7 @@ func addLayoutCommands(app *kingpin.Application) {
 	al := lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
 	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 
+	al.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
 	al.Flag("vars", "Path of vars file.").StringVar(&clm.varsPath)
 	dl.Flag("vars", "Path of vars file.").StringVar(&clm.varsPath)
 }

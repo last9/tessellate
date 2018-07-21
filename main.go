@@ -17,13 +17,13 @@ const Version = "0.0.1"
 var (
 	port      = kingpin.Flag("port", "Port no.").Short('p').Default("9977").String()
 	nomadAddr = kingpin.Flag("nomad-addr", "Nomad Server Addr").
-			Short('n').Default("127.0.0.1:4646").OverrideDefaultFromEnvar("NOMAD_ADDR").String()
+			Short('n').Default("http://127.0.0.1:4646").OverrideDefaultFromEnvar("NOMAD_ADDR").String()
 	nomadHttpAuthUsername = kingpin.Flag("nomad-username", "Basic Auth Username").Envar("NOMAD_USERNAME").String()
 	nomadHttpAuthPassword = kingpin.Flag("nomad-password", "Basic Auth Password").Envar("NOMAD_PASSWORD").String()
 	nomadDc               = kingpin.Flag("nomad-dc", "Nomad Datacenter").Default("dc1").
 				OverrideDefaultFromEnvar("NOMAD_DATACENTER").String()
 	workerImage = kingpin.Flag("worker-image", "Worker Docker image name with tag").
-			Required().Envar("WORKER_IMAGE").String()
+			Default("tsl8/worker").Envar("WORKER_IMAGE").String()
 	workerCPU = kingpin.Flag("worker-cpu", "Worker job CPU limit").Envar("WORKER_CPU").
 			Default("200").String()
 	workerMemory = kingpin.Flag("worker-memory", "Worker Memory limit in MB").Envar("WORKER_MEMORY").
