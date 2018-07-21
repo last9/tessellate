@@ -4,6 +4,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/tsocial/tessellate/server"
 	"google.golang.org/grpc"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -15,19 +16,19 @@ var (
 )
 
 var once sync.Once
-var conn *grpc.ClientConn
+var client server.TessellateClient
 
-func getClient() *grpc.ClientConn {
+func getClient() server.TessellateClient {
 	once.Do(func() {
-		con, err := grpc.Dial(*endpoint, grpc.WithInsecure())
+		conn, err := grpc.Dial(*endpoint, grpc.WithInsecure())
 		if err != nil {
 			panic(err)
 		}
 
-		conn = con
+		client = server.NewTessellateClient(conn)
 	})
 
-	return conn
+	return client
 }
 
 func main() {
