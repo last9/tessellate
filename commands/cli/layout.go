@@ -56,7 +56,7 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		return fmt.Errorf("no json file found in directory %s", cm.dirName)
 	}
 
-	var maps []interface{}
+	fLayout := map[string]interface{}{}
 
 	for _, f := range files {
 		fBytes, err := ioutil.ReadFile(f)
@@ -71,12 +71,11 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 			return err
 		}
 
-		maps = append(maps, fObj)
+		splits := strings.Split(f, "/")
+		fLayout[splits[len(splits)-1]] = fObj
 	}
 
-	finalMap := mergeMaps(maps...)
-
-	layoutBytes, err := json.Marshal(finalMap)
+	layoutBytes, err := json.Marshal(fLayout)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -195,42 +194,4 @@ func addLayoutCommands(app *kingpin.Application) {
 	al.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
 	al.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 	dl.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
-}
-
-func mergeMaps(maps ...interface{}) interface{} {
-	if len(maps) == 1 {
-		return maps[0]
-	}
-
-	if len(maps) == 2 {
-		return merge(maps[0], maps[1])
-	}
-
-	merged := merge(maps[0], maps[1])
-	return mergeMaps(append(maps[2:], merged)...)
-}
-
-func merge(x1, x2 interface{}) interface{} {
-
-	switch x1 := x1.(type) {
-	case map[string]interface{}:
-		x2, ok := x2.(map[string]interface{})
-		if !ok {
-			return x1
-		}
-		for k, v2 := range x2 {
-			if v1, ok := x1[k]; ok {
-				x1[k] = merge(v1, v2)
-			} else {
-				x1[k] = v2
-			}
-		}
-	case nil:
-		// merge(nil, map[string]interface{...}) -> map[string]interface{...}
-		x2, ok := x2.(map[string]interface{})
-		if ok {
-			return x2
-		}
-	}
-	return x1
 }
