@@ -169,7 +169,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, layoutId, job.LayoutId)
 		assert.Equal(t, JobState_PENDING, job.Status)
 		assert.Equal(t, Operation_APPLY, job.Op)
-		assert.Equal(t, false, job.Dry)
+		assert.Equal(t, true, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 
@@ -199,7 +199,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, layoutId, job.LayoutId)
 		assert.Equal(t, JobState_PENDING, job.Status)
 		assert.Equal(t, Operation_DESTROY, job.Op)
-		assert.Equal(t, false, job.Dry)
+		assert.Equal(t, true, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 }
