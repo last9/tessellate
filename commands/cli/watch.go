@@ -67,16 +67,12 @@ func addWatchCommand(app *kingpin.Application) {
 	// Sub commands : start and stop.
 	wStart := wApp.Command("start", "Start the watch for the given workspace and layout," +
 		" which triggers an http call on success or failure of the job.").Action(wCLI.watchStart)
-	wStop := wApp.Command("stop", "Stop the watch for the given workspace and layout ID.").Action(wCLI.watchStop)
+	wApp.Command("stop", "Stop the watch for the given workspace and layout ID.").Action(wCLI.watchStop)
 
 	// Tie flags to `watch start -w wID -l lID -s sURL -f fURL` command.
-	wStart.Flag("workspace_id", "Workspace ID").Required().Short('w').StringVar(&wCLI.workspaceID)
-	wStart.Flag("layout_id", "Layout ID").Required().Short('l').StringVar(&wCLI.layoutID)
+	wApp.Flag("workspace_id", "Workspace ID").Required().Short('w').StringVar(&wCLI.workspaceID)
+	wApp.Flag("layout_id", "Layout ID").Required().Short('l').StringVar(&wCLI.layoutID)
 
 	wStart.Flag("success_url", "URL to trigger on success of job.").Short('s').StringVar(&wCLI.sURL)
 	wStart.Flag("failure_url", "URL to trigger on failure of job.").Short('f').StringVar(&wCLI.fURL)
-
-	// Tie flags to `watch stop -w wID -l lID`
-	wStop.Flag("workspace_id", "Workspace ID").Required().Short('w').StringVar(&wCLI.workspaceID)
-	wStop.Flag("layout_id", "Layout ID").Required().Short('l').StringVar(&wCLI.layoutID)
 }

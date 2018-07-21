@@ -19,18 +19,13 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-type createLayoutCommand struct {
+type layout struct {
 	id          string
 	workspaceId string
 	dirName     string
 }
 
-type getLayoutCommand struct {
-	id          string
-	workspaceId string
-}
-
-func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
+func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 	if _, err := os.Stat(cm.dirName); err != nil {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)
 	}
@@ -100,7 +95,7 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 	return nil
 }
 
-func (cm *getLayoutCommand) run(c *kingpin.ParseContext) error {
+func (cm *layout) layoutGet(c *kingpin.ParseContext) error {
 	req := &server.LayoutRequest{
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
@@ -121,20 +116,19 @@ func (cm *getLayoutCommand) run(c *kingpin.ParseContext) error {
 }
 
 func addLayoutCommands(app *kingpin.Application) {
-	layout := app.Command("layout", "Commands for layout")
+	lCLI := app.Command("layout", "Commands for layout")
 
-	clm := &createLayoutCommand{}
-	cl := layout.Command("create", "Create Layout").Action(clm.run)
+	clm := &layout{}
+	cl := lCLI.Command("create", "Create Layout").Action(clm.layoutCreate)
 
 	cl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
 	cl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
 	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().StringVar(&clm.dirName)
 
-	getLayout := &getLayoutCommand{}
-	gl := layout.Command("get", "Get Layout").Action(getLayout.run)
+	gl := lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
 
-	gl.Flag("id", "Name of the layout").Required().StringVar(&getLayout.id)
-	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&getLayout.workspaceId)
+	gl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
+	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
 }
 
 func mergeMaps(maps ...interface{}) interface{} {
