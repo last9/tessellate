@@ -33,13 +33,16 @@ http_build:
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 		--grpc-gateway_out=logtostderr=true:${GOPATH}/src \
 		proto/tessellate.proto
-	go build github.com/tsocial/tessellate/commands/http
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_http -a -installsuffix cgo \
+		github.com/tsocial/tessellate/commands/http
 
 worker_build:
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o worker -a -installsuffix cgo github.com/tsocial/tessellate/commands/worker
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_worker -a -installsuffix cgo \
+		github.com/tsocial/tessellate/commands/worker
 
 tessellate_build:
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix cgo github.com/tsocial/tessellate/
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
+		cgo github.com/tsocial/tessellate/
 
 tessellate: build_deps tessellate_build
 worker: build_deps worker_build
