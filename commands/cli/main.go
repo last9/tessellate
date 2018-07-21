@@ -11,9 +11,7 @@ import (
 
 const version = "0.0.1"
 
-var (
-	endpoint = kingpin.Flag("service_addr", "endpoint of YourService").Short('a').Default("localhost:9977").String()
-)
+var endpoint *string
 
 var once sync.Once
 var client server.TessellateClient
@@ -33,6 +31,7 @@ func getClient() server.TessellateClient {
 
 func main() {
 	app := kingpin.New("tessellate", "Tessellate CLI")
+	endpoint = app.Flag("address", "endpoint of YourService").Short('a').Default("localhost:9977").String()
 	app.Version(version)
 
 	addWorkspaceCommand(app)
