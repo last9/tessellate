@@ -4,6 +4,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/tsocial/tessellate/server"
 	"google.golang.org/grpc"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -15,30 +16,36 @@ var (
 )
 
 var once sync.Once
-var conn *grpc.ClientConn
+var client server.TessellateClient
 
-func getClient() *grpc.ClientConn {
+func getClient() server.TessellateClient {
 	once.Do(func() {
-		con, err := grpc.Dial(*endpoint, grpc.WithInsecure())
+		conn, err := grpc.Dial(*endpoint, grpc.WithInsecure())
 		if err != nil {
 			panic(err)
 		}
 
-		conn = con
+		client = server.NewTessellateClient(conn)
 	})
 
-	return conn
+	return client
 }
 
 func main() {
 	app := kingpin.New("tessellate", "Tessellate CLI")
 	app.Version(version)
 
-	// Add your subcommand methods here.
+	// Add your command methods here.
 	addWorkspaceCommand(app)
 	// addLayoutCommand(app)
 	addVarsCommand(app)
 	addWatchCommand(app)
 
-	kingpin.MustParse(app.Parse(os.Args[1:]))
+	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	// Start watch
+
+	case wStart.FullCommand():
+		println("Watch started.")
+
+	}
 }
