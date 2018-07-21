@@ -22,8 +22,6 @@ import (
 	"github.com/tsocial/tessellate/utils"
 )
 
-var store Storer
-
 // Deletes all the keys in the prefix / on Consul.
 func deleteTree(client *api.Client) error {
 	client.KV().Put(&api.KVPair{}, &api.WriteOptions{})
@@ -40,8 +38,6 @@ func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	store = consul.MakeConsulStore("127.0.0.1:8500")
-	store.Setup()
 
 	os.Exit(func() int {
 		//defer deleteTree(store.GetClient())
@@ -52,6 +48,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestStorer(t *testing.T) {
+	store := consul.MakeConsulStore("127.0.0.1:8500")
+	store.Setup()
+
 	t.Run("Storage tests", func(t *testing.T) {
 		tree := &types.Tree{Name: "store_test", TreeType: "testing"}
 
@@ -116,6 +115,19 @@ func TestStorer(t *testing.T) {
 			}
 
 			assert.Equal(t, 2, len(x))
+		})
+
+		t.Run("Get Consul Key", func(t *testing.T) {
+			d, err := store.GetKey("hello/world")
+			assert.Nil(t, err)
+			assert.Equal(t, []byte{}, d)
+		})
+
+		t.Run("Get Valid Consul Key", func(t *testing.T) {
+			key := fmt.Sprintf("workspaces/%v/latest", wid)
+			d, err := store.GetKey(key)
+			assert.Nil(t, err)
+			assert.NotEqual(t, []byte{}, d)
 		})
 	})
 }

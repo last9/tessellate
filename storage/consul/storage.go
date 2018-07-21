@@ -30,6 +30,10 @@ func (e *ConsulStore) GetKey(key string) ([]byte, error) {
 		return nil, err
 	}
 
+	if bytes == nil {
+		return []byte{}, nil
+	}
+
 	return bytes.Value, err
 }
 

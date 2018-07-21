@@ -94,8 +94,10 @@ func (p *Cmd) Run() error {
 		return errors.Wrap(err, "Cannot save vars")
 	}
 
-	if err := p.saveRemote(p.remoteAddr); err != nil {
-		return errors.Wrap(err, "Cannot save Remote")
+	if p.remoteAddr != "" && p.remotePath != "" {
+		if err := p.saveRemote(p.remoteAddr); err != nil {
+			return errors.Wrap(err, "Cannot save Remote")
+		}
 	}
 
 	if err := p.initLayout(); err != nil {

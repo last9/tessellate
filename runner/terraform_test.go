@@ -43,7 +43,7 @@ func TestCmd_ZRun(t *testing.T) {
 	cmd.skipInit = true
 	err := cmd.Run()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
