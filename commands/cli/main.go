@@ -11,7 +11,7 @@ import (
 const version = "0.0.1"
 
 var (
-	endpoint = kingpin.Flag("service_addr", "endpoint of YourService").Short('a').Default("localhost:9977").String()
+	endpoint = kingpin.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
 )
 
 var once sync.Once
@@ -35,7 +35,10 @@ func main() {
 	app.Version(version)
 
 	// Add your subcommand methods here.
-	addWorkerCommand(app)
+	addWorkspaceCommand(app)
+	// addLayoutCommand(app)
+	addVarsCommand(app)
+	addWatchCommand(app)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
