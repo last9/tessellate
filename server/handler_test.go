@@ -160,7 +160,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 
 		assert.Equal(t, jobQueue.Store, []string{resp.Id})
 
-		job := types.Job{Id: resp.Id}
+		job := types.Job{Id: resp.Id, LayoutId: layoutId}
 		tree := types.MakeTree(workspaceId)
 		if err := store.Get(&job, tree); err != nil {
 			t.Fatal(err)

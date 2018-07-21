@@ -185,9 +185,9 @@ func addLayoutCommands(app *kingpin.Application) {
 	clm := &layout{}
 	cl := lCLI.Command("create", "Create Layout").Action(clm.layoutCreate)
 
-	lCLI.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
-	lCLI.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
-	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().StringVar(&clm.dirName)
+	lCLI.Flag("id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
+	lCLI.Flag("workspace-id", "Workspace name").Required().Short('w').StringVar(&clm.workspaceId)
+	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().Short('d').StringVar(&clm.dirName)
 
 	lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
 
@@ -195,8 +195,8 @@ func addLayoutCommands(app *kingpin.Application) {
 	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 
 	al.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
-	al.Flag("vars", "Path of vars file.").StringVar(&clm.varsPath)
-	dl.Flag("vars", "Path of vars file.").StringVar(&clm.varsPath)
+	al.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
+	dl.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 }
 
 func mergeMaps(maps ...interface{}) interface{} {

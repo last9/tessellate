@@ -63,6 +63,6 @@ func addWatchCommand(app *kingpin.Application) {
 	wApp.Flag("workspace_id", "Workspace ID").Required().Short('w').StringVar(&wCLI.workspaceID)
 	wApp.Flag("layout_id", "Layout ID").Required().Short('l').StringVar(&wCLI.layoutID)
 
-	wStart.Arg("success_callback", "URL to trigger on success of job.").StringVar(&wCLI.sURL)
-	wStart.Arg("failure_callback", "URL to trigger on failure of job.").StringVar(&wCLI.fURL)
+	wStart.Flag("success_callback", "URL to trigger on success of job.").Short('s').StringVar(&wCLI.sURL)
+	wStart.Flag("failure_callback", "URL to trigger on failure of job.").Short('f').StringVar(&wCLI.fURL)
 }
