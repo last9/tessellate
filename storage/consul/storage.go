@@ -24,6 +24,15 @@ type ConsulStore struct {
 	client *api.Client
 }
 
+func (e *ConsulStore) GetKey(key string) ([]byte, error) {
+	bytes, _, err := e.client.KV().Get(key, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.Value, err
+}
+
 func (e *ConsulStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) ([]string, error) {
 	key := reader.MakePath(tree)
 	l, _, err := e.client.KV().Keys(key, "", nil)

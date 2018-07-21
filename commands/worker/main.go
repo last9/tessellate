@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -71,6 +72,7 @@ func main() {
 
 	// Make Layout tree.
 	t2 := types.MakeTree(*workspaceID, j.LayoutId)
+	remotePath := path.Join("state", *workspaceID, j.LayoutId)
 
 	// Get Layout
 	l := types.Layout{Id: j.LayoutId}
@@ -88,9 +90,11 @@ func main() {
 		}
 	}
 
+	startState, _ := store.GetKey(remotePath)
+
 	cmd := runner.Cmd{}
 	cmd.SetOp(j.Op)
-	cmd.SetRemotePath(path.Join("state", *workspaceID, j.LayoutId))
+	cmd.SetRemotePath(remotePath)
 	cmd.SetRemote(*consulIP)
 	cmd.SetDir("/tmp/test_runner")
 	cmd.SetLayout(l.Plan)
@@ -102,29 +106,28 @@ func main() {
 		log.Println(err)
 	}
 
-	var req *http.Request
-	var err2 error
-
 	status := 0
+	url := w.SuccessURL
 
 	if err := cmd.Run(); err != nil {
 		status = 127
 		log.Println(err)
-		if w.FailureURL != "" {
-			req, err2 = http.NewRequest(http.MethodPost, w.FailureURL, bytes.NewBuffer(nil))
-		}
-	} else {
-		if w.SuccessURL != "" {
-			req, err2 = http.NewRequest(http.MethodPost, w.SuccessURL, bytes.NewBuffer(nil))
-		}
+		url = w.FailureURL
 	}
 
-	if err2 != nil {
-		log.Println(err2)
-	}
+	if url != "" {
+		endState, _ := store.GetKey(remotePath)
+		body := struct {
+			OldState []byte `json:"old_state"`
+			NewState []byte `json:"new_state"`
+		}{OldState: startState, NewState: endState}
 
-	if req != nil {
-		makeCall(req)
+		b, _ := json.Marshal(body)
+		if req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b)); err != nil {
+			log.Println(err)
+		} else {
+			makeCall(req)
+		}
 	}
 
 	os.Exit(status)
