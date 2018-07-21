@@ -35,7 +35,7 @@ func main() {
 	app.Version(version)
 
 	// Add your subcommand methods here.
-	addWorkerCommand(app)
+	addWorkspaceCommand(app)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
