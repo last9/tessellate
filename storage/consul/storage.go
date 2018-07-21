@@ -41,20 +41,15 @@ func (e *ConsulStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) (
 	}
 
 	var keys []string
-	var splitByKey []string
 	for _, k := range l {
-		splitByKey = strings.Split(k, key)
-		log.Println(splitByKey)
-		if len(splitByKey) > 0 {
-			splits := strings.Split(splitByKey[1], "/")
-			if len(splits) == 1 {
-				keys = append(keys, splits[0])
-				log.Println(splits)
+		splitByKey := strings.SplitAfter(k, key + "/")
+		for _, k2 := range splitByKey {
+			if !strings.Contains(k2, "/") {
+				keys = append(keys, k2)
 			}
 		}
 	}
 
-	log.Println(keys)
 	return keys, nil
 }
 
