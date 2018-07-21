@@ -10,7 +10,7 @@ import (
 
 // Check if the bytes will yield a hash
 func isJSON(b []byte) bool {
-	var js map[string]interface{}
+	var js interface{}
 	err := json.Unmarshal(b, &js)
 	return err == nil
 }

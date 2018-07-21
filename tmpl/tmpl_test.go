@@ -27,6 +27,18 @@ func TestTmpl(t *testing.T) {
 		assert.Equal(t, true, strings.Contains(string(out), "012"))
 	})
 
+	t.Run("Should parse an array as an Error", func(t *testing.T) {
+		d, err := ioutil.ReadFile("./testdata/array.tmpl")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		y := pongo2.Context{}
+		if _, err := ParseLayout(d, y); err != nil {
+			t.Fatal(err)
+		}
+	})
+
 	t.Run("Should not render template", func(t *testing.T) {
 		d, err := ioutil.ReadFile("./testdata/layout.tmpl")
 		assert.Nil(t, err)
