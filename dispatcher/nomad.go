@@ -37,7 +37,7 @@ job "{{ job_id }}" {
   group "{{ job_id }}" {
     count = 1
 
-    task "apply job" {
+    task "apply_job" {
       driver = "docker"
 
       config {
@@ -54,14 +54,14 @@ job "{{ job_id }}" {
 }
 `
 	cfg := pongo2.Context{
-		"job_id":      j,
+		"job_id":       j,
 		"workspace_id": w,
-		"layout_id": l,
-		"datacenter":  c.cfg.Datacenter,
-		"image":       c.cfg.Image,
-		"cpu":         c.cfg.CPU,
-		"memory":      c.cfg.Memory,
-		"consul_addr": c.cfg.ConsulAddr,
+		"layout_id":    l,
+		"datacenter":   c.cfg.Datacenter,
+		"image":        c.cfg.Image,
+		"cpu":          c.cfg.CPU,
+		"memory":       c.cfg.Memory,
+		"consul_addr":  c.cfg.ConsulAddr,
 	}
 
 	nomadJob, err := tmpl.Parse(tmplStr, cfg)

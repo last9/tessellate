@@ -156,12 +156,12 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 
 // Operation layout for APPLY and DESTROY operations on the layout.
 func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*JobStatus, error) {
-	lyt := types.Layout{}
+	lyt := types.Layout{Id: lID}
 	tree := types.MakeTree(wID)
 	layoutTree := types.MakeTree(wID, lID)
 
 	// GET versions of the layout.
-	versions, err := s.store.GetVersions(&lyt, tree)
+	versions, err := s.store.GetVersions(&lyt, layoutTree)
 	if err != nil {
 		return nil, err
 	}
@@ -175,11 +175,8 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 			return nil, err
 		}
 
-		// Make tree for layout.
-		lTree := types.MakeTree(wID, lID)
-
 		// Save the vars for apply op, in the layout tree.
-		if err := s.store.Save(&v, lTree); err != nil {
+		if err := s.store.Save(&v, layoutTree); err != nil {
 			return nil, err
 		}
 	}

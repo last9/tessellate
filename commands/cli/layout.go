@@ -136,9 +136,7 @@ func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
 		return err
 	}
 
-	state := resp.Status
-
-	prettyPrint(state)
+	prettyPrint("JobID = " + resp.Id)
 	return nil
 }
 
