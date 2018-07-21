@@ -5,7 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/tsocial/tessellate/storage"
 	"github.com/tsocial/tessellate/storage/consul"
+	"github.com/tsocial/tessellate/storage/types"
 
 	"context"
 	"fmt"
@@ -17,10 +19,11 @@ import (
 	"github.com/tsocial/tessellate/utils"
 )
 
+var store storage.Storer
 var server TessellateServer
 
 func TestMain(m *testing.M) {
-	store := consul.MakeConsulStore()
+	store = consul.MakeConsulStore()
 	store.Setup()
 
 	server = New(store)
@@ -156,6 +159,18 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.NotEmpty(t, resp.Id)
 
 		assert.Equal(t, jobQueue.Store, []string{resp.Id})
+
+		job := types.Job{Id: resp.Id}
+		tree := types.MakeTree(workspaceId)
+		if err := store.Get(&job, tree); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, layoutId, job.LayoutId)
+		assert.Equal(t, JobState_PENDING, job.Status)
+		assert.Equal(t, Operation_APPLY, job.Op)
+		assert.Equal(t, false, job.Dry)
+		assert.NotEmpty(t, job.LayoutVersion)
 	})
 
 	t.Run("Should Destroy a layout", func(t *testing.T) {
@@ -174,5 +189,17 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.NotEmpty(t, resp.Id)
 
 		assert.Equal(t, jobQueue.Store[1], resp.Id)
+
+		job := types.Job{Id: resp.Id}
+		tree := types.MakeTree(workspaceId)
+		if err := store.Get(&job, tree); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, layoutId, job.LayoutId)
+		assert.Equal(t, JobState_PENDING, job.Status)
+		assert.Equal(t, Operation_DESTROY, job.Op)
+		assert.Equal(t, false, job.Dry)
+		assert.NotEmpty(t, job.LayoutVersion)
 	})
 }
