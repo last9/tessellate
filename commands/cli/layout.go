@@ -25,11 +25,12 @@ type createLayoutCommand struct {
 	dirName     string
 }
 
-func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
-	log.Println("Directory = ", cm.dirName)
-	log.Println("Name = ", cm.id)
-	log.Println("Workspace = ", cm.workspaceId)
+type getLayoutCommand struct {
+	id          string
+	workspaceId string
+}
 
+func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 	if _, err := os.Stat(cm.dirName); err != nil {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)
 	}
@@ -42,7 +43,7 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 		}
 
 		if filepath.Ext(path) != ".json" || strings.Contains(path, "tfvars") {
-			log.Printf("skipping %s : %s", path, filepath.Ext(path))
+			log.Printf("skipping %s", path)
 			return nil
 		}
 
@@ -60,13 +61,14 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 	var maps []interface{}
 
 	for _, f := range files {
+		log.Println(f)
 		fBytes, err := ioutil.ReadFile(f)
 		if err != nil {
 			log.Println(err)
 			return err
 		}
 
-		var fObj map[string]interface{}
+		var fObj interface{}
 		if err := json.Unmarshal(fBytes, &fObj); err != nil {
 			log.Printf("invald json file: %s", f)
 			return err
@@ -75,7 +77,11 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 		maps = append(maps, fObj)
 	}
 
+	log.Println(maps)
+
 	finalMap := mergeMaps(maps...)
+
+	prettyPrint(finalMap)
 	layoutBytes, err := json.Marshal(finalMap)
 	if err != nil {
 		log.Println(err)
@@ -88,18 +94,37 @@ func (cm *createLayoutCommand) run(c *kingpin.ParseContext) error {
 		Plan:        layoutBytes,
 	}
 
-	resp, err := getClient().SaveLayout(context.Background(), req)
+	_, err = getClient().SaveLayout(context.Background(), req)
 
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	log.Println(resp.String())
 	return nil
 }
 
-func addLayoutCommand(app *kingpin.Application) {
+func (cm *getLayoutCommand) run(c *kingpin.ParseContext) error {
+	req := &server.LayoutRequest{
+		Id:          cm.id,
+		WorkspaceId: cm.workspaceId,
+	}
+
+	resp, err := getClient().GetLayout(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	var plan interface{}
+	if err := json.Unmarshal(resp.Plan, &plan); err != nil {
+		return err
+	}
+
+	prettyPrint(plan)
+	return nil
+}
+
+func addLayoutCommands(app *kingpin.Application) {
 	layout := app.Command("layout", "Commands for layout")
 
 	clm := &createLayoutCommand{}
@@ -108,6 +133,12 @@ func addLayoutCommand(app *kingpin.Application) {
 	cl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
 	cl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
 	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().StringVar(&clm.dirName)
+
+	getLayout := &getLayoutCommand{}
+	gl := layout.Command("get", "Get Layout").Action(getLayout.run)
+
+	gl.Flag("id", "Name of the layout").Required().StringVar(&getLayout.id)
+	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&getLayout.workspaceId)
 }
 
 func mergeMaps(maps ...interface{}) interface{} {
@@ -120,6 +151,10 @@ func mergeMaps(maps ...interface{}) interface{} {
 	}
 
 	merged := merge(maps[0], maps[1])
+
+	log.Println("-------------------------")
+	prettyPrint(merged)
+	log.Println("-------------------------")
 	return mergeMaps(merged, maps[2:])
 }
 
