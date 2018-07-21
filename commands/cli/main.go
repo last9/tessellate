@@ -19,7 +19,6 @@ var client server.TessellateClient
 
 func getClient() server.TessellateClient {
 	once.Do(func() {
-		log.Println(*endpoint)
 		conn, err := grpc.Dial(*endpoint, grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
 			panic(err)

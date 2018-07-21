@@ -56,7 +56,6 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 	var maps []interface{}
 
 	for _, f := range files {
-		log.Println(f)
 		fBytes, err := ioutil.ReadFile(f)
 		if err != nil {
 			log.Println(err)
@@ -72,11 +71,8 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		maps = append(maps, fObj)
 	}
 
-	log.Println(maps)
-
 	finalMap := mergeMaps(maps...)
 
-	prettyPrint(finalMap)
 	layoutBytes, err := json.Marshal(finalMap)
 	if err != nil {
 		log.Println(err)
@@ -184,14 +180,11 @@ func mergeMaps(maps ...interface{}) interface{} {
 	}
 
 	merged := merge(maps[0], maps[1])
-
-	log.Println("-------------------------")
-	prettyPrint(merged)
-	log.Println("-------------------------")
-	return mergeMaps(merged, maps[2:])
+	return mergeMaps(append(maps[2:], merged)...)
 }
 
 func merge(x1, x2 interface{}) interface{} {
+
 	switch x1 := x1.(type) {
 	case map[string]interface{}:
 		x2, ok := x2.(map[string]interface{})
