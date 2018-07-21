@@ -66,14 +66,12 @@ func main() {
 	// Create Job Struct to Load Job into.
 	j := types.Job{Id: *jobID, LayoutId: *layoutID}
 	t := types.MakeTree(*workspaceID)
-	if err := store.Get(&j, t); err != nil {
+	if err := store.GetVersion(&j, t, *jobID); err != nil {
 		log.Println(err)
 		os.Exit(127)
 	}
 
 	// Make Layout tree.
-	t2 := types.MakeTree(*workspaceID, j.LayoutId)
-	remotePath := path.Join("state", *workspaceID, j.LayoutId)
 
 	// Get Layout
 	l := types.Layout{Id: j.LayoutId}
@@ -84,6 +82,7 @@ func main() {
 
 	// Get Vars
 	var v types.Vars
+	t2 := types.MakeTree(*workspaceID, j.LayoutId)
 	if err := store.GetVersion(&v, t2, j.VarsVersion); err != nil {
 		log.Println(err)
 		if !strings.Contains(err.Error(), "Missing") {
@@ -91,6 +90,7 @@ func main() {
 		}
 	}
 
+	remotePath := path.Join("state", *workspaceID, j.LayoutId)
 	startState, _ := store.GetKey(remotePath)
 
 	cmd := runner.Cmd{}

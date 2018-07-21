@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"log"
 	"testing"
 
@@ -43,7 +44,7 @@ func TestMain(m *testing.M) {
 	store.Setup()
 
 	os.Exit(func() int {
-		defer deleteTree(store.GetClient())
+		//defer deleteTree(store.GetClient())
 
 		y := m.Run()
 		return y
@@ -54,7 +55,8 @@ func TestStorer(t *testing.T) {
 	t.Run("Storage tests", func(t *testing.T) {
 		tree := &types.Tree{Name: "store_test", TreeType: "testing"}
 
-		workspace := types.Workspace(fmt.Sprintf("alibaba-%s", utils.RandString(8)))
+		wid := fmt.Sprintf("alibaba-%s", utils.RandString(8))
+		workspace := types.Workspace(wid)
 
 		t.Run("Workspace does not exist", func(t *testing.T) {
 			if err := store.Get(&workspace, tree); err == nil {
@@ -89,6 +91,31 @@ func TestStorer(t *testing.T) {
 
 			assert.Equal(t, 3, len(v))
 			assert.Contains(t, strings.Join(v, ""), "latest")
+		})
+
+		t.Run("Save Layout", func(t *testing.T) {
+			tree := types.MakeTree(wid)
+			l := types.Layout{
+				Id:   "test-hello",
+				Plan: map[string]json.RawMessage{},
+			}
+
+			if err := store.Save(&l, tree); err != nil {
+				t.Fatal(err)
+			}
+
+			ltree := types.MakeTree(wid, "test-hello")
+			v := types.Vars(map[string]interface{}{})
+			if err := store.Save(&v, ltree); err != nil {
+				t.Fatal(err)
+			}
+
+			x, err := store.GetVersions(&l, tree)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			assert.Equal(t, 2, len(x))
 		})
 	})
 }
