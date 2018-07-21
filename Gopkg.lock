@@ -188,6 +188,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/meson10/highbrow"
+  packages = ["."]
+  revision = "88261ca7babdb56d0a2b44e63a1c99ef62a94494"
+
+[[projects]]
+  branch = "master"
   name = "github.com/meson10/pester"
   packages = ["."]
   revision = "9c8497d2b7d89b5ffb4e6bdde01fe76c1121fbd6"
@@ -351,6 +357,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fadd6ee0ed1b70a88259e56c0ca5a080a6be821c25ec37498fe6b1463cc286e1"
+  inputs-digest = "43b3c2b7d366314dfe232fd12ef625c5d7cb5b9ae6f2578a19f9f19aaccec39e"
   solver-name = "gps-cdcl"
   solver-version = 1

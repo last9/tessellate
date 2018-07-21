@@ -4,9 +4,16 @@ import (
 	"context"
 	"encoding/json"
 
+	"fmt"
+
+	"github.com/meson10/highbrow"
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/dispatcher"
 	"github.com/tsocial/tessellate/storage/types"
+)
+
+const (
+	RETRY = 5
 )
 
 // Save Workspace under workspaces/ .
@@ -203,6 +210,16 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	}
 
 	job := &JobStatus{Id: j.Id, Status: JobState(j.Status)}
+
+	// Lock for workspace and layout.
+	key := fmt.Sprintf("%v-%v", wID, lID)
+
+	if err := highbrow.Try(RETRY, func() error {
+		return s.store.Lock(key)
+	}); err != nil {
+		return nil, err
+	}
+
 	return job, dispatcher.Get().Dispatch(j.Id, wID, j.LayoutId)
 }
 

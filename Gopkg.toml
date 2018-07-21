@@ -68,3 +68,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/meson10/pester"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/meson10/highbrow"

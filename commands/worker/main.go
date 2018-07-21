@@ -11,6 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
+
+	"github.com/meson10/highbrow"
 	"github.com/meson10/pester"
 	"github.com/tsocial/tessellate/runner"
 	"github.com/tsocial/tessellate/storage/consul"
@@ -59,9 +62,19 @@ func main() {
 	kingpin.Version(Version)
 	kingpin.Parse()
 
-	// Inititalize Storage engine
+	// Initialize Storage engine
 	store := consul.MakeConsulStore(*consulIP)
 	store.Setup()
+
+	defer func() {
+		key := fmt.Sprintf("%v-%v", *workspaceID, *layoutID)
+
+		if err := highbrow.Try(3, func() error {
+			return store.Unlock(key)
+		}); err != nil {
+			log.Printf("error while unlocking key: %s, err: %+v", key, err)
+		}
+	}()
 
 	// Create Job Struct to Load Job into.
 	j := types.Job{Id: *jobID, LayoutId: *layoutID}

@@ -46,7 +46,7 @@ func (e *ConsulStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) (
 
 	var keys []string
 	for _, k := range l {
-		splitByKey := strings.SplitAfter(k, key + "/")
+		splitByKey := strings.SplitAfter(k, key+"/")
 		for _, k2 := range splitByKey {
 			if !strings.Contains(k2, "/") {
 				keys = append(keys, k2)
@@ -126,6 +126,7 @@ func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
 	}
 
 	ok, _, _, err := e.client.KV().Txn(ops, nil)
+
 	if err != nil {
 		return errors.Wrap(err, "Cannot save Consul Transaction")
 	}
@@ -151,6 +152,36 @@ func (e *ConsulStore) Setup() error {
 
 	e.client = client
 	return nil
+}
+
+func (e *ConsulStore) Lock(key string) error {
+	kv := api.KVPair{
+		Key:   key,
+		Value: []byte{},
+	}
+	status, _, err := e.client.KV().CAS(&kv, nil)
+
+	if status == false {
+		return errors.New("Cannot take lock.")
+	}
+
+	return err
+}
+
+func (e *ConsulStore) Unlock(key string) error {
+
+	kv := api.KVPair{
+		Key:   key,
+		Value: []byte{},
+	}
+
+	status, _, err := e.client.KV().DeleteCAS(&kv, nil)
+
+	if status == false {
+		return errors.New("Cannot delete a lock. Doesn't exist")
+	}
+
+	return err
 }
 
 func (e *ConsulStore) Teardown() error {

@@ -14,4 +14,7 @@ type Storer interface {
 	Get(reader types.ReaderWriter, tree *types.Tree) error
 	GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error
 	GetVersions(reader types.ReaderWriter, tree *types.Tree) ([]string, error)
+
+	Lock(key string) error
+	UnLock(key string) error
 }
