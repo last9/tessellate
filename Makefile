@@ -57,7 +57,7 @@ build_images: worker_build tessellate_build http_build
 	docker-compose -f docker-compose.yaml build tessellate
 	docker-compose -f docker-compose.yaml build http
 
-upload_images: build_images docker_login
+upload_images: docker_login
 	docker push worker
 	docker push tessellate
 	docker push http
