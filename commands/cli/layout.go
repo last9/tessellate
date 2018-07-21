@@ -169,9 +169,9 @@ func addLayoutCommands(app *kingpin.Application) {
 	gl.Flag("id", "Name of the layout").Required().StringVar(&clm.id)
 	gl.Flag("workspace-id", "Workspace name").Required().StringVar(&clm.workspaceId)
 
-	al := lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
+	lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
 
-	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
+	lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 }
 
 func mergeMaps(maps ...interface{}) interface{} {
