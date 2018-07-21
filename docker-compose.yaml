@@ -12,11 +12,11 @@ services:
       dockerfile: WorkerDockerfile
     image: tsl8/worker
     command: --job=123 --workspace=123 --consul-host=consul:8500
-  tessellate:
+  grpc-server:
     build:
       context: .
       dockerfile: ServerDockerfile
-    image: tsl8/tessellate
+    image: tsl8/grpc-server
 #  http:
 #    build:
 #      context: .

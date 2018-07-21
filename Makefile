@@ -55,10 +55,9 @@ tessellate: build_deps tessellate_build
 worker: build_deps worker_build
 http: build_deps http_build
 
-build_images: worker_build tessellate_build http_build
+build_images: worker_build tessellate_build
 	docker-compose -f docker-compose.yaml build worker
-	docker-compose -f docker-compose.yaml build tessellate
-	docker-compose -f docker-compose.yaml build http
+	docker-compose -f docker-compose.yaml build grpc-server
 
 upload_worker: docker_login
 	docker tag $(WORKER_REPO):latest $(WORKER_REPO):$(TRAVIS_BRANCH)-latest

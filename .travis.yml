@@ -17,6 +17,7 @@ script:
   - make cli_build
   - make tessellate_build
   - make test
+  - make build_images
 
 deploy:
   - provider: script
