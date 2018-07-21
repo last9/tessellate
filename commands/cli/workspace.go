@@ -35,7 +35,7 @@ func workspaceGet(c *kingpin.ParseContext) error {
 		return err
 	}
 
-	log.Println(w)
+	prettyPrint(w)
 	return nil
 }
 
