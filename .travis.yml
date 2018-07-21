@@ -10,7 +10,7 @@ script:
   - make protodep
   - export PROTO_VERSION=3.5.1
   - export PATH="/tmp/proto/${PROTO_VERSION}/bin/":$PATH
-  - make buld_deps
+  - make build_deps
   - docker-compose -f docker-compose.yaml up -d consul
   - make worker_build
   - make http_build
