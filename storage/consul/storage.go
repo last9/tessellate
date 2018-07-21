@@ -8,6 +8,8 @@ import (
 
 	"fmt"
 
+	"strings"
+
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/storage/types"
@@ -24,17 +26,19 @@ type ConsulStore struct {
 
 func (e *ConsulStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) ([]string, error) {
 	key := reader.MakePath(tree)
-	l, _, err := e.client.KV().List(key, nil)
+	l, _, err := e.client.KV().Keys(key, "", nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Cannot list %v", key)
 	}
 
-	v := []string{}
-	for _, n := range l {
-		v = append(v, string(n.Key))
+	var keys []string
+	var splits []string
+	for _, k := range l {
+		splits = strings.Split(k, "/")
+		keys = append(keys, splits[len(splits)-1])
 	}
 
-	return v, nil
+	return keys, nil
 }
 
 func (e *ConsulStore) Get(reader types.ReaderWriter, tree *types.Tree) error {
