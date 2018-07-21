@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -89,6 +90,7 @@ func main() {
 
 	cmd := runner.Cmd{}
 	cmd.SetOp(j.Op)
+	cmd.SetRemotePath(path.Join("state", *workspaceID, j.LayoutId))
 	cmd.SetRemote(*consulIP)
 	cmd.SetDir("/tmp/test_runner")
 	cmd.SetLayout(l.Plan)

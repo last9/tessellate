@@ -8,26 +8,26 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/tmpl"
-	"github.com/flosch/pongo2"
 )
 
 const ApplyOp = 0
 const DestroyOp = 1
 
 var opMap = map[int32]string{
-	ApplyOp: "apply",
+	ApplyOp:   "apply",
 	DestroyOp: "destroy",
 }
 
-func remoteLayout(addr string) map[string]interface{} {
+func remoteLayout(addr, path string) map[string]interface{} {
 	return map[string]interface{}{
 		"terraform": map[string]interface{}{
 			"backend": map[string]interface{}{
 				"consul": map[string]interface{}{
 					"address": addr,
-					"path":    "full/path2",
+					"path":    path,
 				},
 			},
 		},
@@ -68,6 +68,7 @@ type Cmd struct {
 	dir        string
 	logPrefix  string
 	remoteAddr string
+	remotePath string
 }
 
 // - Prepares the Basic Directories.
@@ -109,6 +110,10 @@ func (p *Cmd) Run() error {
 	}
 
 	return nil
+}
+
+func (p *Cmd) SetRemotePath(path string) {
+	p.remotePath = path
 }
 
 func (p *Cmd) GetStderr() OutWriteCloser {
@@ -160,7 +165,7 @@ func (p *Cmd) ClearDir(path string) error {
 func (p *Cmd) saveRemote(addr string) error {
 	lPath := fmt.Sprintf("%v/state.tf.json", p.dir)
 	p.stdout.Output("Saving Remote state file")
-	lData, err := json.Marshal(remoteLayout(addr))
+	lData, err := json.Marshal(remoteLayout(addr, p.remotePath))
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal remote State")
 	}
