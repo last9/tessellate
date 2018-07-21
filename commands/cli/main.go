@@ -1,10 +1,9 @@
 package main
 
 import (
-	"context"
-	"log"
+	"os"
+	"sync"
 
-	"github.com/tsocial/tessellate/server"
 	"google.golang.org/grpc"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -15,23 +14,28 @@ var (
 	endpoint = kingpin.Flag("service_addr", "endpoint of YourService").Short('a').Default("localhost:9977").String()
 )
 
+var once sync.Once
+var conn *grpc.ClientConn
+
+func getClient() *grpc.ClientConn {
+	once.Do(func() {
+		con, err := grpc.Dial(*endpoint, grpc.WithInsecure())
+		if err != nil {
+			panic(err)
+		}
+
+		conn = con
+	})
+
+	return conn
+}
+
 func main() {
-	kingpin.Version(version)
-	kingpin.Parse()
+	app := kingpin.New("tessellate", "Tessellate CLI")
+	app.Version(version)
 
-	conn, err := grpc.Dial(*endpoint, grpc.WithInsecure())
-	if err != nil {
-		panic(err)
-	}
+	// Add your subcommand methods here.
+	addWorkerCommand(app)
 
-	defer conn.Close()
-
-	req := server.GetWorkspaceRequest{
-		Id: "hello",
-	}
-
-	client := server.NewTessellateClient(conn)
-	w, err := client.GetWorkspace(context.Background(), &req)
-	log.Println(w)
-	log.Println(err)
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
