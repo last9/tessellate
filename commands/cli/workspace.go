@@ -41,7 +41,8 @@ func workspaceGet(c *kingpin.ParseContext) error {
 
 func addWorkspaceCommand(app *kingpin.Application) {
 	w := app.Command("workspace", "Workspace")
-	wid = w.Flag("workspace_id", "Workspace Id").Short('w').String()
 	w.Command("create", "Create a workspace").Action(workspaceAdd)
 	w.Command("get", "Get a workspace").Action(workspaceGet)
+
+	wid = w.Flag("workspace_id", "Workspace Id").Short('w').Required().String()
 }

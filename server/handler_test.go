@@ -144,6 +144,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 			WorkspaceId: workspaceId,
 			Id:          layoutId,
 			Dry:         true,
+			Vars:        vBytes,
 		}
 
 		resp, err := server.ApplyLayout(context.Background(), req)

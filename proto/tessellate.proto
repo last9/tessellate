@@ -16,7 +16,7 @@ service Tessellate {
   }
   rpc GetWorkspace (GetWorkspaceRequest) returns (Workspace) {
     option (google.api.http) = {
-      get: "/v1/workspace/{Id}",
+      get: "/v1/workspace/{Id}"
     };
   }
  // rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
@@ -41,7 +41,7 @@ service Tessellate {
   }
   rpc DestroyLayout (ApplyLayoutRequest) returns (JobStatus) {
     option (google.api.http) = {
-      delete: "/v1/workspace/{WorkspaceId}/layout/{Id}/apply"
+      delete: "/v1/workspace/{WorkspaceId}/layout/{Id}/destroy"
     };
   }
 

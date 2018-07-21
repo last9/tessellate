@@ -33,10 +33,14 @@ func getClient() server.TessellateClient {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	app := kingpin.New("tessellate", "Tessellate CLI")
-	endpoint = app.Flag("address", "endpoint of YourService").Short('a').Default("localhost:9977").String()
+	endpoint = kingpin.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
 	app.Version(version)
 
+	// Add your command methods here.
 	addWorkspaceCommand(app)
 	addLayoutCommand(app)
+	addVarsCommand(app)
+	addWatchCommand(app)
+
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
