@@ -5,13 +5,21 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	"github.com/tsocial/tessellate/cert"
 	"github.com/tsocial/tessellate/fault"
 	"google.golang.org/grpc"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 func customFunc(t interface{}) error {
 	return fault.Printer(t)
 }
+
+var (
+	rootCert = kingpin.Flag("root-cert", "Root Cert File").String()
+	certFile = kingpin.Flag("cert-file", "Cert File").String()
+	keyFile  = kingpin.Flag("key-file", "Key File").String()
+)
 
 func grpcServer() *grpc.Server {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -24,9 +32,18 @@ func grpcServer() *grpc.Server {
 		grpc_recovery.UnaryServerInterceptor(opts...),
 	}
 
-	s := grpc.NewServer(
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(unaries...)),
-	)
+	sopts := []grpc.ServerOption{}
 
-	return s
+	if *certFile != "" && *keyFile != "" {
+		creds, err := cert.ServerCerts(*certFile, *keyFile, *rootCert)
+		if err != nil {
+			panic(err)
+		}
+
+		// Append the Credentials to the Server Options.
+		sopts = append(sopts, grpc.Creds(creds))
+	}
+
+	sopts = append(sopts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(unaries...)))
+	return grpc.NewServer(sopts...)
 }
