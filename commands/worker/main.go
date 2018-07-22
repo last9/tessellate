@@ -6,12 +6,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 	"time"
 
 	"fmt"
+
+	"os"
 
 	"github.com/meson10/highbrow"
 	"github.com/meson10/pester"
@@ -66,6 +67,8 @@ func main() {
 	store := consul.MakeConsulStore(*consulIP)
 	store.Setup()
 
+	status := 0
+
 	defer func() {
 		key := fmt.Sprintf("%v-%v", *workspaceID, *layoutID)
 
@@ -74,6 +77,8 @@ func main() {
 		}); err != nil {
 			log.Printf("error while unlocking key: %s, err: %+v", key, err)
 		}
+
+		os.Exit(status)
 	}()
 
 	// Create Job Struct to Load Job into.
@@ -81,7 +86,8 @@ func main() {
 	t := types.MakeTree(*workspaceID)
 	if err := store.GetVersion(&j, t, *jobID); err != nil {
 		log.Println(err)
-		os.Exit(127)
+		status = 127
+		return
 	}
 
 	// Make Layout tree.
@@ -90,7 +96,8 @@ func main() {
 	l := types.Layout{Id: j.LayoutId}
 	if err := store.GetVersion(&l, t, j.LayoutVersion); err != nil {
 		log.Println(err)
-		os.Exit(127)
+		status = 127
+		return
 	}
 
 	// Get Vars
@@ -99,7 +106,8 @@ func main() {
 	if err := store.GetVersion(&v, t2, j.VarsVersion); err != nil {
 		log.Println(err)
 		if !strings.Contains(err.Error(), "Missing") {
-			os.Exit(127)
+			status = 127
+			return
 		}
 	}
 
@@ -125,7 +133,6 @@ func main() {
 		log.Println(err)
 	}
 
-	status := 0
 	url := w.SuccessURL
 
 	if err := cmd.Run(); err != nil {
@@ -148,6 +155,4 @@ func main() {
 			makeCall(req)
 		}
 	}
-
-	os.Exit(status)
 }
