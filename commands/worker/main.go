@@ -70,7 +70,7 @@ func main() {
 		key := fmt.Sprintf("%v-%v", *workspaceID, *layoutID)
 
 		if err := highbrow.Try(3, func() error {
-			return store.Unlock(key)
+			return store.Unlock(key, *jobID)
 		}); err != nil {
 			log.Printf("error while unlocking key: %s, err: %+v", key, err)
 		}
@@ -106,8 +106,13 @@ func main() {
 	remotePath := path.Join("state", *workspaceID, j.LayoutId)
 	startState, _ := store.GetKey(remotePath)
 
+	op := j.Op
+	if j.Dry {
+		op = runner.PlanOp
+	}
+
 	cmd := runner.Cmd{}
-	cmd.SetOp(j.Op)
+	cmd.SetOp(op)
 	cmd.SetRemotePath(remotePath)
 	cmd.SetRemote(*consulIP)
 	cmd.SetDir("/tmp/test_runner")

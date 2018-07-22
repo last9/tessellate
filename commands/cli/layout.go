@@ -145,11 +145,10 @@ func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
 		return err
 	}
 
-	req := &server.ApplyLayoutRequest{
+	req := &server.DestroyLayoutRequest{
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
 		Vars:        vars,
-		Dry:         false,
 	}
 
 	resp, err := getClient().DestroyLayout(context.Background(), req)

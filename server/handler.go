@@ -215,7 +215,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	key := fmt.Sprintf("%v-%v", wID, lID)
 
 	if err := highbrow.Try(RETRY, func() error {
-		return s.store.Lock(key)
+		return s.store.Lock(key, job.Id)
 	}); err != nil {
 		return nil, err
 	}
@@ -233,12 +233,12 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 }
 
 // Destroy layout job.
-func (s *Server) DestroyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobStatus, error) {
+func (s *Server) DestroyLayout(ctx context.Context, in *DestroyLayoutRequest) (*JobStatus, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_DESTROY), in.Vars, in.Dry)
+	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_DESTROY), in.Vars, false)
 }
 
 // Abort job.

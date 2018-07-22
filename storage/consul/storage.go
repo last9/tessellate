@@ -154,23 +154,33 @@ func (e *ConsulStore) Setup() error {
 	return nil
 }
 
-func (e *ConsulStore) Lock(key string) error {
-	ok, _, err := e.client.KV().Acquire(&api.KVPair{Key: key}, nil)
+func (e *ConsulStore) Lock(key, s string) error {
+	ok, _, err := e.client.KV().CAS(&api.KVPair{
+		Key:         path.Join("lock", key),
+		ModifyIndex: 0,
+		CreateIndex: 0,
+		Value:       []byte(s),
+	}, nil)
 
-	if !ok {
-		return errors.New("Txn was rolled back. Weird, huh!")
+	if err != nil {
+		return err
 	}
 
-	return err
+	if !ok {
+		return errors.New("Cannot write Lock")
+	}
+
+	return nil
 }
 
-func (e *ConsulStore) Unlock(key string) error {
-	ok, _, err := e.client.KV().Release(&api.KVPair{Key: key}, nil)
-	if !ok {
-		return errors.New("cannot unlock")
+func (e *ConsulStore) Unlock(key, s string) error {
+	key = path.Join("lock", key)
+	_, err := e.client.KV().Delete(key, nil)
+	if err != nil {
+		return err
 	}
 
-	return err
+	return nil
 }
 
 func (e *ConsulStore) Teardown() error {

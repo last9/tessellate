@@ -51,6 +51,32 @@ func TestStorer(t *testing.T) {
 	store := consul.MakeConsulStore("127.0.0.1:8500")
 	store.Setup()
 
+	t.Run("Lock tests", func(t *testing.T) {
+		t.Run("Lock a Key", func(t *testing.T) {
+			if err := store.Lock("key3", "c1"); err != nil {
+				t.Fatal(err)
+			}
+		})
+
+		t.Run("Un-Idempotent Lock a Key", func(t *testing.T) {
+			if err := store.Lock("key3", "c12"); err == nil {
+				t.Fatal(err)
+			}
+		})
+
+		t.Run("Release a Key", func(t *testing.T) {
+			if err := store.Unlock("key3", "c1"); err != nil {
+				t.Fatal(err)
+			}
+		})
+
+		t.Run("Idempotent Release a Key", func(t *testing.T) {
+			if err := store.Unlock("key3", "c12"); err != nil {
+				t.Fatal(err)
+			}
+		})
+	})
+
 	t.Run("Storage tests", func(t *testing.T) {
 		tree := &types.Tree{Name: "store_test", TreeType: "testing"}
 

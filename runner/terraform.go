@@ -13,10 +13,14 @@ import (
 	"github.com/tsocial/tessellate/tmpl"
 )
 
-const ApplyOp = 0
-const DestroyOp = 1
+const (
+	ApplyOp   = 0
+	DestroyOp = 1
+	PlanOp    = 2
+)
 
 var opMap = map[int32][]string{
+	PlanOp:    []string{"plan"},
 	ApplyOp:   []string{"apply", "-auto-approve"},
 	DestroyOp: []string{"destroy", "-auto-approve"},
 }

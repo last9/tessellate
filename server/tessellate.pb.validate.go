@@ -748,6 +748,64 @@ func (e ApplyLayoutRequestValidationError) Error() string {
 
 var _ error = ApplyLayoutRequestValidationError{}
 
+// Validate checks the field values on DestroyLayoutRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *DestroyLayoutRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
+		return DestroyLayoutRequestValidationError{
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
+		}
+	}
+
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		return DestroyLayoutRequestValidationError{
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
+		}
+	}
+
+	// no validation rules for Vars
+
+	return nil
+}
+
+// DestroyLayoutRequestValidationError is the validation error returned by
+// DestroyLayoutRequest.Validate if the designated constraints aren't met.
+type DestroyLayoutRequestValidationError struct {
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
+}
+
+// Error satisfies the builtin error interface
+func (e DestroyLayoutRequestValidationError) Error() string {
+	cause := ""
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
+	}
+
+	key := ""
+	if e.Key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDestroyLayoutRequest.%s: %s%s",
+		key,
+		e.Field,
+		e.Reason,
+		cause)
+}
+
+var _ error = DestroyLayoutRequestValidationError{}
+
 // Validate checks the field values on StartWatchRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
 // error is returned.

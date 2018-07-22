@@ -184,7 +184,7 @@ var (
 )
 
 func request_Tessellate_DestroyLayout_0(ctx context.Context, marshaler runtime.Marshaler, client TessellateClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ApplyLayoutRequest
+	var protoReq DestroyLayoutRequest
 	var metadata runtime.ServerMetadata
 
 	var (

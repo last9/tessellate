@@ -173,11 +173,38 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 
-	t.Run("Should Destroy a layout", func(t *testing.T) {
+	lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
+
+	t.Run("Should Lock a run till completed by worker", func(t *testing.T) {
 		req := &ApplyLayoutRequest{
 			WorkspaceId: workspaceId,
 			Id:          layoutId,
 			Dry:         true,
+			Vars:        vBytes,
+		}
+
+		_, err := server.ApplyLayout(context.Background(), req)
+		if err == nil {
+			t.Fatal("Should have failed with a Lock")
+		}
+	})
+
+	t.Run("Should allow unlocking a Layout", func(t *testing.T) {
+		if err := store.Unlock(lockKey, "job-id"); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Unlocking is Idempotent", func(t *testing.T) {
+		if err := store.Unlock(lockKey, "job-id"); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Should Destroy a layout", func(t *testing.T) {
+		req := &DestroyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId,
 		}
 
 		resp, err := server.DestroyLayout(context.Background(), req)
@@ -199,7 +226,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, layoutId, job.LayoutId)
 		assert.Equal(t, int32(JobState_PENDING), job.Status)
 		assert.Equal(t, int32(Operation_DESTROY), job.Op)
-		assert.Equal(t, true, job.Dry)
+		assert.Equal(t, false, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 }
