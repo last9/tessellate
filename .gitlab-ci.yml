@@ -1,0 +1,92 @@
+# ##############################################################################
+# Signed-off-by: Franheit Sangapta M <franheit.sangapta@gmail.com>
+# ##############################################################################
+# Changes since version before:
+#  * completed environment variables for Gitlab than using static link to the repo
+#  * separete jobs based on functionality: build image, test, release, and deploy (manual and auto)
+#  * separate jobs based on branch's environment:
+#   - slug        : any supporting branch,
+#   - dev         : any branches to test,
+#   - staging     : develop branch
+#   - production  : master branch
+#  * deployment uses Stackahoy feature as a hook to remote server
+# ##############################################################################
+
+image: docker:17.04
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - release
+  - deploy
+
+variables:
+  STAGING_REGISTRY: "registry.gitlab.com"
+  PRODUCTION_REGISTRY: $STAGING_REGISTRY
+  CONTAINER_TEST_IMAGE: ${STAGING_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_BUILD_REF_NAME}_${CI_BUILD_REF}
+  CONTAINER_RELEASE_IMAGE: ${STAGING_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_BUILD_REF_NAME}_${CI_BUILD_REF}
+  CONTAINER_LATEST_IMAGE: ${STAGING_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:latest
+
+before_script:
+  - echo $CONTAINER_TEST_IMAGE
+  - echo $CONTAINER_RELEASE_IMAGE
+  - echo $CONTAINER_LATEST_IMAGE
+
+# ##############################################################################
+# Task      : Build image, environment
+# Branch    : Master, Develop
+# ##############################################################################
+build::image:
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $STAGING_REGISTRY
+    - docker build --pull -t $CONTAINER_TEST_IMAGE .
+    - docker push $CONTAINER_TEST_IMAGE
+  only:
+    - develop
+    - master
+
+# ##############################################################################
+# Task      : Release image
+# Branch    : Master
+# ##############################################################################
+release::latest:
+  stage: release
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $STAGING_REGISTRY
+    - docker pull $CONTAINER_TEST_IMAGE
+    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_LATEST_IMAGE
+    - docker push $CONTAINER_LATEST_IMAGE
+  only:
+    - master
+
+# ##############################################################################
+# Task      : Deploy
+# Branch    : Develop, Master
+# ##############################################################################
+# Note(s)   :
+# - deploy::staging will be executed every success commit in 'develop' branch
+# - deploy::production will be executed every success commit in 'master' branch
+# ##############################################################################
+deploy::staging:
+  stage: deploy
+  image: cdrx/rancher-gitlab-deploy
+  script:
+    - upgrade --environment $DEPLOY_STAGING_ENVIRONMENT --stack $DEPLOY_STACK --service $DEPLOY_SERVICE --new-image $CONTAINER_TEST_IMAGE --finish-upgrade
+  environment:
+    name: staging
+  only:
+    - develop
+
+deploy::production:
+  stage: deploy
+  image: cdrx/rancher-gitlab-deploy
+  script:
+    - upgrade --environment $DEPLOY_PRODUCTION_ENVIRONMENT --stack $DEPLOY_STACK --service $DEPLOY_SERVICE --new-image $CONTAINER_LATEST_IMAGE --finish-upgrade
+  environment:
+    name: production
+  when: manual
+  only:
+    - master
