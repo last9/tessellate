@@ -5,8 +5,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/tsocial/tessellate/cert"
-	"github.com/tsocial/tessellate/server"
+	"gitlab.com/tsocial/sre/tessellate/cert"
+	"gitlab.com/tsocial/sre/tessellate/server"
 	"google.golang.org/grpc"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )

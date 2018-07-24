@@ -2,7 +2,7 @@ package storage
 
 import (
 	"github.com/hashicorp/consul/api"
-	"github.com/tsocial/tessellate/storage/types"
+	"gitlab.com/tsocial/sre/tessellate/storage/types"
 )
 
 type Storer interface {

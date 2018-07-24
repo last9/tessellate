@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/tsocial/tessellate/server"
+	"gitlab.com/tsocial/sre/tessellate/server"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 

@@ -8,8 +8,8 @@ import (
 
 	"github.com/meson10/highbrow"
 	"github.com/pkg/errors"
-	"github.com/tsocial/tessellate/dispatcher"
-	"github.com/tsocial/tessellate/storage/types"
+	"gitlab.com/tsocial/sre/tessellate/dispatcher"
+	"gitlab.com/tsocial/sre/tessellate/storage/types"
 )
 
 const (

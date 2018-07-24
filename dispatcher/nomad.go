@@ -5,7 +5,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
-	"github.com/tsocial/tessellate/tmpl"
+	"gitlab.com/tsocial/sre/tessellate/tmpl"
 )
 
 type client struct {

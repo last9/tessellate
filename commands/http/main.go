@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	gw "github.com/tsocial/tessellate/server"
+	gw "gitlab.com/tsocial/sre/tessellate/server"
 )
 
 const Version = "0.0.1"

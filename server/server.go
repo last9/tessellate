@@ -1,6 +1,6 @@
 package server
 
-import "github.com/tsocial/tessellate/storage"
+import "gitlab.com/tsocial/sre/tessellate/storage"
 
 type Server struct {
 	store storage.Storer

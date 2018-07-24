@@ -37,19 +37,19 @@ http_build:
 		--grpc-gateway_out=logtostderr=true:${GOPATH}/src \
 		proto/tessellate.proto
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_http -a -installsuffix cgo \
-		github.com/tsocial/tessellate/commands/http
+		gitlab.com/tsocial/sre/tessellate/commands/http
 
 worker_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_worker -a -installsuffix cgo \
-		github.com/tsocial/tessellate/commands/worker
+		gitlab.com/tsocial/sre/tessellate/commands/worker
 
 tessellate_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
-		cgo github.com/tsocial/tessellate/
+		cgo gitlab.com/tsocial/sre/tessellate/
 
 cli_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
-		cgo github.com/tsocial/tessellate/commands/cli
+		cgo github.com/tsocial/sre/tessellate/commands/cli
 
 tessellate: build_deps tessellate_build
 worker: build_deps worker_build

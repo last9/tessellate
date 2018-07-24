@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/tsocial/tessellate/storage/consul"
-	"github.com/tsocial/tessellate/storage/types"
-	"github.com/tsocial/tessellate/utils"
+	"gitlab.com/tsocial/sre/tessellate/storage/consul"
+	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"gitlab.com/tsocial/sre/tessellate/utils"
 )
 
 // Deletes all the keys in the prefix / on Consul.

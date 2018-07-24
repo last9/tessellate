@@ -10,7 +10,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
-	"github.com/tsocial/tessellate/tmpl"
+	"gitlab.com/tsocial/sre/tessellate/tmpl"
 )
 
 const (

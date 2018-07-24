@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/tsocial/tessellate/server"
+	"gitlab.com/tsocial/sre/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -127,7 +127,7 @@ func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
 		Vars:        vars,
-		Dry:         false,
+		Dry:         cm.dry,
 	}
 
 	resp, err := getClient().ApplyLayout(context.Background(), req)
