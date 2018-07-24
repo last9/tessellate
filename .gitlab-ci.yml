@@ -19,6 +19,7 @@ variables:
 # repository in /go/src/gitlab.com/namespace/project
 # Thus, making a symbolic link corrects this.
 before_script:
+    - apk --update unzip
     - curl -fSL "https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip" -o terraform.zip
     - unzip terraform.zip -d /opt/terraform
     - ln -s /opt/terraform/terraform /usr/bin/terraform
