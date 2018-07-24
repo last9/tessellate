@@ -1,92 +1,48 @@
-# ##############################################################################
-# Signed-off-by: Franheit Sangapta M <franheit.sangapta@gmail.com>
-# ##############################################################################
-# Changes since version before:
-#  * completed environment variables for Gitlab than using static link to the repo
-#  * separete jobs based on functionality: build image, test, release, and deploy (manual and auto)
-#  * separate jobs based on branch's environment:
-#   - slug        : any supporting branch,
-#   - dev         : any branches to test,
-#   - staging     : develop branch
-#   - production  : master branch
-#  * deployment uses Stackahoy feature as a hook to remote server
-# ##############################################################################
-
-image: docker:17.04
+# This file is a template, and might need editing before it works on your project.
+image: golang:1.10
 
 services:
-  - docker:dind
+    - docker
 
 stages:
-  - build
-  - release
-  - deploy
-
+    - test
+    - build
+    
 variables:
-  STAGING_REGISTRY: "registry.gitlab.com"
-  PRODUCTION_REGISTRY: $STAGING_REGISTRY
-  CONTAINER_TEST_IMAGE: ${STAGING_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_BUILD_REF_NAME}_${CI_BUILD_REF}
-  CONTAINER_RELEASE_IMAGE: ${STAGING_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_BUILD_REF_NAME}_${CI_BUILD_REF}
-  CONTAINER_LATEST_IMAGE: ${STAGING_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:latest
+  # Please edit to your GitLab project
+  REPO_NAME: gitlab.com/tsocial/sre/tessellate
 
+# The problem is that to be able to use go get, one needs to put
+# the repository in the $GOPATH. So for example if your gitlab domain
+# is gitlab.com, and that your repository is namespace/project, and
+# the default GOPATH being /go, then you'd need to have your
+# repository in /go/src/gitlab.com/namespace/project
+# Thus, making a symbolic link corrects this.
 before_script:
-  - echo $CONTAINER_TEST_IMAGE
-  - echo $CONTAINER_RELEASE_IMAGE
-  - echo $CONTAINER_LATEST_IMAGE
+    - curl -fSL "https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip" -o terraform.zip
+    - sudo unzip terraform.zip -d /opt/terraform
+    - sudo ln -s /opt/terraform/terraform /usr/bin/terraform
+    - rm -f terraform.zip
+    - make protodep
+    - export PROTO_VERSION=3.5.1
+    - export PATH="/tmp/proto/${PROTO_VERSION}/bin/":$PATH
+    - make build_deps
+    - docker-compose -f docker-compose.yaml up -d consul
 
-# ##############################################################################
-# Task      : Build image, environment
-# Branch    : Master, Develop
-# ##############################################################################
-build::image:
-  stage: build
-  script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $STAGING_REGISTRY
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
-  only:
-    - develop
-    - master
+stages:
+    - test
+    - build
 
-# ##############################################################################
-# Task      : Release image
-# Branch    : Master
-# ##############################################################################
-release::latest:
-  stage: release
-  script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $STAGING_REGISTRY
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_LATEST_IMAGE
-    - docker push $CONTAINER_LATEST_IMAGE
-  only:
-    - master
-
-# ##############################################################################
-# Task      : Deploy
-# Branch    : Develop, Master
-# ##############################################################################
-# Note(s)   :
-# - deploy::staging will be executed every success commit in 'develop' branch
-# - deploy::production will be executed every success commit in 'master' branch
-# ##############################################################################
-deploy::staging:
-  stage: deploy
-  image: cdrx/rancher-gitlab-deploy
-  script:
-    - upgrade --environment $DEPLOY_STAGING_ENVIRONMENT --stack $DEPLOY_STACK --service $DEPLOY_SERVICE --new-image $CONTAINER_TEST_IMAGE --finish-upgrade
-  environment:
-    name: staging
-  only:
-    - develop
-
-deploy::production:
-  stage: deploy
-  image: cdrx/rancher-gitlab-deploy
-  script:
-    - upgrade --environment $DEPLOY_PRODUCTION_ENVIRONMENT --stack $DEPLOY_STACK --service $DEPLOY_SERVICE --new-image $CONTAINER_LATEST_IMAGE --finish-upgrade
-  environment:
-    name: production
-  when: manual
-  only:
-    - master
+unit_test:
+    stage: test
+    script:
+        - make test
+    
+build:
+    stage: build
+    script:
+        - make worker_build
+        - make http_build
+        - make cli_build
+        - make tessellate_build
+        - make build_images
