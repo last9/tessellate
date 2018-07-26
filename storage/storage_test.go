@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStorer(t *testing.T) {
-	store := consul.MakeConsulStore("127.0.0.1:8500")
+	store := consul.MakeConsulStore("consul:8500")
 	store.Setup()
 
 	t.Run("Lock tests", func(t *testing.T) {
