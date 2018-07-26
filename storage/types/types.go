@@ -4,8 +4,6 @@ import (
 	"path"
 
 	"encoding/json"
-
-	"github.com/satori/go.uuid"
 )
 
 const (
