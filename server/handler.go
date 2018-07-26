@@ -6,19 +6,20 @@ import (
 
 	"fmt"
 
+	"log"
+	"regexp"
+
 	"github.com/meson10/highbrow"
 	"github.com/pkg/errors"
 	"gitlab.com/tsocial/sre/tessellate/dispatcher"
 	"gitlab.com/tsocial/sre/tessellate/storage/types"
-	"log"
-	"regexp"
 )
 
 const (
-	RETRY = 5
+	retry = 5
 )
 
-// Save Workspace under workspaces/ .
+// SaveWorkspace under workspaces/ .
 func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
@@ -35,9 +36,9 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 
 	vars := types.Vars{}
 
-	if in.Vars != nil {
+	if in.Providers != nil {
 		// Create vars instance.
-		if err := vars.Unmarshal(in.Vars); err != nil {
+		if err := vars.Unmarshal(in.Providers); err != nil {
 			return nil, err
 		}
 	}
@@ -50,7 +51,7 @@ func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*
 	return &Ok{}, nil
 }
 
-// Get workspace for the mentioned Workspace ID.
+// GetWorkspace for the mentioned Workspace ID.
 func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Workspace, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
@@ -84,25 +85,10 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 	return &w, err
 }
 
-// Saves the layout under the mentioned workspace ID.
+// SaveLayout under the mentioned workspace ID.
 func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
-	}
-
-	// Marshal vars for layout.
-	vars := types.Vars{}
-	if len(in.Vars) > 0 {
-		if err := vars.Unmarshal(in.Vars); err != nil {
-			return nil, err
-		}
-	}
-	// Make tree for layout inside the workspace.
-	lTree := types.MakeTree(in.WorkspaceId, in.Id)
-
-	// Save vars in the layout tree.
-	if err := s.store.Save(&vars, lTree); err != nil {
-		return nil, err
 	}
 
 	// Make tree for workspace ID dir.
@@ -114,12 +100,20 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 		return nil, err
 	}
 
-	for k, _ := range p {
+	for k := range p {
 		var validExt = regexp.MustCompile(`.*.tf.json`)
-
-		if validExt.MatchString(k) == false {
-			return nil, errors.New("Invalid extension.")
+		if !validExt.MatchString(k) {
+			return nil, errors.New("invalid extension")
 		}
+	}
+
+	wVars := &types.Vars{}
+	s.store.Get(wVars, tree)
+
+	// Check if this workspace supports providers by default.
+	// If a workspace already supplies provider, then you must supply an Alias.
+	if err := providerConflict(p, wVars); err != nil {
+		return nil, errors.Wrap(err, "Provider conflict")
 	}
 
 	// Create layout instance to be saved for given ID and plan.
@@ -133,7 +127,7 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 	return &Ok{}, nil
 }
 
-// GET layout for given layout ID.
+// GetLayout for given layout ID.
 func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
@@ -141,7 +135,6 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 
 	// Make workspace and layout trees.
 	wTree := types.MakeTree(in.WorkspaceId)
-	tree := types.MakeTree(in.WorkspaceId, in.Id)
 	layout := types.Layout{Id: in.Id}
 
 	// GET the layout from the workspace tree.
@@ -149,15 +142,8 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		return nil, err
 	}
 
-	// GET the vars from the layout tree.
-	vars := types.Vars{}
-	if err := s.store.Get(&vars, tree); err != nil {
-		return nil, err
-	}
-
 	// Marshal plan and vars.
 	pBytes, _ := json.Marshal(layout.Plan)
-	vBytes, _ := vars.Marshal()
 
 	// Return the layout instance.
 	lay := Layout{
@@ -165,7 +151,6 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 		Id:          layout.Id,
 		Status:      Status(layout.Status),
 		Plan:        pBytes,
-		Vars:        vBytes,
 	}
 
 	return &lay, nil
@@ -225,7 +210,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	// Lock for workspace and layout.
 	key := fmt.Sprintf("%v-%v", wID, lID)
 
-	if err := highbrow.Try(RETRY, func() error {
+	if err := highbrow.Try(retry, func() error {
 		return s.store.Lock(key, job.Id)
 	}); err != nil {
 		return nil, err
@@ -234,7 +219,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	return job, dispatcher.Get().Dispatch(j.Id, wID, j.LayoutId)
 }
 
-// Apply layout job.
+// ApplyLayout job.
 func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobStatus, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
@@ -243,7 +228,7 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry)
 }
 
-// Destroy layout job.
+// DestroyLayout job.
 func (s *Server) DestroyLayout(ctx context.Context, in *DestroyLayoutRequest) (*JobStatus, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
@@ -252,7 +237,7 @@ func (s *Server) DestroyLayout(ctx context.Context, in *DestroyLayoutRequest) (*
 	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_DESTROY), in.Vars, false)
 }
 
-// Abort job.
+// AbortJob to halt.
 func (s *Server) AbortJob(ctx context.Context, in *JobRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
@@ -261,7 +246,7 @@ func (s *Server) AbortJob(ctx context.Context, in *JobRequest) (*Ok, error) {
 	return nil, nil
 }
 
-// Start watch.
+// StartWatch to listen to state changes on a Layout
 func (s *Server) StartWatch(ctx context.Context, in *StartWatchRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())

@@ -101,6 +101,21 @@ func main() {
 		return
 	}
 
+	// Get Workspace Vars
+	var wv types.Vars
+	if err := store.Get(&wv, t); err != nil {
+		log.Println(err)
+		if !strings.Contains(err.Error(), "Missing") {
+			status = 127
+			return
+		}
+	}
+
+	if err := padLayoutWithProvider(l.Plan, wv); err != nil {
+		status = 127
+		return
+	}
+
 	// Get Vars
 	var v types.Vars
 	t2 := types.MakeTree(*workspaceID, j.LayoutId)

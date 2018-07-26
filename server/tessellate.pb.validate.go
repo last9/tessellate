@@ -140,9 +140,7 @@ func (m *Layouts) Validate() error {
 	for idx, item := range m.GetLayouts() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface {
-			Validate() error
-		}); ok {
+		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return LayoutsValidationError{
 					Field:  fmt.Sprintf("Layouts[%v]", idx),
@@ -201,8 +199,6 @@ func (m *Layout) Validate() error {
 
 	// no validation rules for Plan
 
-	// no validation rules for Vars
-
 	// no validation rules for Status
 
 	return nil
@@ -254,7 +250,7 @@ func (m *SaveWorkspaceRequest) Validate() error {
 		}
 	}
 
-	// no validation rules for Vars
+	// no validation rules for Providers
 
 	return nil
 }
@@ -595,8 +591,6 @@ func (m *SaveLayoutRequest) Validate() error {
 	}
 
 	// no validation rules for Plan
-
-	// no validation rules for Vars
 
 	return nil
 }

@@ -41,12 +41,9 @@ func TestServer_SaveAndGetWorkspace(t *testing.T) {
 
 	t.Run("Should save a workspace.", func(t *testing.T) {
 		req := &SaveWorkspaceRequest{Id: id}
-		resp, err := server.SaveWorkspace(context.Background(), req)
-
-		if err != nil {
+		if _, err := server.SaveWorkspace(context.Background(), req); err != nil {
 			errors.Wrap(err, Errors_INVALID_VALUE.String())
 		}
-		fmt.Print(resp.String())
 	})
 
 	t.Run("Should get the same workspace that was created.", func(t *testing.T) {
@@ -85,7 +82,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	vBytes = uglyJson(vBytes)
 
 	t.Run("Should create a layout in the workspace", func(t *testing.T) {
-		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Vars: vBytes}
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes}
 		resp, err := server.SaveLayout(context.Background(), req)
 
 		if err != nil {
@@ -93,6 +90,53 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		}
 
 		assert.Equal(t, resp, &Ok{})
+	})
+
+	t.Run("Layout with provider conflict without worksapce should not error", func(t *testing.T) {
+		id := fmt.Sprintf("workspace-conflict")
+		wreq := &SaveWorkspaceRequest{Id: id}
+		if _, err := server.SaveWorkspace(context.Background(), wreq); err != nil {
+			errors.Wrap(err, Errors_INVALID_VALUE.String())
+		}
+
+		plan2 := map[string]json.RawMessage{}
+		fBytes, err := ioutil.ReadFile("./testdata/file.tf.json")
+		if err != nil {
+			t.Error(err)
+		}
+
+		plan2["file.tf.json"] = uglyJson(fBytes)
+		pBytes, _ := json.Marshal(plan2)
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: id, Plan: pBytes}
+
+		if _, err = server.SaveLayout(context.Background(), req); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Layout with provider conflict without worksapce should nerror", func(t *testing.T) {
+		id := fmt.Sprintf("workspace-conflict")
+		wv := &types.Vars{"aws": nil}
+		wvars, _ := json.Marshal(wv)
+		wreq := &SaveWorkspaceRequest{Id: id, Providers: wvars}
+		if _, err := server.SaveWorkspace(context.Background(), wreq); err != nil {
+			errors.Wrap(err, Errors_INVALID_VALUE.String())
+		}
+
+		plan2 := map[string]json.RawMessage{}
+		fBytes, err := ioutil.ReadFile("./testdata/file.tf.json")
+		if err != nil {
+			t.Error(err)
+		}
+
+		plan2["file.tf.json"] = uglyJson(fBytes)
+		pBytes, _ := json.Marshal(plan2)
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: id, Plan: pBytes}
+
+		_, err = server.SaveLayout(context.Background(), req)
+		if err == nil {
+			t.Fatal("Should have complained about a conflicting Provider")
+		}
 	})
 
 	t.Run("Should get the layout that was created", func(t *testing.T) {
@@ -107,8 +151,6 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, resp.Status, Status_INACTIVE)
 		assert.Equal(t, resp.Workspaceid, workspaceId)
 		assert.Equal(t, resp.Plan, pBytes)
-
-		assert.Equal(t, resp.Vars, vBytes)
 	})
 
 	t.Run("Should save a watch", func(t *testing.T) {

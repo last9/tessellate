@@ -100,13 +100,12 @@ message Layout {
   string Workspaceid = 1;
   string Id = 2;
   bytes Plan = 3;
-  bytes Vars = 4;
   Status Status = 5;
 }
 
 message SaveWorkspaceRequest {
   string Id = 1 [(validate.rules).string.min_len = 1];
-  bytes Vars = 2;
+  bytes Providers = 2;
 }
 
 message GetWorkspaceLayoutsRequest {
@@ -139,7 +138,6 @@ message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
   bytes Plan = 3;
-  bytes Vars = 4;
 }
 
 message SetLayoutStatusRequest {
