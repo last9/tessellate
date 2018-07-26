@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/tsocial/sre/tessellate/dispatcher"
 	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"log"
 	"regexp"
 )
 
@@ -178,6 +179,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 
 	// GET versions of the layout.
 	versions, err := s.store.GetVersions(&lyt, tree)
+	log.Print(versions)
 	if err != nil {
 		return nil, err
 	}
