@@ -32,7 +32,7 @@ before_script:
 
     - make build_deps
 
-    - sudo docker-compose -f docker-compose.yaml up -d consul
+    - docker-compose -f docker-compose.yaml up -d consul
 
 stages:
     - test
