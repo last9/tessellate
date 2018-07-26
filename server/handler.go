@@ -296,3 +296,8 @@ func (s *Server) saveWatch(wID, lID, success, failure string) (*Ok, error) {
 
 	return &Ok{}, nil
 }
+
+func (s *Server) Internal_UnlockDead(ctx context.Context, in *UnlockDeadRequest) (*Ok, error) {
+
+	return &Ok{}, nil
+}
