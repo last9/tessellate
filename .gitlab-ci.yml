@@ -1,9 +1,15 @@
 # This file is a template, and might need editing before it works on your project.
+<<<<<<< HEAD
 image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:develop_a6155bd98b1629873045b24abcb3f5f59b3d9ed0
+=======
+image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:latest
+>>>>>>> fe25fd140b3f27eb95e74581fbcc14e92a75b112
 
 services:
-    - docker:dind
-    
+    - name: docker:dind
+      privileged: true
+    - name: consul:1.2.0
+
 variables:
   # Please edit to your GitLab project
   REPO_NAME: gitlab.com/tsocial/sre/tessellate
@@ -30,14 +36,19 @@ before_script:
     - cp -R /builds/tsocial/sre/tessellate $GOPATH/src/gitlab.com/tsocial/sre
     - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
 
+<<<<<<< HEAD
     - make build_deps
 
     # - usermod -aG docker ${USER}
     - docker-compose -f docker-compose.yaml up -d consul
+=======
+    # - make build_deps
+>>>>>>> fe25fd140b3f27eb95e74581fbcc14e92a75b112
 
 stages:
     - test
     - build
+    # - deploy
 
 test::unit_test:
     stage: test
@@ -48,10 +59,16 @@ test::unit_test:
 build:
     stage: build
     script:
-        - cd $GOPATH/src/gitlab.com/tsocial/sre/tesselate
+        - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
         - make worker_build
         - make http_build
         - make cli_build
         - make tessellate_build
         - make build_images
         
+#deploy:
+#    stage: deploy
+#    script:
+#        - make upload_images
+#    only:
+#        - master

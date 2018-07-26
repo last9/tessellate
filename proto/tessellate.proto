@@ -49,6 +49,8 @@ service Tessellate {
 
   rpc StartWatch (StartWatchRequest) returns (Ok) {}
   rpc StopWatch (StopWatchRequest) returns (Ok) {}
+
+  rpc Internal_UnlockDead(UnlockDeadRequest) returns (Ok) {}
 }
 
 enum Errors {
@@ -169,4 +171,8 @@ message StartWatchRequest {
 message StopWatchRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message UnlockDeadRequest {
+  string Token = 1 [(validate.rules).string.min_len = 1];
 }
