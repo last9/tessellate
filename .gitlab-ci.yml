@@ -34,8 +34,9 @@ before_script:
     - ls /builds/tsocial/sre/tessellate
 
     # - ln -s /builds/tsocial/sre/tessellate $GOPATH/src
-    - cp -R /builds/tsocial/sre/tessellate $GOPATH/src
-    - cd $GOPATH//src/tessellate
+    - mkdir -p $GOPATH/src/gitlab.com/tsocial/sre
+    - cp -R /builds/tsocial/sre/tessellate $GOPATH/src/gitlab.com/tsocial/sre
+    - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
 
 
     # - cp -R . $GOPATH/src/tessellate
@@ -54,13 +55,13 @@ stages:
 test::unit_test:
     stage: test
     script:
-        - cd $GOPATH/src/tessellate
+        - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
         - make test
     
 build:
     stage: build
     script:
-        - cd $GOPATH/src/tesselate
+        - cd $GOPATH/src/gitlab.com/tsocial/sre/tesselate
         - make worker_build
         - make http_build
         - make cli_build
