@@ -76,4 +76,6 @@ upload_server: docker_login
 upload_images: upload_worker upload_server
 
 docker_login:
-	echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin
+	echo "$(DOCKER_PASSWORD)" | docker login registry.gitlab.com -u "$(DOCKER_USERNAME)" --password-stdin
+
+
