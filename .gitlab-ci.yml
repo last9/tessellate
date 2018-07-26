@@ -9,7 +9,7 @@ services:
 stages:
     - test
     - build
-    # - release
+    - release
     # - deploy
 
 variables:
