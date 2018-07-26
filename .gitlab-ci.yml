@@ -1,5 +1,5 @@
 # This file is a template, and might need editing before it works on your project.
-image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:develop_109298fe900316ae48658a1cb16a242ac14fbf64
+image: docker:latest
 
 services:
     - docker:dind
@@ -32,6 +32,8 @@ before_script:
 
     - make build_deps
 
+    - apk add --no-cache py-pip      # <--
+    - pip install docker-compose
     - docker-compose -f docker-compose.yaml up -d consul
 
 stages:
