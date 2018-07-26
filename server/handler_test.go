@@ -5,17 +5,16 @@ import (
 	"os"
 	"testing"
 
-	"gitlab.com/tsocial/sre/tessellate/storage"
-	"gitlab.com/tsocial/sre/tessellate/storage/consul"
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
-
 	"context"
 	"fmt"
+	"gitlab.com/tsocial/sre/tessellate/storage"
+	"gitlab.com/tsocial/sre/tessellate/storage/consul"
 	"io/ioutil"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/tsocial/sre/tessellate/dispatcher"
+	"gitlab.com/tsocial/sre/tessellate/storage/types"
 	"gitlab.com/tsocial/sre/tessellate/utils"
 )
 
@@ -75,7 +74,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		t.Error(err)
 	}
 
-	plan["sleep"] = uglyJson(lBytes)
+	plan["sleep.tf.json"] = uglyJson(lBytes)
 
 	vBytes, err := ioutil.ReadFile("../tmpl/testdata/vars.json")
 	if err != nil {
