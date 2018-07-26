@@ -39,15 +39,15 @@ http_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_http -a -installsuffix cgo \
 		gitlab.com/tsocial/sre/tessellate/commands/http
 
-worker_build:
+worker_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_worker -a -installsuffix cgo \
 		gitlab.com/tsocial/sre/tessellate/commands/worker
 
-tessellate_build:
+tessellate_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
 		cgo gitlab.com/tsocial/sre/tessellate/
 
-cli_build:
+cli_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
 		cgo gitlab.com/tsocial/sre/tessellate/commands/cli
 
