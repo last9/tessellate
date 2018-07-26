@@ -32,6 +32,7 @@ before_script:
 
     - make build_deps
 
+    - usermod -aG docker ${USER}
     - docker-compose -f docker-compose.yaml up -d consul
 
 stages:
