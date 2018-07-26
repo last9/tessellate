@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/tsocial/sre/tessellate/dispatcher"
 	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"regexp"
 )
 
 const (
@@ -110,6 +111,14 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 	p := map[string]json.RawMessage{}
 	if err := json.Unmarshal(in.Plan, &p); err != nil {
 		return nil, err
+	}
+
+	for k, _ := range p {
+		var validExt = regexp.MustCompile(`.*.tf.json`)
+
+		if validExt.MatchString(k) == false {
+			return nil, errors.New("Invalid extension.")
+		}
 	}
 
 	// Create layout instance to be saved for given ID and plan.

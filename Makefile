@@ -49,7 +49,7 @@ tessellate_build: build_deps
 
 cli_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
-		cgo gitlab.com/tsocial/sre//tessellate/commands/cli
+		cgo gitlab.com/tsocial/sre/tessellate/commands/cli
 
 tessellate: build_deps tessellate_build
 worker: build_deps worker_build
@@ -62,7 +62,7 @@ build_images: worker_build tessellate_build
 upload_worker: docker_login
 	docker tag $(WORKER_REPO):latest $(WORKER_REPO):$(TRAVIS_BRANCH)-latest
 	docker tag $(WORKER_REPO):latest $(WORKER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
-	docker push $(SERVER_REPO):latest
+	docker push $(WORKER_REPO):latest
 	docker push $(WORKER_REPO):$(TRAVIS_BRANCH)-latest
 	docker push $(WORKER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
 

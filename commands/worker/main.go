@@ -16,6 +16,7 @@ import (
 
 	"github.com/meson10/highbrow"
 	"github.com/meson10/pester"
+	"github.com/pkg/errors"
 	"gitlab.com/tsocial/sre/tessellate/runner"
 	"gitlab.com/tsocial/sre/tessellate/storage/consul"
 	"gitlab.com/tsocial/sre/tessellate/storage/types"
@@ -144,12 +145,20 @@ func main() {
 	if url != "" {
 		endState, _ := store.GetKey(remotePath)
 		body := struct {
-			OldState []byte `json:"old_state"`
-			NewState []byte `json:"new_state"`
-		}{OldState: startState, NewState: endState}
+			OldState interface{} `json:"old_state"`
+			NewState interface{} `json:"new_state"`
+		}{}
 
-		b, _ := json.Marshal(body)
-		if req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b)); err != nil {
+		if err := json.Unmarshal(startState, &body.OldState); err != nil {
+			errors.Wrap(err, "Cannot unmarshal")
+		}
+
+		if err := json.Unmarshal(endState, &body.NewState); err != nil {
+			errors.Wrap(err, "Cannot unmarshal")
+		}
+
+		bfinal, _ := json.Marshal(body)
+		if req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(bfinal)); err != nil {
 			log.Println(err)
 		} else {
 			makeCall(req)
