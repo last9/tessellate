@@ -6,7 +6,7 @@ services:
     
 variables:
   # Please edit to your GitLab project
-#   REPO_NAME: gitlab.com/tsocial/sre/tessellate
+  REPO_NAME: gitlab.com/tsocial/sre/tessellate
 
 # The problem is that to be able to use go get, one needs to put
 # the repository in the $GOPATH. So for example if your gitlab domain
