@@ -16,13 +16,6 @@ variables:
 # Thus, making a symbolic link corrects this.
 
 before_script:
-
-    # - apk add --update unzip
-    # - curl -fSL "https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip" -o terraform.zip
-    # - mkdir -p /opt/terraform && unzip terraform.zip -d /opt/terraform
-    # - ln -s /opt/terraform/terraform /usr/bin/terraform
-    # - rm -f terraform.zip
-
     - make protodep
     - export PROTO_VERSION=3.5.1
     - export PATH="/tmp/proto/${PROTO_VERSION}/bin/":$PATH
@@ -33,19 +26,13 @@ before_script:
     - echo $GOPATH
     - ls /builds/tsocial/sre/tessellate
 
-    # - ln -s /builds/tsocial/sre/tessellate $GOPATH/src
-    - cp -R /builds/tsocial/sre/tessellate $GOPATH/src
-    - cd $GOPATH//src/tessellate
-
-
-    # - cp -R . $GOPATH/src/tessellate
-    # - ls -al $GOPATH/src
+    - mkdir -p $GOPATH/src/gitlab.com/tsocial/sre
+    - cp -R /builds/tsocial/sre/tessellate $GOPATH/src/gitlab.com/tsocial/sre
+    - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
 
     - make build_deps
 
-    # - cd /builds/tsocial/sre/tessellate
-    # - docker-compose -f docker-compose.yaml up -d consul
-
+    - docker-compose -f docker-compose.yaml up -d consul
 
 stages:
     - test
@@ -54,13 +41,13 @@ stages:
 test::unit_test:
     stage: test
     script:
-        - cd $GOPATH/src/tessellate
+        - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
         - make test
     
 build:
     stage: build
     script:
-        - cd $GOPATH/src/tesselate
+        - cd $GOPATH/src/gitlab.com/tsocial/sre/tesselate
         - make worker_build
         - make http_build
         - make cli_build
