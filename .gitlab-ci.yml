@@ -1,6 +1,5 @@
 # This file is a template, and might need editing before it works on your project.
-image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:develop_447dd6407ef7df76cb63160bc77dca098a2b21b0 # docker:17.04
-
+image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:develop_4fd5c13f9af5f67cd7e72ffd186175604bf71b8e
 services:
     - docker:dind
     
