@@ -56,6 +56,10 @@ cli_build: build_deps
 		cgo gitlab.com/tsocial/sre/tessellate/commands/cli
 
 tessellate: build_deps tessellate_build
+
+start_server: tessellate
+	nohup ./tessellate --support-version 1 &
+
 worker: build_deps worker_build
 http: build_deps http_build
 
