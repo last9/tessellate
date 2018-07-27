@@ -6,10 +6,10 @@ import (
 	"net"
 
 	"gitlab.com/tsocial/sre/tessellate/dispatcher"
-	server "gitlab.com/tsocial/sre/tessellate/server"
+	"gitlab.com/tsocial/sre/tessellate/server"
 	"gitlab.com/tsocial/sre/tessellate/storage/consul"
 	"google.golang.org/grpc/reflection"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const Version = "0.0.1"
@@ -29,7 +29,7 @@ var (
 	workerMemory = kingpin.Flag("worker-memory", "Worker Memory limit in MB").Envar("WORKER_MEMORY").
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
-			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
+			OverrideDefaultFromEnvar("CONSUL").String()
 )
 
 func main() {
