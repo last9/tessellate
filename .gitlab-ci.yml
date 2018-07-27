@@ -3,7 +3,6 @@ image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:latest
 
 services:
     - name: docker:dind
-      privileged: true
     - name: consul:1.2.0
 
 stages:
