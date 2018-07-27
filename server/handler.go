@@ -17,6 +17,7 @@ import (
 
 const (
 	retry = 5
+	EXT   = ".tf.json"
 )
 
 // SaveWorkspace under workspaces/ .
@@ -85,6 +86,14 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 	return &w, err
 }
 
+func checkExt(filename string) (bool, error) {
+	var validExt = regexp.MustCompile(`.*` + EXT)
+	if !validExt.MatchString(filename) {
+		return false, errors.New("invalid extension")
+	}
+	return true, nil
+}
+
 // SaveLayout under the mentioned workspace ID.
 func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
@@ -100,10 +109,13 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 		return nil, err
 	}
 
+	// Check the extension of the file, and raise an error if the ext is not tf.json.
+	var err error
+
 	for k := range p {
-		var validExt = regexp.MustCompile(`.*.tf.json`)
-		if !validExt.MatchString(k) {
-			return nil, errors.New("invalid extension")
+		_, err = checkExt(k)
+		if err != nil {
+			return nil, err
 		}
 	}
 

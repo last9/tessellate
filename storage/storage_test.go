@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStorer(t *testing.T) {
-	store := consul.MakeConsulStore("consul:8500")
+	store := consul.MakeConsulStore(os.Getenv("CONSUL"))
 	store.Setup()
 
 	t.Run("Lock tests", func(t *testing.T) {
