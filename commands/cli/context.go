@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"google.golang.org/grpc/metadata"
-	"log"
 )
 
 func makeContext(ctx context.Context) context.Context {
@@ -16,6 +15,5 @@ func makeContext(ctx context.Context) context.Context {
 
 	// First Request
 	// ctx := metadata.AppendToOutgoingContext(context.Background(), "version", version)
-	log.Printf("Context: %+v", ctx)
 	return ctx
 }

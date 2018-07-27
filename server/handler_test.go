@@ -231,13 +231,13 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	})
 
 	t.Run("Should allow unlocking a Layout", func(t *testing.T) {
-		if err := store.Unlock(lockKey, "job-id"); err != nil {
+		if err := store.Unlock(lockKey); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Unlocking is Idempotent", func(t *testing.T) {
-		if err := store.Unlock(lockKey, "job-id"); err != nil {
+		if err := store.Unlock(lockKey); err != nil {
 			t.Fatal(err)
 		}
 	})

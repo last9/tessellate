@@ -10,11 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"fmt"
-
 	"os"
 
-	"github.com/meson10/highbrow"
 	"github.com/meson10/pester"
 	"github.com/pkg/errors"
 	"gitlab.com/tsocial/sre/tessellate/runner"
@@ -71,14 +68,6 @@ func main() {
 	status := 0
 
 	defer func() {
-		key := fmt.Sprintf("%v-%v", *workspaceID, *layoutID)
-
-		if err := highbrow.Try(3, func() error {
-			return store.Unlock(key, *jobID)
-		}); err != nil {
-			log.Printf("error while unlocking key: %s, err: %+v", key, err)
-		}
-
 		os.Exit(status)
 	}()
 

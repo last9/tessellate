@@ -196,10 +196,17 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		}
 	}
 
-	// GET the version for vars.
-	varsVersions, err := s.store.GetVersions(&v, layoutTree)
+	varsVersions, err := s.store.GetVersions(&v, tree)
 	if err != nil {
 		return nil, err
+	}
+
+	var vv string
+
+	if len(varsVersions) >= 2 {
+		vv = varsVersions[len(varsVersions)-2]
+	} else {
+		vv = ""
 	}
 
 	// Return the job instance for layout with latest version of vars and layout.
@@ -207,7 +214,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		LayoutId:      lID,
 		LayoutVersion: versions[len(versions)-2],
 		Status:        int32(JobState_PENDING),
-		VarsVersion:   varsVersions[len(varsVersions)-2],
+		VarsVersion:   vv,
 		Op:            op,
 		Dry:           dry,
 	}
@@ -290,11 +297,6 @@ func (s *Server) saveWatch(wID, lID, success, failure string) (*Ok, error) {
 	if err := s.store.Save(&watch, tree); err != nil {
 		return nil, err
 	}
-
-	return &Ok{}, nil
-}
-
-func (s *Server) Internal_UnlockDead(ctx context.Context, in *UnlockDeadRequest) (*Ok, error) {
 
 	return &Ok{}, nil
 }

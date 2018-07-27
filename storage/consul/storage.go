@@ -107,8 +107,6 @@ func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
 		return errors.Wrap(err, "Cannot Lock key")
 	}
 
-	defer lock.Unlock()
-
 	// Create a Tx Chain of Ops.
 	ops := api.KVTxnOps{
 		&api.KVTxnOp{
@@ -136,6 +134,8 @@ func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
 	}
 
 	source.SaveId(fmt.Sprintf("%v", ts))
+
+	lock.Unlock()
 	return nil
 }
 
@@ -173,7 +173,7 @@ func (e *ConsulStore) Lock(key, s string) error {
 	return nil
 }
 
-func (e *ConsulStore) Unlock(key, s string) error {
+func (e *ConsulStore) Unlock(key string) error {
 	key = path.Join("lock", key)
 	_, err := e.client.KV().Delete(key, nil)
 	if err != nil {
