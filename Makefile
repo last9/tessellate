@@ -28,7 +28,7 @@ proto: protodep
 build_deps: proto deps clean
 
 ifeq ($(strip $(CONSUL)),)
-CONSUL = "127.0.0.1"
+CONSUL = "127.0.0.1:8500"
 endif
 
 test: build_deps
