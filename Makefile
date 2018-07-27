@@ -31,7 +31,7 @@ ifeq ($(strip $(CONSUL)),)
 CONSUL = "127.0.0.1:8500"
 endif
 
-test: build_deps
+test: build_deps start_server
 	go test -v ./...
 
 http_build:
@@ -58,7 +58,7 @@ cli_build: build_deps
 tessellate: build_deps tessellate_build
 
 start_server: tessellate
-	nohup ./tessellate --support-version 1 &
+	nohup ./tessellate --support-version 1 >/dev/null &
 
 worker: build_deps worker_build
 http: build_deps http_build

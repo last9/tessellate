@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"log"
-	"strconv"
+	"strings"
 )
 
 func getVersionId(ctx context.Context) (string, error) {
@@ -16,6 +16,8 @@ func getVersionId(ctx context.Context) (string, error) {
 		panic(errors.New("Cannot get header metadata from context"))
 	}
 
+	log.Println("headers are")
+	log.Println(headers)
 	if headers["version"] != nil {
 		version := headers["version"][0]
 		return version, nil
@@ -26,20 +28,10 @@ func getVersionId(ctx context.Context) (string, error) {
 // Check the version of the client's binary.
 // Return false, if version is deprecated.
 func validateVersion(version, latestVersion string) bool {
-	ver, err := strconv.Atoi(version)
-	latest, err := strconv.Atoi(latestVersion)
-
-	if err != nil {
-		return false
-	}
-
-	if ver == latest  {
-		return true
-	}
-	return false
+	return strings.EqualFold(version, latestVersion)
 }
 
-func UnaryServerInterceptor(serverVersion string) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(supportVersion string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		// Get the version from the header.
 		version, err := getVersionId(ctx)
@@ -49,7 +41,7 @@ func UnaryServerInterceptor(serverVersion string) grpc.UnaryServerInterceptor {
 			log.Printf("Version not found.")
 			return nil, errors.New("You are using an older version of Tessellate. Download the new version from here.")
 		}
-		if !validateVersion(version, serverVersion) {
+		if !validateVersion(version, supportVersion) {
 			return nil, errors.New("You are using an older version of Tessellate. Download the new version from here.")
 		}
 

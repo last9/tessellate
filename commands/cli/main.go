@@ -5,11 +5,9 @@ import (
 	"os"
 	"sync"
 
-	"context"
 	"gitlab.com/tsocial/sre/tessellate/cert"
 	"gitlab.com/tsocial/sre/tessellate/server"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -23,9 +21,10 @@ var (
 )
 
 var once sync.Once
-var client server.TessellateClient
 
 func getClient() server.TessellateClient {
+	var client server.TessellateClient
+
 	once.Do(func() {
 
 		opts := []grpc.DialOption{}
@@ -45,10 +44,6 @@ func getClient() server.TessellateClient {
 		}
 
 		client = server.NewTessellateClient(conn)
-
-		// First Request
-		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", version)
-		log.Printf("Context: %+v", ctx)
 	})
 
 	return client
