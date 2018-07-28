@@ -47,6 +47,9 @@ worker_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_worker -a -installsuffix cgo \
 		gitlab.com/tsocial/sre/tessellate/commands/worker
 
+tessellate_build_linux:
+	go build -o tessellate gitlab.com/tsocial/sre/tessellate/
+
 tessellate_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
 		cgo gitlab.com/tsocial/sre/tessellate/
