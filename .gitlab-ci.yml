@@ -32,7 +32,7 @@ before_script:
     - echo $CONTAINER_TEST_IMAGE
     - echo $CONTAINER_RELEASE_IMAGE
     - echo $CONTAINER_LATEST_IMAGE
-    - apk update && apk add make
+    - apk update && apk add make coreutils
     - make protodep
     - export PROTO_VERSION=3.5.1
     - export PATH="/tmp/proto/${PROTO_VERSION}/bin/":$PATH
