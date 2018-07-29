@@ -1,6 +1,5 @@
 # This file is a template, and might need editing before it works on your project.
-image: docker:stable
-
+image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:latest
 
 services:
     - name: docker:dind
@@ -30,7 +29,6 @@ variables:
 
 before_script:
     # Debug container's infos in Gitlab
-    - apk add -U make bash
     - echo $CONTAINER_TEST_IMAGE
     - echo $CONTAINER_RELEASE_IMAGE
     - echo $CONTAINER_LATEST_IMAGE
