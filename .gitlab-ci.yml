@@ -30,6 +30,7 @@ variables:
 
 before_script:
     # Debug container's infos in Gitlab
+    - apk make bash
     - echo $CONTAINER_TEST_IMAGE
     - echo $CONTAINER_RELEASE_IMAGE
     - echo $CONTAINER_LATEST_IMAGE
