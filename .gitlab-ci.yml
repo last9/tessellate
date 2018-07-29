@@ -1,5 +1,6 @@
 # This file is a template, and might need editing before it works on your project.
-image: registry.gitlab.com/tsocial/docker-images/golang-pipeline-runner:latest
+image: docker:stable
+
 
 services:
     - name: docker:dind
