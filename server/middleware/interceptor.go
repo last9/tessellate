@@ -27,8 +27,8 @@ func getVersionId(ctx context.Context) (string, error) {
 
 // Check the version of the client's binary.
 // Return false, if version is deprecated.
-func validateVersion(cliVersion, latestVersion string) bool {
-	c := version.NewConstrainGroupFromString("<=" + latestVersion)
+func validateVersion(cliVersion, leastVersion string) bool {
+	c := version.NewConstrainGroupFromString(">=" + leastVersion)
 	return c.Match(cliVersion)
 }
 
