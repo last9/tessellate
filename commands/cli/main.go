@@ -21,10 +21,9 @@ var (
 )
 
 var once sync.Once
+var client server.TessellateClient
 
 func getClient() server.TessellateClient {
-	var client server.TessellateClient
-
 	once.Do(func() {
 
 		opts := []grpc.DialOption{}
