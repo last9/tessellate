@@ -59,4 +59,28 @@ func TestInterceptor_GetAndCheckVersion(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, resp, &Ok{})
 	})
+
+	t.Run("Boundary case: Should pass for the exact version support.", func(t *testing.T) {
+
+		opts := []grpc.DialOption{}
+
+		opts = append(opts, grpc.WithInsecure())
+
+		conn, err := grpc.Dial("127.0.0.1:9977", opts...)
+		if err != nil {
+			panic(err)
+		}
+
+		tClient = NewTessellateClient(conn)
+
+		// 1. Pass same versions.
+		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.4")
+		// log.Printf("Context: %+v", ctx)
+
+		resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "test"})
+
+		// 2. Assert for success.
+		assert.Nil(t, err)
+		assert.Equal(t, resp, &Ok{})
+	})
 }
