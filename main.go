@@ -29,7 +29,7 @@ var (
 	workerMemory = kingpin.Flag("worker-memory", "Worker Memory limit in MB").Envar("WORKER_MEMORY").
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
-			OverrideDefaultFromEnvar("CONSUL").String()
+			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
 )
 
 func main() {

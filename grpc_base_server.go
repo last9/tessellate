@@ -20,7 +20,7 @@ var (
 	rootCert = kingpin.Flag("root-cert", "Root Cert File").String()
 	certFile = kingpin.Flag("cert-file", "Cert File").String()
 	keyFile  = kingpin.Flag("key-file", "Key File").String()
-	support  = kingpin.Flag("support-version", "Client version supported by Tessellate.").String()
+	support  = kingpin.Flag("support-version", "Client's least supported version by Tessellate.").String()
 )
 
 func grpcServer() *grpc.Server {

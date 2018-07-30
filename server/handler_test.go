@@ -22,7 +22,7 @@ var store storage.Storer
 var server TessellateServer
 
 func TestMain(m *testing.M) {
-	store = consul.MakeConsulStore(os.Getenv("CONSUL"))
+	store = consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
 	store.Setup()
 
 	server = New(store)
