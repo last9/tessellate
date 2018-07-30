@@ -1,17 +1,17 @@
 package main
 
 import (
-		"log"
+	"log"
 	"strings"
+
+	"io/ioutil"
 
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"io/ioutil"
 )
 
 var wid *string
 var providerFilePath *string
-
 
 func workspaceAdd(_ *kingpin.ParseContext) error {
 	client := getClient()
