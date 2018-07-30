@@ -2,10 +2,11 @@ package dispatcher
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
 	"gitlab.com/tsocial/sre/tessellate/tmpl"
-	"log"
 )
 
 func (c *client) GetOrSetCleanup(s string) error {
@@ -26,18 +27,18 @@ func (c *client) GetOrSetCleanup(s string) error {
 	}
 
 	job, _, err := cl.Jobs().Info(s, nil)
-	//if job == nil || job.Status == "dead" {
-	log.Println(job)
-	if err := c.startCleanupJob(s); err != nil {
-		return err
+	// Replace the Job if not found OR existing Job was dead.
+	if job == nil || *job.Status == "dead" {
+		if err := c.startCleanupJob(s); err != nil {
+			return err
+		}
 	}
-	//}
 
 	return nil
 }
 
 func cleanupCmd(nomadHost, consulHost string) string {
-	return fmt.Sprintf(`curl -XGET http://%v/v1/kv/lock/?keys | jq -c '.[]' | tr -d '\"' | xargs -i bash -c 'echo {} > /tmp/job_id && curl -XGET %v/v1/kv/{}' | jq -c '.[] (.Value)' | tr -d '\"' | base64 --decode | xargs -i curl -XGET %v/v1/job/{} | jq 'select( .Status | contains(\"dead\"))' && curl -XDELETE http://%v/v1/kv/$(cat /tmp/job_id)`,
+	return fmt.Sprintf(`curl -XGET http://%v/v1/kv/lock/?keys | jq -c '.[]' | tr -d '\"' | xargs -i bash -c 'echo {} > /tmp/job_id && curl -XGET %v/v1/kv/{}' | jq -c '.[] | (.Value)' | tr -d '\"' | base64 --decode | xargs -i curl -XGET %v/v1/job/{} | jq 'select( .Status == \"dead\")' && curl -XDELETE http://%v/v1/kv/$(cat /tmp/job_id)`,
 		consulHost, consulHost, nomadHost, consulHost)
 }
 
@@ -49,20 +50,21 @@ job "{{ job_id }}" {
   type        = "batch"
 
   periodic {
-    cron             = "*/5 * * * * *"
+    cron             = "*/2 * * * * *"
     prohibit_overlap = true
   }
+
   group "{{ job_id }}" {
     count = 1
 
     task "cleanup_job" {
       driver = "raw_exec"
 
-	  config {
-	  	command = "%v"
-		args = []
+		config {
+			command = "bash"
+			args = ["-exc", "%v"]
       }
-      
+
       resources {
         cpu    = {{ cpu }}
         memory = {{ memory }}
