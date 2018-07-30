@@ -1,20 +1,33 @@
 package main
 
 import (
-	"log"
+		"log"
 	"strings"
 
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"io/ioutil"
 )
 
 var wid *string
+var providerFilePath *string
 
-func workspaceAdd(c *kingpin.ParseContext) error {
+
+func workspaceAdd(_ *kingpin.ParseContext) error {
+	client := getClient()
 	req := server.SaveWorkspaceRequest{Id: strings.ToLower(*wid)}
 
-	ctx := makeContext(nil)
-	if _, err := getClient().SaveWorkspace(ctx, &req); err != nil {
+	var err error
+	if *providerFilePath != "" {
+		req.Providers, err = ioutil.ReadFile(*providerFilePath)
+		if err != nil {
+			return err
+		}
+	} else {
+		log.Println("warning: no provider file given")
+	}
+
+	if _, err := client.SaveWorkspace(makeContext(nil), &req); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -22,11 +35,11 @@ func workspaceAdd(c *kingpin.ParseContext) error {
 	return nil
 }
 
-func workspaceGet(c *kingpin.ParseContext) error {
+func workspaceGet(_ *kingpin.ParseContext) error {
+	client := getClient()
 	req := server.GetWorkspaceRequest{Id: strings.ToLower(*wid)}
 
-	ctx := makeContext(nil)
-	w, err := getClient().GetWorkspace(ctx, &req)
+	w, err := client.GetWorkspace(makeContext(nil), &req)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -38,8 +51,9 @@ func workspaceGet(c *kingpin.ParseContext) error {
 
 func addWorkspaceCommand(app *kingpin.Application) {
 	w := app.Command("workspace", "Workspace")
-	w.Command("create", "Create a workspace").Action(workspaceAdd)
+	wc := w.Command("create", "Create a workspace").Action(workspaceAdd)
 	w.Command("get", "Get a workspace").Action(workspaceGet)
 
 	wid = w.Flag("workspace_id", "Workspace Id").Short('w').Required().String()
+	providerFilePath = wc.Flag("providers", "Path to providers.tf.json").Short('p').String()
 }
