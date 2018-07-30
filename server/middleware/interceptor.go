@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/mcuadros/go-version"
@@ -58,6 +59,7 @@ func UnaryServerInterceptor(supportVersion string) grpc.UnaryServerInterceptor {
 		// Else, pass the request ahead to the handler.
 		resp, err := handler(ctx, req)
 		if err != nil {
+			fmt.Printf("%+v", err)
 			return nil, err
 		}
 
