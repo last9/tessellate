@@ -5,9 +5,9 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"gitlab.com/tsocial/sre/tessellate/cert"
-	"gitlab.com/tsocial/sre/tessellate/fault"
-	"gitlab.com/tsocial/sre/tessellate/server/middleware"
+	"github.com/tsocial/tessellate/cert"
+	"github.com/tsocial/tessellate/fault"
+	"github.com/tsocial/tessellate/server/middleware"
 	"google.golang.org/grpc"
 	"gopkg.in/alecthomas/kingpin.v2"
 )

@@ -12,7 +12,7 @@ import (
 
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"github.com/tsocial/tessellate/storage/types"
 )
 
 func MakeConsulStore(addr ...string) *ConsulStore {

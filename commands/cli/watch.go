@@ -5,7 +5,7 @@ import (
 
 	"strings"
 
-	"gitlab.com/tsocial/sre/tessellate/server"
+	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

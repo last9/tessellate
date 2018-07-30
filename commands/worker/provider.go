@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"github.com/tsocial/tessellate/storage/types"
 )
 
 // Plan that is about to be saved will be appended with terraform layout.
