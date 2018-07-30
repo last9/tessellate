@@ -14,9 +14,9 @@ import (
 
 	"github.com/meson10/pester"
 	"github.com/pkg/errors"
-	"gitlab.com/tsocial/sre/tessellate/runner"
-	"gitlab.com/tsocial/sre/tessellate/storage/consul"
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"github.com/tsocial/tessellate/runner"
+	"github.com/tsocial/tessellate/storage/consul"
+	"github.com/tsocial/tessellate/storage/types"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

@@ -18,7 +18,7 @@ variables:
   CONTAINER_LATEST_IMAGE: ${STAGING_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:latest
   CONSUL_ADDR: "consul:8500"
 
-  REPO_NAME: gitlab.com/tsocial/sre/tessellate
+  REPO_NAME: github.com/tsocial/tessellate
 
 # The problem is that to be able to use go get, one needs to put
 # the repository in the $GOPATH. So for example if your gitlab domain
@@ -45,20 +45,20 @@ before_script:
 
     - mkdir -p $GOPATH/src/gitlab.com/tsocial/sre
     - cp -R /builds/tsocial/sre/tessellate $GOPATH/src/gitlab.com/tsocial/sre
-    - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
+    - cd $GOPATH/src/github.com/tsocial/tessellate
 
     # - make build_deps
 
 test::unit_test:
     stage: test
     script:
-        - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
+        - cd $GOPATH/src/github.com/tsocial/tessellate
         - make test
     
 build::image:
     stage: build
     script:
-        - cd $GOPATH/src/gitlab.com/tsocial/sre/tessellate
+        - cd $GOPATH/src/github.com/tsocial/tessellate
         - make worker_build
         - make http_build
         - make cli_build

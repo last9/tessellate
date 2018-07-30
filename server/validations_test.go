@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"github.com/tsocial/tessellate/storage/types"
 )
 
 func TestValidationProvider(t *testing.T) {

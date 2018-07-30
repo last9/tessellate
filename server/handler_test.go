@@ -7,15 +7,15 @@ import (
 
 	"context"
 	"fmt"
-	"gitlab.com/tsocial/sre/tessellate/storage"
-	"gitlab.com/tsocial/sre/tessellate/storage/consul"
+	"github.com/tsocial/tessellate/storage"
+	"github.com/tsocial/tessellate/storage/consul"
 	"io/ioutil"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/tsocial/sre/tessellate/dispatcher"
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
-	"gitlab.com/tsocial/sre/tessellate/utils"
+	"github.com/tsocial/tessellate/dispatcher"
+	"github.com/tsocial/tessellate/storage/types"
+	"github.com/tsocial/tessellate/utils"
 )
 
 var store storage.Storer

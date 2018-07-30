@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"github.com/tsocial/tessellate/storage/types"
 )
 
 const (

@@ -5,9 +5,9 @@ import (
 	"log"
 	"net"
 
-	"gitlab.com/tsocial/sre/tessellate/dispatcher"
-	"gitlab.com/tsocial/sre/tessellate/server"
-	"gitlab.com/tsocial/sre/tessellate/storage/consul"
+	"github.com/tsocial/tessellate/dispatcher"
+	"github.com/tsocial/tessellate/server"
+	"github.com/tsocial/tessellate/storage/consul"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/alecthomas/kingpin.v2"
 )

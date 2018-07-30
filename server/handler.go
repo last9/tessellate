@@ -11,8 +11,8 @@ import (
 
 	"github.com/meson10/highbrow"
 	"github.com/pkg/errors"
-	"gitlab.com/tsocial/sre/tessellate/dispatcher"
-	"gitlab.com/tsocial/sre/tessellate/storage/types"
+	"github.com/tsocial/tessellate/dispatcher"
+	"github.com/tsocial/tessellate/storage/types"
 )
 
 const (
