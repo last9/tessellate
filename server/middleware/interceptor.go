@@ -34,12 +34,15 @@ func validateVersion(cliVersion, leastVersion string) bool {
 
 func UnaryServerInterceptor(supportVersion string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		cli_release_url := "https://github.com/tsocial/tessellate/releases"
+
 		// Get the version from the header.
 		version, err := getVersionId(ctx)
 		if err != nil {
 			return nil, err
 		}
-		versionErr := errors.New("You are using an older version of Tessellate. Download the new version from here.")
+		versionErr := errors.New("You are using an older version: " + version +
+			" of Tessellate CLI. Download the newer version (>= " + supportVersion + ") from: " + cli_release_url)
 
 		// If the id is empty, return a older version error.
 		if version == "" {

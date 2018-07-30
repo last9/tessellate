@@ -12,7 +12,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const Version = "0.0.1"
+const Version = "0.1.0"
 
 var (
 	port      = kingpin.Flag("port", "Port no.").Short('p').Default("9977").String()
@@ -30,6 +30,13 @@ var (
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
+	rootCert = kingpin.Flag("root-cert-file", "Root Cert File").Envar("ROOT_CERT_FILE").
+		String()
+	certFile = kingpin.Flag("cert-file", "Cert File").Envar("CERT_FILE").String()
+	keyFile  = kingpin.Flag("key-file", "Key File").Envar("KEY_FILE").String()
+	support  = (kingpin.Flag("least-cli-version", "Client's least supported version by Tessellate.")).
+		Default("0.1.0").OverrideDefaultFromEnvar("LEAST_CLI_VERSION").String()
+
 	unlocker = "tessellate_unlock_job"
 )
 

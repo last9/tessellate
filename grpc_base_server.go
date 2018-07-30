@@ -9,19 +9,11 @@ import (
 	"github.com/tsocial/tessellate/fault"
 	"github.com/tsocial/tessellate/server/middleware"
 	"google.golang.org/grpc"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 func customFunc(t interface{}) error {
 	return fault.Printer(t)
 }
-
-var (
-	rootCert = kingpin.Flag("root-cert", "Root Cert File").String()
-	certFile = kingpin.Flag("cert-file", "Cert File").String()
-	keyFile  = kingpin.Flag("key-file", "Key File").String()
-	support  = kingpin.Flag("support-version", "Client's least supported version by Tessellate.").String()
-)
 
 func grpcServer() *grpc.Server {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
