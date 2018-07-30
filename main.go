@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/tsocial/tessellate/dispatcher"
-	server "github.com/tsocial/tessellate/server"
+	"github.com/tsocial/tessellate/server"
 	"github.com/tsocial/tessellate/storage/consul"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -30,6 +30,7 @@ var (
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
+	unlocker = "tessellate_unlock_job"
 )
 
 func main() {
@@ -64,6 +65,9 @@ func main() {
 
 	dispatcher.Set(nomadClient)
 
+	// check if a job exists with prefix name:
+	go nomadClient.GetOrSetCleanup(unlocker)
+
 	server.RegisterTessellateServer(s, server.New(store))
 
 	// Register reflection service on gRPC server.
@@ -73,4 +77,5 @@ func main() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/tsocial/tessellate/cert"
 	"github.com/tsocial/tessellate/server"
 	"google.golang.org/grpc"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const version = "0.0.1"
@@ -25,6 +25,7 @@ var client server.TessellateClient
 
 func getClient() server.TessellateClient {
 	once.Do(func() {
+
 		opts := []grpc.DialOption{}
 		if *certFile != "" && *keyFile != "" {
 			creds, err := cert.ClientCerts(*certFile, *keyFile, *rootCert)

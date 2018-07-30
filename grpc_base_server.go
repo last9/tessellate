@@ -7,8 +7,9 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/tsocial/tessellate/cert"
 	"github.com/tsocial/tessellate/fault"
+	"github.com/tsocial/tessellate/server/middleware"
 	"google.golang.org/grpc"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 func customFunc(t interface{}) error {
@@ -19,6 +20,7 @@ var (
 	rootCert = kingpin.Flag("root-cert", "Root Cert File").String()
 	certFile = kingpin.Flag("cert-file", "Cert File").String()
 	keyFile  = kingpin.Flag("key-file", "Key File").String()
+	support  = kingpin.Flag("support-version", "Client's least supported version by Tessellate.").String()
 )
 
 func grpcServer() *grpc.Server {
@@ -30,6 +32,7 @@ func grpcServer() *grpc.Server {
 
 	unaries := []grpc.UnaryServerInterceptor{
 		grpc_recovery.UnaryServerInterceptor(opts...),
+		middleware.UnaryServerInterceptor(*support),
 	}
 
 	sopts := []grpc.ServerOption{}
@@ -45,5 +48,8 @@ func grpcServer() *grpc.Server {
 	}
 
 	sopts = append(sopts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(unaries...)))
-	return grpc.NewServer(sopts...)
+
+	return grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(unaries...)),
+	)
 }

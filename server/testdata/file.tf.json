@@ -1,0 +1,15 @@
+{
+  "variable": {
+    "region": {
+      "default": "us-west-1"
+    }
+  },
+  "provider": [
+    {
+      "aws": {
+        "region": "${var.region}",
+        "profile": "${var.profile}"
+      }
+    }
+  ]
+}

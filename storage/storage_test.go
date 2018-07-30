@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStorer(t *testing.T) {
-	store := consul.MakeConsulStore("127.0.0.1:8500")
+	store := consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
 	store.Setup()
 
 	t.Run("Lock tests", func(t *testing.T) {
@@ -65,13 +65,13 @@ func TestStorer(t *testing.T) {
 		})
 
 		t.Run("Release a Key", func(t *testing.T) {
-			if err := store.Unlock("key3", "c1"); err != nil {
+			if err := store.Unlock("key3"); err != nil {
 				t.Fatal(err)
 			}
 		})
 
 		t.Run("Idempotent Release a Key", func(t *testing.T) {
-			if err := store.Unlock("key3", "c12"); err != nil {
+			if err := store.Unlock("key3"); err != nil {
 				t.Fatal(err)
 			}
 		})

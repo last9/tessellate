@@ -188,6 +188,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/mcuadros/go-version"
+  packages = ["."]
+  revision = "6d5863ca60fa6fe914b5fd43ed8533d7567c5b0b"
+
+[[projects]]
+  branch = "master"
   name = "github.com/meson10/highbrow"
   packages = ["."]
   revision = "88261ca7babdb56d0a2b44e63a1c99ef62a94494"
@@ -357,6 +363,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "91325049676a08720e7be6c7ce332da7f72e9d6208b69c6df9b6aabd3d8f3ceb"
+  inputs-digest = "bb566516fd839f1bb018e608fdeb964aafa4ac16c844cf8be92fdd187c7492b0"
   solver-name = "gps-cdcl"
   solver-version = 1

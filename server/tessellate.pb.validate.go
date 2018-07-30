@@ -199,8 +199,6 @@ func (m *Layout) Validate() error {
 
 	// no validation rules for Plan
 
-	// no validation rules for Vars
-
 	// no validation rules for Status
 
 	return nil
@@ -252,7 +250,7 @@ func (m *SaveWorkspaceRequest) Validate() error {
 		}
 	}
 
-	// no validation rules for Vars
+	// no validation rules for Providers
 
 	return nil
 }
@@ -593,8 +591,6 @@ func (m *SaveLayoutRequest) Validate() error {
 	}
 
 	// no validation rules for Plan
-
-	// no validation rules for Vars
 
 	return nil
 }

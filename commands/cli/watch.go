@@ -3,11 +3,10 @@ package main
 import (
 	"log"
 
-	"context"
 	"strings"
 
 	"github.com/tsocial/tessellate/server"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type watch struct {
@@ -20,12 +19,10 @@ type watch struct {
 func (w *watch) watchStart(c *kingpin.ParseContext) error {
 	log.Println("watch start -w " + w.workspaceID + " -l " + w.layoutID + " -s " + w.sURL + " -f " + w.fURL)
 
-	client := getClient()
 	req := server.StartWatchRequest{WorkspaceId: strings.ToLower(w.workspaceID), Id: strings.ToLower(w.layoutID),
 		SuccessCallback: w.sURL, FailureCallback: w.fURL}
 
-	ctx := context.Background()
-	if _, err := client.StartWatch(ctx, &req); err != nil {
+	if _, err := getClient().StartWatch(makeContext(nil), &req); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -36,11 +33,9 @@ func (w *watch) watchStart(c *kingpin.ParseContext) error {
 func (w *watch) watchStop(c *kingpin.ParseContext) error {
 	log.Println("watch stop -w " + w.workspaceID + " -l " + w.layoutID)
 
-	client := getClient()
 	req := server.StopWatchRequest{WorkspaceId: strings.ToLower(w.workspaceID), Id: strings.ToLower(w.layoutID)}
 
-	ctx := context.Background()
-	if _, err := client.StopWatch(ctx, &req); err != nil {
+	if _, err := getClient().StopWatch(makeContext(nil), &req); err != nil {
 		log.Println(err)
 		return err
 	}

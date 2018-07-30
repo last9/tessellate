@@ -27,8 +27,13 @@ proto: protodep
 
 build_deps: proto deps clean
 
-test: build_deps
+ifeq ($(strip $(CONSUL_ADDR)),)
+CONSUL_ADDR = "127.0.0.1:8500"
+endif
+
+test: build_deps start_server
 	go test -v ./...
+	make stop_server
 
 http_build:
 	protoc -I. \
@@ -39,19 +44,29 @@ http_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_http -a -installsuffix cgo \
 		github.com/tsocial/tessellate/commands/http
 
-worker_build:
+worker_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_worker -a -installsuffix cgo \
 		github.com/tsocial/tessellate/commands/worker
 
-tessellate_build:
+tessellate_build_linux:
+	go build -o tessellate gitlab.com/tsocial/sre/tessellate/
+
+tessellate_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
 		cgo github.com/tsocial/tessellate/
 
-cli_build:
+cli_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
 
 tessellate: build_deps tessellate_build
+
+start_server: tessellate
+	nohup ./tessellate --support-version 0.0.4 >/dev/null &
+
+stop_server:
+	pkill tessellate
+
 worker: build_deps worker_build
 http: build_deps http_build
 
@@ -62,7 +77,7 @@ build_images: worker_build tessellate_build
 upload_worker: docker_login
 	docker tag $(WORKER_REPO):latest $(WORKER_REPO):$(TRAVIS_BRANCH)-latest
 	docker tag $(WORKER_REPO):latest $(WORKER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
-	docker push $(SERVER_REPO):latest
+	docker push $(WORKER_REPO):latest
 	docker push $(WORKER_REPO):$(TRAVIS_BRANCH)-latest
 	docker push $(WORKER_REPO):$(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)
 

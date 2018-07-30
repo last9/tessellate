@@ -10,12 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"fmt"
-
 	"os"
 
-	"github.com/meson10/highbrow"
 	"github.com/meson10/pester"
+	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/runner"
 	"github.com/tsocial/tessellate/storage/consul"
 	"github.com/tsocial/tessellate/storage/types"
@@ -70,14 +68,6 @@ func main() {
 	status := 0
 
 	defer func() {
-		key := fmt.Sprintf("%v-%v", *workspaceID, *layoutID)
-
-		if err := highbrow.Try(3, func() error {
-			return store.Unlock(key, *jobID)
-		}); err != nil {
-			log.Printf("error while unlocking key: %s, err: %+v", key, err)
-		}
-
 		os.Exit(status)
 	}()
 
@@ -96,6 +86,21 @@ func main() {
 	l := types.Layout{Id: j.LayoutId}
 	if err := store.GetVersion(&l, t, j.LayoutVersion); err != nil {
 		log.Println(err)
+		status = 127
+		return
+	}
+
+	// Get Workspace Vars
+	var wv types.Vars
+	if err := store.Get(&wv, t); err != nil {
+		log.Println(err)
+		if !strings.Contains(err.Error(), "Missing") {
+			status = 127
+			return
+		}
+	}
+
+	if err := padLayoutWithProvider(l.Plan, wv); err != nil {
 		status = 127
 		return
 	}
@@ -144,12 +149,20 @@ func main() {
 	if url != "" {
 		endState, _ := store.GetKey(remotePath)
 		body := struct {
-			OldState []byte `json:"old_state"`
-			NewState []byte `json:"new_state"`
-		}{OldState: startState, NewState: endState}
+			OldState interface{} `json:"old_state"`
+			NewState interface{} `json:"new_state"`
+		}{}
 
-		b, _ := json.Marshal(body)
-		if req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b)); err != nil {
+		if err := json.Unmarshal(startState, &body.OldState); err != nil {
+			errors.Wrap(err, "Cannot unmarshal")
+		}
+
+		if err := json.Unmarshal(endState, &body.NewState); err != nil {
+			errors.Wrap(err, "Cannot unmarshal")
+		}
+
+		bfinal, _ := json.Marshal(body)
+		if req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(bfinal)); err != nil {
 			log.Println(err)
 		} else {
 			makeCall(req)

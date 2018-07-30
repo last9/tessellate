@@ -101,14 +101,8 @@ job "{{ job_id }}" {
 		return err
 	}
 
-	dResp, _, err := jobs.Dispatch(resp.EvalID, nil, nil, nil)
-	if err != nil {
-		log.Printf("error while dispatching job: %+v", err)
-
-		// De-registering job since it is not dispatched correctly.
-		jobs.Deregister(resp.EvalID, true, nil)
-	}
-
-	log.Printf("successfully dispatched the job: %+v", dResp)
+	log.Printf("successfully dispatched the job: %+v", resp)
 	return nil
 }
+
+

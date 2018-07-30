@@ -9,7 +9,6 @@ import (
 
 	"fmt"
 
-	"context"
 	"encoding/json"
 	"io/ioutil"
 
@@ -87,7 +86,7 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		Plan:        layoutBytes,
 	}
 
-	_, err = getClient().SaveLayout(context.Background(), req)
+	_, err = getClient().SaveLayout(makeContext(nil), req)
 
 	if err != nil {
 		log.Println(err)
@@ -103,7 +102,7 @@ func (cm *layout) layoutGet(c *kingpin.ParseContext) error {
 		WorkspaceId: cm.workspaceId,
 	}
 
-	resp, err := getClient().GetLayout(context.Background(), req)
+	resp, err := getClient().GetLayout(makeContext(nil), req)
 	if err != nil {
 		return err
 	}
@@ -127,10 +126,10 @@ func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
 		Vars:        vars,
-		Dry:         false,
+		Dry:         cm.dry,
 	}
 
-	resp, err := getClient().ApplyLayout(context.Background(), req)
+	resp, err := getClient().ApplyLayout(makeContext(nil), req)
 	if err != nil {
 		return err
 	}
@@ -151,7 +150,7 @@ func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
 		Vars:        vars,
 	}
 
-	resp, err := getClient().DestroyLayout(context.Background(), req)
+	resp, err := getClient().DestroyLayout(makeContext(nil), req)
 	if err != nil {
 		return err
 	}

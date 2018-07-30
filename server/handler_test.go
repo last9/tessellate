@@ -5,17 +5,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tsocial/tessellate/storage"
-	"github.com/tsocial/tessellate/storage/consul"
-	"github.com/tsocial/tessellate/storage/types"
-
 	"context"
 	"fmt"
+	"github.com/tsocial/tessellate/storage"
+	"github.com/tsocial/tessellate/storage/consul"
 	"io/ioutil"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/dispatcher"
+	"github.com/tsocial/tessellate/storage/types"
 	"github.com/tsocial/tessellate/utils"
 )
 
@@ -23,7 +22,7 @@ var store storage.Storer
 var server TessellateServer
 
 func TestMain(m *testing.M) {
-	store = consul.MakeConsulStore()
+	store = consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
 	store.Setup()
 
 	server = New(store)
@@ -42,12 +41,9 @@ func TestServer_SaveAndGetWorkspace(t *testing.T) {
 
 	t.Run("Should save a workspace.", func(t *testing.T) {
 		req := &SaveWorkspaceRequest{Id: id}
-		resp, err := server.SaveWorkspace(context.Background(), req)
-
-		if err != nil {
+		if _, err := server.SaveWorkspace(context.Background(), req); err != nil {
 			errors.Wrap(err, Errors_INVALID_VALUE.String())
 		}
-		fmt.Print(resp.String())
 	})
 
 	t.Run("Should get the same workspace that was created.", func(t *testing.T) {
@@ -75,7 +71,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		t.Error(err)
 	}
 
-	plan["sleep"] = uglyJson(lBytes)
+	plan["sleep.tf.json"] = uglyJson(lBytes)
 
 	vBytes, err := ioutil.ReadFile("../tmpl/testdata/vars.json")
 	if err != nil {
@@ -86,7 +82,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	vBytes = uglyJson(vBytes)
 
 	t.Run("Should create a layout in the workspace", func(t *testing.T) {
-		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Vars: vBytes}
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes}
 		resp, err := server.SaveLayout(context.Background(), req)
 
 		if err != nil {
@@ -94,6 +90,53 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		}
 
 		assert.Equal(t, resp, &Ok{})
+	})
+
+	t.Run("Layout with provider conflict without worksapce should not error", func(t *testing.T) {
+		id := fmt.Sprintf("workspace-conflict")
+		wreq := &SaveWorkspaceRequest{Id: id}
+		if _, err := server.SaveWorkspace(context.Background(), wreq); err != nil {
+			errors.Wrap(err, Errors_INVALID_VALUE.String())
+		}
+
+		plan2 := map[string]json.RawMessage{}
+		fBytes, err := ioutil.ReadFile("./testdata/file.tf.json")
+		if err != nil {
+			t.Error(err)
+		}
+
+		plan2["file.tf.json"] = uglyJson(fBytes)
+		pBytes, _ := json.Marshal(plan2)
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: id, Plan: pBytes}
+
+		if _, err = server.SaveLayout(context.Background(), req); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Layout with provider conflict without workspace should error", func(t *testing.T) {
+		id := fmt.Sprintf("workspace-conflict")
+		wv := &types.Vars{"aws": nil}
+		wvars, _ := json.Marshal(wv)
+		wreq := &SaveWorkspaceRequest{Id: id, Providers: wvars}
+		if _, err := server.SaveWorkspace(context.Background(), wreq); err != nil {
+			errors.Wrap(err, Errors_INVALID_VALUE.String())
+		}
+
+		plan2 := map[string]json.RawMessage{}
+		fBytes, err := ioutil.ReadFile("./testdata/file.tf.json")
+		if err != nil {
+			t.Error(err)
+		}
+
+		plan2["file.tf.json"] = uglyJson(fBytes)
+		pBytes, _ := json.Marshal(plan2)
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: id, Plan: pBytes}
+
+		_, err = server.SaveLayout(context.Background(), req)
+		if err == nil {
+			t.Fatal("Should have complained about a conflicting Provider")
+		}
 	})
 
 	t.Run("Should get the layout that was created", func(t *testing.T) {
@@ -108,8 +151,6 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, resp.Status, Status_INACTIVE)
 		assert.Equal(t, resp.Workspaceid, workspaceId)
 		assert.Equal(t, resp.Plan, pBytes)
-
-		assert.Equal(t, resp.Vars, vBytes)
 	})
 
 	t.Run("Should save a watch", func(t *testing.T) {
@@ -190,13 +231,13 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	})
 
 	t.Run("Should allow unlocking a Layout", func(t *testing.T) {
-		if err := store.Unlock(lockKey, "job-id"); err != nil {
+		if err := store.Unlock(lockKey); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Unlocking is Idempotent", func(t *testing.T) {
-		if err := store.Unlock(lockKey, "job-id"); err != nil {
+		if err := store.Unlock(lockKey); err != nil {
 			t.Fatal(err)
 		}
 	})

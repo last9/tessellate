@@ -1,22 +1,20 @@
 package main
 
 import (
-	"context"
 	"log"
 	"strings"
 
 	"github.com/tsocial/tessellate/server"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var wid *string
 
 func workspaceAdd(c *kingpin.ParseContext) error {
-	client := getClient()
 	req := server.SaveWorkspaceRequest{Id: strings.ToLower(*wid)}
 
-	ctx := context.Background()
-	if _, err := client.SaveWorkspace(ctx, &req); err != nil {
+	ctx := makeContext(nil)
+	if _, err := getClient().SaveWorkspace(ctx, &req); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -25,11 +23,10 @@ func workspaceAdd(c *kingpin.ParseContext) error {
 }
 
 func workspaceGet(c *kingpin.ParseContext) error {
-	client := getClient()
 	req := server.GetWorkspaceRequest{Id: strings.ToLower(*wid)}
 
-	ctx := context.Background()
-	w, err := client.GetWorkspace(ctx, &req)
+	ctx := makeContext(nil)
+	w, err := getClient().GetWorkspace(ctx, &req)
 	if err != nil {
 		log.Println(err)
 		return err
