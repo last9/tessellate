@@ -62,7 +62,7 @@ cli_build: build_deps
 tessellate: build_deps tessellate_build
 
 start_server: tessellate
-	nohup ./tessellate --support-version 0.0.4 >/dev/null &
+	nohup ./tessellate --least-cli-version 0.0.4 >/dev/null &
 
 stop_server:
 	pkill tessellate

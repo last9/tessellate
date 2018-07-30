@@ -30,6 +30,12 @@ var (
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
+	rootCert = kingpin.Flag("root-cert-file", "Root Cert File").String()
+	certFile = kingpin.Flag("cert-file", "Cert File").String()
+	keyFile  = kingpin.Flag("key-file", "Key File").String()
+	support  = (kingpin.Flag("least-cli-version", "Client's least supported version by Tessellate.")).
+		Default("0.1.0").OverrideDefaultFromEnvar("LEAST_CLI_VERSION").String()
+
 	unlocker = "tessellate_unlock_job"
 )
 
