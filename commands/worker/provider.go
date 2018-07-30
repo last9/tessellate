@@ -8,7 +8,11 @@ import (
 )
 
 // Plan that is about to be saved will be appended with terraform layout.
-func padLayoutWithProvider(plan map[string]json.RawMessage, vars types.Vars) error {
+func padLayoutWithProvider(plan map[string]json.RawMessage, vars *types.Vars) error {
+	if vars == nil {
+		return nil
+	}
+
 	b, err := vars.Marshal()
 	if err != nil {
 		return errors.Wrap(err, "Cannot marshal providers from worksapce")
