@@ -27,12 +27,13 @@ proto: protodep
 
 build_deps: proto deps clean
 
-ifeq ($(strip $(CONSUL)),)
-CONSUL = "127.0.0.1:8500"
+ifeq ($(strip $(CONSUL_ADDR)),)
+CONSUL_ADDR = "127.0.0.1:8500"
 endif
 
-test: build_deps
+test: build_deps start_server
 	go test -v ./...
+	make stop_server
 
 http_build:
 	protoc -I. \
@@ -56,6 +57,13 @@ cli_build: build_deps
 		cgo gitlab.com/tsocial/sre/tessellate/commands/cli
 
 tessellate: build_deps tessellate_build
+
+start_server: tessellate
+	nohup ./tessellate --support-version 0.0.4 >/dev/null &
+
+stop_server:
+	pkill tessellate
+
 worker: build_deps worker_build
 http: build_deps http_build
 
@@ -81,5 +89,3 @@ upload_images: upload_worker upload_server
 
 docker_login:
 	echo "$(DOCKER_PASSWORD)" | docker login registry.gitlab.com -u "$(DOCKER_USERNAME)" --password-stdin
-
-

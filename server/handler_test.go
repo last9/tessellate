@@ -22,7 +22,7 @@ var store storage.Storer
 var server TessellateServer
 
 func TestMain(m *testing.M) {
-	store = consul.MakeConsulStore(os.Getenv("CONSUL"))
+	store = consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
 	store.Setup()
 
 	server = New(store)
@@ -112,19 +112,6 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		if _, err = server.SaveLayout(context.Background(), req); err != nil {
 			t.Fatal(err)
 		}
-	})
-
-	t.Run("Validate the extension of tf json files.", func(t *testing.T) {
-		// read a file with wrong ext. raise an error.
-		filename := "file1.tfvars.json"
-		valid, err := checkExt(filename)
-		assert.Equal(t, false, valid)
-
-		// read correct file ext, and raise an error.
-		filename = "validext.tf.json"
-		valid, err = checkExt(filename)
-		assert.Equal(t, nil, err)
-		assert.Equal(t, true, valid)
 	})
 
 	t.Run("Layout with provider conflict without workspace should error", func(t *testing.T) {

@@ -6,10 +6,10 @@ import (
 	"net"
 
 	"gitlab.com/tsocial/sre/tessellate/dispatcher"
-	server "gitlab.com/tsocial/sre/tessellate/server"
+	"gitlab.com/tsocial/sre/tessellate/server"
 	"gitlab.com/tsocial/sre/tessellate/storage/consul"
 	"google.golang.org/grpc/reflection"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const Version = "0.0.1"
