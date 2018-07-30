@@ -142,7 +142,7 @@ func (Operation) EnumDescriptor() ([]byte, []int) {
 }
 
 type GetWorkspaceRequest struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=Id" json:"Id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -180,10 +180,10 @@ func (m *GetWorkspaceRequest) GetId() string {
 }
 
 type Workspace struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
+	Name                 string   `protobuf:"bytes,1,opt,name=Name" json:"Name,omitempty"`
 	Vars                 []byte   `protobuf:"bytes,2,opt,name=Vars,proto3" json:"Vars,omitempty"`
-	Version              string   `protobuf:"bytes,3,opt,name=Version,proto3" json:"Version,omitempty"`
-	Versions             []string `protobuf:"bytes,4,rep,name=Versions,proto3" json:"Versions,omitempty"`
+	Version              string   `protobuf:"bytes,3,opt,name=Version" json:"Version,omitempty"`
+	Versions             []string `protobuf:"bytes,4,rep,name=Versions" json:"Versions,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -242,7 +242,7 @@ func (m *Workspace) GetVersions() []string {
 }
 
 type Layouts struct {
-	Layouts              []*Layout `protobuf:"bytes,1,rep,name=layouts,proto3" json:"layouts,omitempty"`
+	Layouts              []*Layout `protobuf:"bytes,1,rep,name=layouts" json:"layouts,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
 	XXX_unrecognized     []byte    `json:"-"`
 	XXX_sizecache        int32     `json:"-"`
@@ -280,10 +280,10 @@ func (m *Layouts) GetLayouts() []*Layout {
 }
 
 type Layout struct {
-	Workspaceid          string   `protobuf:"bytes,1,opt,name=Workspaceid,proto3" json:"Workspaceid,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
+	Workspaceid          string   `protobuf:"bytes,1,opt,name=Workspaceid" json:"Workspaceid,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
 	Plan                 []byte   `protobuf:"bytes,3,opt,name=Plan,proto3" json:"Plan,omitempty"`
-	Status               Status   `protobuf:"varint,5,opt,name=Status,proto3,enum=tsocial.tessellate.server.Status" json:"Status,omitempty"`
+	Status               Status   `protobuf:"varint,5,opt,name=Status,enum=tsocial.tessellate.server.Status" json:"Status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -342,7 +342,7 @@ func (m *Layout) GetStatus() Status {
 }
 
 type SaveWorkspaceRequest struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=Id" json:"Id,omitempty"`
 	Providers            []byte   `protobuf:"bytes,2,opt,name=Providers,proto3" json:"Providers,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -388,7 +388,7 @@ func (m *SaveWorkspaceRequest) GetProviders() []byte {
 }
 
 type GetWorkspaceLayoutsRequest struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=Id" json:"Id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -426,8 +426,8 @@ func (m *GetWorkspaceLayoutsRequest) GetId() string {
 }
 
 type JobStatus struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
-	Status               JobState `protobuf:"varint,2,opt,name=status,proto3,enum=tsocial.tessellate.server.JobState" json:"status,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=Id" json:"Id,omitempty"`
+	Status               JobState `protobuf:"varint,2,opt,name=status,enum=tsocial.tessellate.server.JobState" json:"status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -510,7 +510,7 @@ func (m *Vars) GetVars() []byte {
 }
 
 type JobRequest struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=Id" json:"Id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -578,8 +578,8 @@ func (m *Ok) XXX_DiscardUnknown() {
 var xxx_messageInfo_Ok proto.InternalMessageInfo
 
 type LayoutRequest struct {
-	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId,proto3" json:"WorkspaceId,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
+	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId" json:"WorkspaceId,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -624,8 +624,8 @@ func (m *LayoutRequest) GetId() string {
 }
 
 type SaveLayoutRequest struct {
-	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId,proto3" json:"WorkspaceId,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
+	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId" json:"WorkspaceId,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
 	Plan                 []byte   `protobuf:"bytes,3,opt,name=Plan,proto3" json:"Plan,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -678,9 +678,9 @@ func (m *SaveLayoutRequest) GetPlan() []byte {
 }
 
 type SetLayoutStatusRequest struct {
-	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId,proto3" json:"WorkspaceId,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
-	Status               string   `protobuf:"bytes,3,opt,name=Status,proto3" json:"Status,omitempty"`
+	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId" json:"WorkspaceId,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
+	Status               string   `protobuf:"bytes,3,opt,name=Status" json:"Status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -732,10 +732,10 @@ func (m *SetLayoutStatusRequest) GetStatus() string {
 }
 
 type ApplyLayoutRequest struct {
-	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId,proto3" json:"WorkspaceId,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
+	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId" json:"WorkspaceId,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
 	Vars                 []byte   `protobuf:"bytes,3,opt,name=Vars,proto3" json:"Vars,omitempty"`
-	Dry                  bool     `protobuf:"varint,4,opt,name=dry,proto3" json:"dry,omitempty"`
+	Dry                  bool     `protobuf:"varint,4,opt,name=dry" json:"dry,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -794,8 +794,8 @@ func (m *ApplyLayoutRequest) GetDry() bool {
 }
 
 type DestroyLayoutRequest struct {
-	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId,proto3" json:"WorkspaceId,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
+	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId" json:"WorkspaceId,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
 	Vars                 []byte   `protobuf:"bytes,3,opt,name=Vars,proto3" json:"Vars,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -848,10 +848,10 @@ func (m *DestroyLayoutRequest) GetVars() []byte {
 }
 
 type StartWatchRequest struct {
-	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId,proto3" json:"WorkspaceId,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
-	SuccessCallback      string   `protobuf:"bytes,3,opt,name=SuccessCallback,proto3" json:"SuccessCallback,omitempty"`
-	FailureCallback      string   `protobuf:"bytes,4,opt,name=FailureCallback,proto3" json:"FailureCallback,omitempty"`
+	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId" json:"WorkspaceId,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
+	SuccessCallback      string   `protobuf:"bytes,3,opt,name=SuccessCallback" json:"SuccessCallback,omitempty"`
+	FailureCallback      string   `protobuf:"bytes,4,opt,name=FailureCallback" json:"FailureCallback,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -910,8 +910,8 @@ func (m *StartWatchRequest) GetFailureCallback() string {
 }
 
 type StopWatchRequest struct {
-	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId,proto3" json:"WorkspaceId,omitempty"`
-	Id                   string   `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
+	WorkspaceId          string   `protobuf:"bytes,1,opt,name=WorkspaceId" json:"WorkspaceId,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=Id" json:"Id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

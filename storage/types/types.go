@@ -78,7 +78,9 @@ func (w *Workspace) Marshal() ([]byte, error) {
 
 type Vars map[string]interface{}
 
-func (v *Vars) SaveId(string) {}
+func (v *Vars) SaveId(id string) {
+	map[string]interface{}(*v)["id"] = id
+}
 
 func (v *Vars) MakePath(n *Tree) string {
 	return path.Join(n.MakePath(), VAR)

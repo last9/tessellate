@@ -183,6 +183,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 
 	v := types.Vars{}
 
+	var varID string
 	// todo check if vars are empty.
 	if vars != nil {
 		// Unmarshal in vars in v.
@@ -194,19 +195,8 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		if err := s.store.Save(&v, layoutTree); err != nil {
 			return nil, err
 		}
-	}
 
-	varsVersions, err := s.store.GetVersions(&v, tree)
-	if err != nil {
-		return nil, err
-	}
-
-	var vv string
-
-	if len(varsVersions) >= 2 {
-		vv = varsVersions[len(varsVersions)-2]
-	} else {
-		vv = ""
+		varID = map[string]interface{}(v)["id"].(string)
 	}
 
 	// Return the job instance for layout with latest version of vars and layout.
@@ -214,7 +204,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		LayoutId:      lID,
 		LayoutVersion: versions[len(versions)-2],
 		Status:        int32(JobState_PENDING),
-		VarsVersion:   vv,
+		VarsVersion:   varID,
 		Op:            op,
 		Dry:           dry,
 	}
