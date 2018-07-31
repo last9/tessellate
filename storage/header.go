@@ -10,6 +10,7 @@ type Storer interface {
 	Teardown() error
 	GetClient() *api.Client
 
+	GetKey(string) ([]byte, error)
 	Save(reader types.ReaderWriter, tree *types.Tree) error
 	Get(reader types.ReaderWriter, tree *types.Tree) error
 	GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error
