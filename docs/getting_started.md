@@ -24,6 +24,10 @@ We need to feed your provider details while creating the workspace. An ideal pro
 __What is important to note here, is that a value for var.region is expected before one runs any layout.__
 __Do not redefine the region variable, just pass a value for region.__
 
+Commonly made mistakes:
+
+1. Do not pass profile name in provider field. You need to exclusively pass the `access_key` and the `secret_key` for your provider.
+2. Do not pass any __default__ value to the region variable in the provider.tf.json. Only declare the variable as above
 ```
 $ ./tessellate_cli workspace create -w alicloud-dev -p providers.tf.json -a control.ha.tsengineering.io:9977
 ```
@@ -75,6 +79,6 @@ When you're ready to apply, remove the `dry` flag in the above command.
 To destroy the layout that you created, execute:
 
 ```
-$ ./tessellate_cli destroy -w staging -l my-layout -v /home/username/variables.tfvars.json -a control.ha.tsengineering.io:9977
+$ ./tessellate_cli layout destroy -w staging -l my-layout -v /home/username/variables.tfvars.json -a control.ha.tsengineering.io:9977
 ```
 
