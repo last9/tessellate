@@ -9,7 +9,7 @@ import (
 
 // Plan that is about to be saved will be appended with terraform layout.
 func padLayoutWithProvider(plan map[string]json.RawMessage, vars *types.Vars) error {
-	if vars == nil {
+	if vars == nil || len(*vars) == 0 {
 		return nil
 	}
 
