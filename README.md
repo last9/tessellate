@@ -13,6 +13,9 @@ Exposes a GRPC (and a HTTP wrapper) around terraform to address:
 * Hierarchical Variables.
 * Asynchronous Jobs with abort.
 
+## Getting Started
+Refer to: [Getting started Documentation](https://github.com/tsocial/tessellate/tree/master/docs/getting_started.md)
+
 ## Data model
 
 ### Workspace
