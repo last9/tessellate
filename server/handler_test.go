@@ -7,9 +7,10 @@ import (
 
 	"context"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/tsocial/tessellate/storage"
 	"github.com/tsocial/tessellate/storage/consul"
-	"io/ioutil"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

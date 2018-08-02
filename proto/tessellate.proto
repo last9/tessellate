@@ -46,9 +46,9 @@ service Tessellate {
   }
 
   rpc AbortJob (JobRequest) returns (Ok) {}
-
   rpc StartWatch (StartWatchRequest) returns (Ok) {}
   rpc StopWatch (StopWatchRequest) returns (Ok) {}
+  rpc GetState (GetStateRequest) returns (GetStateResponse) {}
 }
 
 enum Errors {
@@ -167,4 +167,13 @@ message StartWatchRequest {
 message StopWatchRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetStateRequest {
+  string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
+  string LayoutId = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetStateResponse {
+  bytes state = 1;
 }

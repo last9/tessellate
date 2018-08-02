@@ -9,6 +9,8 @@ import (
 	"log"
 	"regexp"
 
+	"path/filepath"
+
 	"github.com/meson10/highbrow"
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/dispatcher"
@@ -289,4 +291,16 @@ func (s *Server) saveWatch(wID, lID, success, failure string) (*Ok, error) {
 	}
 
 	return &Ok{}, nil
+}
+
+func (s *Server) GetState(ctx context.Context, in *GetStateRequest) (*GetStateResponse, error) {
+	key := filepath.Join(types.STATE, in.WorkspaceId, in.LayoutId)
+	data, err := s.store.GetKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	return &GetStateResponse{
+		State: data,
+	}, nil
 }
