@@ -201,7 +201,7 @@ func engine(store storage.Storer, in *input) (string, error) {
 
 	url := w.SuccessURL
 	if err := cmd.Run(); err != nil {
-		url = w.FailureURL
+		return w.FailureURL, errors.Wrap(err, "Exited with failure")
 	}
 
 	return url, errors.Wrap(err, "Error executing Cmd")
