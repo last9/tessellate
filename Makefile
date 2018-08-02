@@ -55,6 +55,10 @@ tessellate_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
 		cgo github.com/tsocial/tessellate/
 
+tessellate_build_mac: build_deps
+	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
+    		cgo github.com/tsocial/tessellate/commands/cli
+
 cli_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
