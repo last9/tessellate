@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/consul/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/server"
 	"github.com/tsocial/tessellate/storage/consul"
@@ -20,6 +21,11 @@ func TestMainRunner(t *testing.T) {
 
 	store := consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
 	store.Setup()
+
+	defer func() {
+		store.GetClient().KV().DeleteTree(wID + "/", &api.WriteOptions{})
+		store.GetClient().KV().DeleteTree("lock/", &api.WriteOptions{})
+	}()
 
 	// Tree for workspace ID.
 	tree := types.MakeTree(wID)
