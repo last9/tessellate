@@ -4,6 +4,7 @@ import (
 	"path"
 
 	"encoding/json"
+
 	"github.com/satori/go.uuid"
 )
 
@@ -13,6 +14,7 @@ const (
 	JOB       = "jobs"
 	VAR       = "vars"
 	WATCH     = "watch"
+	STATE     = "state"
 )
 
 // MakeTree populates a Tree based on Input.
