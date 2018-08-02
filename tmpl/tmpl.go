@@ -23,10 +23,8 @@ func ParseLayout(data json.RawMessage, vars pongo2.Context) ([]byte, error) {
 		x = string(data)
 	}
 
-	log.Println(string(x))
 	out, err := Parse(x, vars)
 	if err != nil {
-		log.Println(out)
 		return nil, errors.Wrap(err, "Cannot parse template.")
 	}
 
