@@ -1,4 +1,6 @@
 FROM hashicorp/terraform:light
 
+RUN mkdir -p /usr/local/go/lib/time
+COPY zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
 COPY tessellate_worker tsl8
 ENTRYPOINT ["./tsl8"]
