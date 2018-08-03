@@ -227,7 +227,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 
 		_, err := server.ApplyLayout(context.Background(), req)
 		if err == nil {
-			t.Fatal("Should have failed with a Lock")
+			t.Fatalf("Should have failed with a Lock, key: %s-%s", workspaceId, layoutId)
 		}
 	})
 
@@ -257,7 +257,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, JobState_PENDING, resp.Status)
 		assert.NotEmpty(t, resp.Id)
 
-		assert.Equal(t, jobQueue.Store[1], resp.Id)
+		assert.Equal(t, jobQueue.Store[len(jobQueue.Store)-1], resp.Id, fmt.Sprintf("%v", jobQueue.Store))
 
 		job := types.Job{Id: resp.Id, LayoutId: layoutId}
 		tree := types.MakeTree(workspaceId)
