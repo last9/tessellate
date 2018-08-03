@@ -23,8 +23,7 @@ func TestMainRunner(t *testing.T) {
 	store.Setup()
 
 	defer func() {
-		store.GetClient().KV().DeleteTree(wID + "/", &api.WriteOptions{})
-		store.GetClient().KV().DeleteTree("lock/", &api.WriteOptions{})
+		store.GetClient().KV().DeleteTree(wID+"/", &api.WriteOptions{})
 	}()
 
 	// Tree for workspace ID.
