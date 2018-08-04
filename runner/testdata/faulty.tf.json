@@ -7,7 +7,7 @@
   "data": {
     "external": {
       "pause": {
-        "program": ["/bin/sh", "-c", "sleep ${var.duration}; echo '{\"arg\":\"abc\"}'"]
+        "program": ["mybash", "-c", "sleep ${var.duration}; echo '{\"arg\":\"abc\"}'"]
       }
     }
   }
