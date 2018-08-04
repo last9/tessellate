@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 
+	"time"
+
 	"github.com/hashicorp/consul/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/server"
@@ -19,6 +21,8 @@ func TestMainRunner(t *testing.T) {
 	wID := "w123"
 	lID := "l123"
 
+	log.Printf("waiting for consul")
+	time.Sleep(30 * time.Second)
 	store := consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
 	store.Setup()
 
