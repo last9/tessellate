@@ -61,6 +61,11 @@ func (e *ConsulStore) Get(reader types.ReaderWriter, tree *types.Tree) error {
 	return e.GetVersion(reader, tree, "latest")
 }
 
+func (e *ConsulStore) GetKeys(prefix string, separator string) ([]string, error) {
+	l, _, err := e.client.KV().Keys(prefix, separator, nil)
+	return l, err
+}
+
 func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error {
 	path := path.Join(reader.MakePath(tree), version)
 	log.Println(path)

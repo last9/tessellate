@@ -11,6 +11,7 @@ type Storer interface {
 	GetClient() *api.Client
 
 	GetKey(string) ([]byte, error)
+	GetKeys(prefix string, separator string) ([]string, error)
 	Save(reader types.ReaderWriter, tree *types.Tree) error
 	Get(reader types.ReaderWriter, tree *types.Tree) error
 	GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error

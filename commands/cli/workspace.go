@@ -13,17 +13,17 @@ import (
 )
 
 var (
-	wid              *string
-	providerFilePath *string
+	wid              string
+	providerFilePath string
 )
 
 func workspaceAdd(_ *kingpin.ParseContext) error {
 	client := getClient()
-	req := server.SaveWorkspaceRequest{Id: strings.ToLower(*wid)}
+	req := server.SaveWorkspaceRequest{Id: strings.ToLower(wid)}
 
 	var err error
-	if *providerFilePath != "" {
-		req.Providers, err = ioutil.ReadFile(*providerFilePath)
+	if providerFilePath != "" {
+		req.Providers, err = ioutil.ReadFile(providerFilePath)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func workspaceAdd(_ *kingpin.ParseContext) error {
 
 func workspaceGet(_ *kingpin.ParseContext) error {
 	client := getClient()
-	req := server.GetWorkspaceRequest{Id: strings.ToLower(*wid)}
+	req := server.GetWorkspaceRequest{Id: strings.ToLower(wid)}
 
 	w, err := client.GetWorkspace(makeContext(nil), &req)
 	if err != nil {
@@ -54,32 +54,58 @@ func workspaceGet(_ *kingpin.ParseContext) error {
 		return nil
 	}
 
-	var vars map[string]interface{}
+	ppWorkspace(w)
+	return nil
+}
 
-	if err := json.Unmarshal(w.Vars, &vars); err != nil {
+func workspaceAll(_ *kingpin.ParseContext) error {
+	client := getClient()
+	req := server.Ok{}
+
+	w, err := client.GetAllWorkspaces(makeContext(nil), &req)
+	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	pw := ppWorkspace(w, vars)
-	prettyPrint(pw)
+	log.Println("----------------------------------------------")
+	for _, w := range w.Workspaces {
+		if w.Vars != nil && len(w.Vars) > 0 {
+			ppWorkspace(w)
+		} else {
+			prettyPrint(w)
+		}
+		log.Println("----------------------------------------------")
+	}
+
 	return nil
 }
 
-func ppWorkspace(w *server.Workspace, vars interface{}) interface{} {
+func ppWorkspace(w *server.Workspace) {
+	var vars map[string]interface{}
+
+	if err := json.Unmarshal(w.Vars, &vars); err != nil {
+		log.Println(err)
+		return
+	}
+
 	out := make(map[string]interface{})
 	out["Name"] = w.Name
 	out["Versions"] = w.Versions
 	out["Version"] = w.Version
 	out["Vars"] = vars
-	return out
+	prettyPrint(out)
 }
 
 func addWorkspaceCommand(app *kingpin.Application) {
 	w := app.Command("workspace", "Workspace")
-	wc := w.Command("create", "Create a workspace").Action(workspaceAdd)
-	w.Command("get", "Get a workspace").Action(workspaceGet)
 
-	wid = w.Flag("workspace_id", "Workspace Id").Short('w').Required().String()
-	providerFilePath = wc.Flag("providers", "Path to providers.tf.json").Short('p').String()
+	wc := w.Command("create", "Create a workspace").Action(workspaceAdd)
+	wc.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
+	wc.Flag("providers", "Path to providers.tf.json").Short('p').StringVar(&providerFilePath)
+
+	wg := w.Command("get", "Get a workspace").Action(workspaceGet)
+	wg.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
+
+	w.Command("all", "Get All Workspaces").Action(workspaceAll)
 }
