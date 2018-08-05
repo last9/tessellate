@@ -81,6 +81,7 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 		return nil, err
 	}
 
+	vars.RedactSecrets()
 	bytes, _ := vars.Marshal()
 
 	// Return the workspace, with latest version and vars.
