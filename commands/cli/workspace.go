@@ -6,12 +6,16 @@ import (
 
 	"io/ioutil"
 
+	"encoding/json"
+
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-var wid *string
-var providerFilePath *string
+var (
+	wid              *string
+	providerFilePath *string
+)
 
 func workspaceAdd(_ *kingpin.ParseContext) error {
 	client := getClient()
@@ -45,8 +49,30 @@ func workspaceGet(_ *kingpin.ParseContext) error {
 		return err
 	}
 
-	prettyPrint(w)
+	if w.Vars == nil || len(w.Vars) == 0 {
+		prettyPrint(w)
+		return nil
+	}
+
+	var vars map[string]interface{}
+
+	if err := json.Unmarshal(w.Vars, &vars); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	pw := ppWorkspace(w, vars)
+	prettyPrint(pw)
 	return nil
+}
+
+func ppWorkspace(w *server.Workspace, vars interface{}) interface{} {
+	out := make(map[string]interface{})
+	out["Name"] = w.Name
+	out["Versions"] = w.Versions
+	out["Version"] = w.Version
+	out["Vars"] = vars
+	return out
 }
 
 func addWorkspaceCommand(app *kingpin.Application) {
