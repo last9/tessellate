@@ -100,12 +100,12 @@ func ppWorkspace(w *server.Workspace) {
 func addWorkspaceCommand(app *kingpin.Application) {
 	w := app.Command("workspace", "Workspace")
 
-	wc := w.Command("create", "Create a workspace").Action(workspaceAdd)
+	wc := w.Command("create", "Create a workspace.").Action(workspaceAdd)
 	wc.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
 	wc.Flag("providers", "Path to providers.tf.json").Short('p').StringVar(&providerFilePath)
 
-	wg := w.Command("get", "Get a workspace").Action(workspaceGet)
+	wg := w.Command("get", "Get a workspace.").Action(workspaceGet)
 	wg.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
 
-	w.Command("all", "Get All Workspaces").Action(workspaceAll)
+	w.Command("list", "Get All Workspaces.").Action(workspaceAll)
 }

@@ -200,8 +200,8 @@ func addLayoutCommands(app *kingpin.Application) {
 	clm := &layout{}
 	cl := lCLI.Command("create", "Create Layout").Action(clm.layoutCreate)
 
-	lCLI.Flag("id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
-	lCLI.Flag("workspace-id", "Workspace name").Required().Short('w').StringVar(&clm.workspaceId)
+	lCLI.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
+	lCLI.Flag("workspace_id", "Workspace name").Required().Short('w').StringVar(&clm.workspaceId)
 	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().Short('d').StringVar(&clm.dirName)
 
 	lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
