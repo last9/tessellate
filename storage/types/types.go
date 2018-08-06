@@ -5,6 +5,8 @@ import (
 
 	"encoding/json"
 
+	"strings"
+
 	"github.com/satori/go.uuid"
 )
 
@@ -17,11 +19,13 @@ const (
 	STATE     = "state"
 )
 
+var secretKeys = []string{"secret", "access"}
+
 // MakeTree populates a Tree based on Input.
 // Tree in itself is quite vague (read generic), but consumption is specific to workspace
 // and layouts.
 // Example: MakeTRee(workspace_id) returns a tree for a Workspace
-// whereas MakeTree(worksapce_id, layout_id) returns a tree for a Workspace and a Layout{.
+// whereas MakeTree(workspace_id, layout_id) returns a tree for a Workspace and a Layout{.
 func MakeTree(nodes ...string) *Tree {
 	if len(nodes) < 1 {
 		return &Tree{Name: "unknown", TreeType: "unknown"}
@@ -40,7 +44,7 @@ type BaseType struct{}
 
 func (b *BaseType) SaveId(string) {}
 
-// Tree is a Hierarchial representation of a Path at which a node is expcted to be found.
+// Tree is a Hierarchical representation of a Path at which a node is expected to be found.
 type Tree struct {
 	Name     string
 	TreeType string
@@ -90,6 +94,54 @@ func (v *Vars) MakePath(n *Tree) string {
 
 func (w *Vars) Unmarshal(b []byte) error {
 	return json.Unmarshal(b, w)
+}
+
+func (w *Vars) RedactSecrets() {
+	if len(*w) == 0 {
+		return
+	}
+
+	mv := map[string]interface{}(*w)
+	for k := range mv {
+		mv[k] = redactSecrets(mv[k])
+	}
+}
+
+func redactSecrets(m interface{}) interface{} {
+	mp, ok := m.(map[string]interface{})
+	if ok {
+		for k := range mp {
+			if _, ok := mp[k].(map[string]interface{}); ok {
+				mp[k] = redactSecrets(mp[k])
+				continue
+			}
+
+			if _, ok := mp[k].([]interface{}); ok {
+				mp[k] = redactSecrets(mp[k])
+				continue
+			}
+
+			_, ok = mp[k].(string)
+			for _, s := range secretKeys {
+				if strings.Contains(strings.ToLower(k), s) && ok {
+					mp[k] = "***********"
+				}
+			}
+		}
+		return mp
+	}
+
+	ml, ok := m.([]interface{})
+	if ok {
+		for ix, i := range ml {
+			if _, ok := i.(map[string]interface{}); ok {
+				ml[ix] = redactSecrets(ml[ix])
+			}
+		}
+		return ml
+	}
+
+	return m
 }
 
 func (w *Vars) Marshal() ([]byte, error) {

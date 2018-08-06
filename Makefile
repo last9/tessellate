@@ -31,9 +31,8 @@ ifeq ($(strip $(CONSUL_ADDR)),)
 CONSUL_ADDR = "127.0.0.1:8500"
 endif
 
-test: build_deps start_server
+test: build_deps
 	go test -v ./...
-	make stop_server
 
 http_build:
 	protoc -I. \
@@ -49,7 +48,7 @@ worker_build: build_deps
 		github.com/tsocial/tessellate/commands/worker
 
 tessellate_build_linux:
-	go build -o tessellate gitlab.com/tsocial/sre/tessellate/
+	go build -o tessellate github.com/tsocial/tessellate/
 
 tessellate_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \

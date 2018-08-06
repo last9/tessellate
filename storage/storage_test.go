@@ -100,7 +100,7 @@ func TestStorer(t *testing.T) {
 			}
 		})
 
-		t.Run("Resaving a Workspace doesn't raise an Error", func(t *testing.T) {
+		t.Run("Re-saving a Workspace doesn't raise an Error", func(t *testing.T) {
 			if err := store.Save(&workspace, tree); err != nil {
 				t.Fatal(err)
 			}
@@ -154,6 +154,19 @@ func TestStorer(t *testing.T) {
 			d, err := store.GetKey(key)
 			assert.Nil(t, err)
 			assert.NotEqual(t, []byte{}, d)
+		})
+
+		t.Run("Get Consul Keys", func(t *testing.T) {
+			prefix := types.WORKSPACE + "/"
+			separator := "/"
+
+			keys, err := store.GetKeys(prefix, separator)
+			assert.Nil(t, err)
+
+			for _, k := range keys {
+				splits := strings.Split(k, "/")
+				assert.Equal(t, 3, len(splits))
+			}
 		})
 	})
 }

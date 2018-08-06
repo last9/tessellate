@@ -49,6 +49,7 @@ service Tessellate {
   rpc StartWatch (StartWatchRequest) returns (Ok) {}
   rpc StopWatch (StopWatchRequest) returns (Ok) {}
   rpc GetState (GetStateRequest) returns (GetStateResponse) {}
+  rpc GetAllWorkspaces(Ok) returns (AllWorkspaces) {}
 }
 
 enum Errors {
@@ -88,6 +89,10 @@ message Workspace {
   bytes Vars = 2;
   string Version = 3;
   repeated string Versions = 4;
+}
+
+message AllWorkspaces {
+  repeated Workspace Workspaces = 1;
 }
 
 message Layouts {

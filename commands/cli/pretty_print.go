@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 )
 
 func prettyPrint(w interface{}) {
 	b, _ := json.MarshalIndent(w, "", "    ")
-	log.Println(string(b))
+	fmt.Println(string(b))
 }

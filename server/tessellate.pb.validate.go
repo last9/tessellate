@@ -130,6 +130,65 @@ func (e WorkspaceValidationError) Error() string {
 
 var _ error = WorkspaceValidationError{}
 
+// Validate checks the field values on AllWorkspaces with the rules defined in
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
+func (m *AllWorkspaces) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	for idx, item := range m.GetWorkspaces() {
+		_, _ = idx, item
+
+		if v, ok := interface{}(item).(interface {
+			Validate() error
+		}); ok {
+			if err := v.Validate(); err != nil {
+				return AllWorkspacesValidationError{
+					Field:  fmt.Sprintf("Workspaces[%v]", idx),
+					Reason: "embedded message failed validation",
+					Cause:  err,
+				}
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// AllWorkspacesValidationError is the validation error returned by
+// AllWorkspaces.Validate if the designated constraints aren't met.
+type AllWorkspacesValidationError struct {
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
+}
+
+// Error satisfies the builtin error interface
+func (e AllWorkspacesValidationError) Error() string {
+	cause := ""
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
+	}
+
+	key := ""
+	if e.Key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAllWorkspaces.%s: %s%s",
+		key,
+		e.Field,
+		e.Reason,
+		cause)
+}
+
+var _ error = AllWorkspacesValidationError{}
+
 // Validate checks the field values on Layouts with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
 func (m *Layouts) Validate() error {
