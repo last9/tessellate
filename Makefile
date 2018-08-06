@@ -31,9 +31,8 @@ ifeq ($(strip $(CONSUL_ADDR)),)
 CONSUL_ADDR = "127.0.0.1:8500"
 endif
 
-test: build_deps start_server
+test: build_deps
 	go test -v ./...
-	make stop_server
 
 http_build:
 	protoc -I. \
