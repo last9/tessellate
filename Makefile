@@ -1,20 +1,19 @@
+# Variables.
 WORKER_REPO := "tsl8/worker"
 SERVER_REPO := "tsl8/grpc-server"
 
+ifeq ($(strip $(CONSUL_ADDR)),)
+CONSUL_ADDR = "127.0.0.1:8500"
+endif
+
 .PHONY: worker tessellate http
 
+# Make proto file for tessellate.
 protodep:
 	go get -v github.com/golang/protobuf/protoc-gen-go
 	go get -v github.com/lyft/protoc-gen-validate
 	go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	protoc --version || /bin/bash install_protobuf.sh
-
-deps:
-	dep version || (curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh)
-	dep ensure -v
-
-clean:
-	rm -rf vendor/github.com/hashicorp/nomad/nomad/structs/structs.generated.go
 
 proto: protodep
 	protoc \
@@ -25,15 +24,21 @@ proto: protodep
 		--validate_out="lang=go:${GOPATH}/src" \
 		proto/tessellate.proto
 
+# Make dependencies, clean and build proto.
+deps:
+	dep version || (curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh)
+	dep ensure -v
+
+clean:
+	rm -rf vendor/github.com/hashicorp/nomad/nomad/structs/structs.generated.go
+
 build_deps: proto deps clean
 
-ifeq ($(strip $(CONSUL_ADDR)),)
-CONSUL_ADDR = "127.0.0.1:8500"
-endif
-
+# Run unit tests.
 test: build_deps
 	go test -v ./...
 
+# Build http tessellate server.
 http_build:
 	protoc -I. \
 		-I${GOPATH}/src \
@@ -43,36 +48,43 @@ http_build:
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_http -a -installsuffix cgo \
 		github.com/tsocial/tessellate/commands/http
 
+http: build_deps http_build
+
+# Build tessellate worker.
 worker_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_worker -a -installsuffix cgo \
 		github.com/tsocial/tessellate/commands/worker
 
-tessellate_build_linux:
-	go build -o tessellate github.com/tsocial/tessellate/
+worker: build_deps worker_build
 
+# Build grpc tessellate server. For OSX and Linux.
 tessellate_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
 		cgo github.com/tsocial/tessellate/
+
+tessellate_build_linux:
+	go build -o tessellate github.com/tsocial/tessellate/
 
 tessellate_build_mac: build_deps
 	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
     		cgo github.com/tsocial/tessellate/commands/cli
 
+tessellate: build_deps tessellate_build
+
+# Build the tessellate cli.
 cli_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
 
-tessellate: build_deps tessellate_build
-
+# Start tessellate server in background.
 start_server: tessellate
 	nohup ./tessellate --least-cli-version 0.0.4 >/dev/null &
 
+# Kill the tessellate server process.
 stop_server:
 	pkill tessellate
 
-worker: build_deps worker_build
-http: build_deps http_build
-
+# Docker images. Build and Upload.
 build_images: worker_build tessellate_build
 	docker-compose -f docker-compose.yaml build worker
 	docker-compose -f docker-compose.yaml build grpc-server
