@@ -52,9 +52,9 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	app := kingpin.New("tessellate", "Tessellate CLI")
 
-	rootCert = app.Flag("root-cert", "Root Cert File").String()
-	certFile = app.Flag("cert-file", "Cert File").String()
-	keyFile = app.Flag("key-file", "Key File").String()
+	// rootCert = app.Flag("root-cert", "Root Cert File").String()
+	// certFile = app.Flag("cert-file", "Cert File").String()
+	// keyFile = app.Flag("key-file", "Key File").String()
 
 	endpoint = app.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
 	app.Version(version)

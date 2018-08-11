@@ -39,7 +39,7 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 			return nil
 		}
 
-		if filepath.Ext(path) != ".json" || strings.Contains(path, "tfvars") {
+		if !strings.HasSuffix(path, ".tf.json") || strings.Contains(path, "tfvars") {
 			log.Printf("skipping %s", path)
 			return nil
 		}
