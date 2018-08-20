@@ -260,7 +260,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		return nil, err
 	}
 
-	return job, dispatcher.Get().Dispatch(j.Id, wID, j.LayoutId)
+	return job, dispatcher.Get().Dispatch(wID, &j)
 }
 
 // ApplyLayout job.

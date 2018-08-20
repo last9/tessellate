@@ -1,7 +1,9 @@
 package dispatcher
 
+import "github.com/tsocial/tessellate/storage/types"
+
 type Dispatcher interface {
-	Dispatch(jobID, workspaceID, layoutID string) error
+	Dispatch(workspaceID string, job *types.Job) error
 }
 
 var instance Dispatcher
