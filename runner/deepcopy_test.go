@@ -117,6 +117,30 @@ func TestDeepCopy(t *testing.T) {
 				"foo": []string{"biz", "baz"},
 			},
 		},
+		{
+			original: map[string]interface{}{
+				"foo": []string{"biz", "baz"},
+				"foo2": map[string]interface{}{
+					"foo3": []string{"123"},
+				},
+			},
+			transformer: func(m map[string]interface{}) map[string]interface{} {
+				m["foo"].([]string)[0] = "hiz"
+				return m
+			},
+			expectedCopy: map[string]interface{}{
+				"foo": []string{"hiz", "baz"},
+				"foo2": map[string]interface{}{
+					"foo3": []string{"123"},
+				},
+			},
+			expectedOriginal: map[string]interface{}{
+				"foo": []string{"biz", "baz"},
+				"foo2": map[string]interface{}{
+					"foo3": []string{"123"},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
