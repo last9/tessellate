@@ -69,7 +69,7 @@ type Cmd struct {
 	op         []string
 	layout     map[string]json.RawMessage
 	vars       map[string]interface{}
-	stdout     io.WriteCloser
+	stdout     io.Writer
 	stderr     io.WriteCloser
 	dir        string
 	logPrefix  string
@@ -93,7 +93,6 @@ func (p *Cmd) Run() error {
 	//defer p.stderr.Close()
 
 	p.stdout = os.Stdout
-	defer p.stdout.Close()
 
 	p.stderr = os.Stderr
 	defer p.stderr.Close()
