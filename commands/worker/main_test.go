@@ -22,7 +22,7 @@ func TestMainRunner(t *testing.T) {
 	lID := "l123"
 
 	log.Printf("waiting for consul")
-	time.Sleep(30 * time.Second)
+	time.Sleep(5 * time.Second)
 	store := consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
 	store.Setup()
 
