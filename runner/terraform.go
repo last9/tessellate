@@ -224,6 +224,7 @@ func (p *Cmd) saveVars() error {
 		return nil
 	}
 
+	p.stdout.Output(fmt.Sprintf("%+v", p.vars))
 	// Make a Copy of Variables before making alterations.
 	vars, err := DeepCopy(p.vars)
 	if err != nil {
