@@ -5,8 +5,11 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
+	"github.com/tsocial/tessellate/storage/types"
 	"github.com/tsocial/tessellate/tmpl"
 )
+
+const defaultAttempts = 3
 
 type client struct {
 	cfg NomadConfig
@@ -27,7 +30,7 @@ func NewNomadClient(cfg NomadConfig) *client {
 	return &client{cfg}
 }
 
-func (c *client) Dispatch(j, w, l string) error {
+func (c *client) Dispatch(w string, j *types.Job) error {
 	// Create a nomad job using go template
 	var tmplStr = `
 job "{{ job_id }}" {
@@ -36,6 +39,10 @@ job "{{ job_id }}" {
 
   group "{{ job_id }}" {
     count = 1
+
+	restart {
+      attempts = {{ attempts }}
+    }
 
     task "apply_job" {
       driver = "docker"
@@ -54,14 +61,19 @@ job "{{ job_id }}" {
 }
 `
 	cfg := pongo2.Context{
-		"job_id":       j,
+		"job_id":       j.Id,
 		"workspace_id": w,
-		"layout_id":    l,
+		"layout_id":    j.LayoutId,
 		"datacenter":   c.cfg.Datacenter,
 		"image":        c.cfg.Image,
 		"cpu":          c.cfg.CPU,
 		"memory":       c.cfg.Memory,
 		"consul_addr":  c.cfg.ConsulAddr,
+		"attempts":     defaultAttempts,
+	}
+
+	if j.Dry {
+		cfg["attempts"] = 0
 	}
 
 	nomadJob, err := tmpl.Parse(tmplStr, cfg)
@@ -104,5 +116,3 @@ job "{{ job_id }}" {
 	log.Printf("successfully dispatched the job: %+v", resp)
 	return nil
 }
-
-

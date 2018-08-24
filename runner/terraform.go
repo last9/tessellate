@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 
+	"io"
+
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/tmpl"
@@ -20,9 +22,9 @@ const (
 )
 
 var opMap = map[int32][]string{
-	PlanOp:    []string{"plan"},
-	ApplyOp:   []string{"apply", "-auto-approve"},
-	DestroyOp: []string{"destroy", "-auto-approve"},
+	PlanOp:    {"plan"},
+	ApplyOp:   {"apply", "-auto-approve"},
+	DestroyOp: {"destroy", "-auto-approve"},
 }
 
 func remoteLayout(addr, path string) map[string]interface{} {
@@ -67,8 +69,8 @@ type Cmd struct {
 	op         []string
 	layout     map[string]json.RawMessage
 	vars       map[string]interface{}
-	stdout     OutWriteCloser
-	stderr     OutWriteCloser
+	stdout     io.Writer
+	stderr     io.WriteCloser
 	dir        string
 	logPrefix  string
 	remoteAddr string
@@ -84,10 +86,15 @@ func (p *Cmd) Run() error {
 		return errors.Wrapf(err, "Cannot make Directory %v", p.dir)
 	}
 
-	p.stdout = NewOutWriterCloser(false, p.logPrefix, "stdout")
-	defer p.stdout.Close()
+	//p.stdout = NewOutWriterCloser(false, p.logPrefix, "stdout")
+	//defer p.stdout.Close()
+	//
+	//p.stderr = NewOutWriterCloser(true, p.logPrefix, "stderr")
+	//defer p.stderr.Close()
 
-	p.stderr = NewOutWriterCloser(true, p.logPrefix, "stderr")
+	p.stdout = os.Stdout
+
+	p.stderr = os.Stderr
 	defer p.stderr.Close()
 
 	if err := p.saveLayout(); err != nil {
@@ -109,7 +116,7 @@ func (p *Cmd) Run() error {
 	}
 
 	c := p.getCmd()
-	p.stdout.Output(fmt.Sprintf("Executing Command %+v", c))
+	p.stdout.Write([]byte(fmt.Sprintf("Executing Command %+v", c)))
 
 	if err := c.Run(); err != nil {
 		return errors.Wrap(err, "Error executing Command")
@@ -120,10 +127,6 @@ func (p *Cmd) Run() error {
 
 func (p *Cmd) SetRemotePath(path string) {
 	p.remotePath = path
-}
-
-func (p *Cmd) GetStderr() OutWriteCloser {
-	return p.stderr
 }
 
 // Command Setter
@@ -170,14 +173,14 @@ func (p *Cmd) ClearDir(path string) error {
 // Save the remote layout in a directory called .terraform.
 func (p *Cmd) saveRemote(addr string) error {
 	lPath := fmt.Sprintf("%v/state.tf.json", p.dir)
-	p.stdout.Output("Saving Remote state file")
+	p.stdout.Write([]byte("Saving Remote state file\n"))
 	lData, err := json.Marshal(remoteLayout(addr, p.remotePath))
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal remote State")
 	}
 
 	if err := ioutil.WriteFile(lPath, lData, os.ModePerm); err != nil {
-		p.stdout.Output("Cannot save tfstate")
+		p.stdout.Write([]byte("Cannot save tfstate\n"))
 		return errors.Wrap(err, "Cannot save tfstate to file")
 	}
 
@@ -192,7 +195,7 @@ func (p *Cmd) saveLayout() error {
 	}
 
 	fn := func(data json.RawMessage, name string) error {
-		p.stdout.Output(fmt.Sprintf("Saving Layout %v", name))
+		p.stdout.Write([]byte(fmt.Sprintf("Saving Layout %v", name)))
 		layout, err := tmpl.ParseLayout(data, tv[name])
 		if err != nil {
 			return errors.Wrap(err, "Invalid Layout template")
@@ -200,7 +203,7 @@ func (p *Cmd) saveLayout() error {
 
 		lPath := fmt.Sprintf("%v/%v.tf.json", p.dir, name)
 		if err := ioutil.WriteFile(lPath, layout, os.ModePerm); err != nil {
-			p.stdout.Output("Cannot save layout file.")
+			p.stdout.Write([]byte("Cannot save layout file."))
 			return errors.Wrap(err, "Cannot save Layout file")
 		}
 
@@ -220,11 +223,10 @@ func (p *Cmd) saveLayout() error {
 func (p *Cmd) saveVars() error {
 	// Do not save empty variables.
 	if len(p.vars) == 0 {
-		p.stdout.Output("Skipping empty Vars file")
+		p.stdout.Write([]byte("Skipping empty Vars file"))
 		return nil
 	}
 
-	p.stdout.Output(fmt.Sprintf("%+v", p.vars))
 	// Make a Copy of Variables before making alterations.
 	vars, err := DeepCopy(p.vars)
 	if err != nil {
@@ -233,7 +235,7 @@ func (p *Cmd) saveVars() error {
 
 	delete(vars, "__tmpl__vars__")
 
-	p.stdout.Output("Saving Vars file")
+	p.stdout.Write([]byte("Saving Vars file"))
 	lData, err := json.Marshal(vars)
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal vars")
@@ -241,7 +243,7 @@ func (p *Cmd) saveVars() error {
 
 	lPath := fmt.Sprintf("%v/terraform.tfvars.json", p.dir)
 	if err := ioutil.WriteFile(lPath, lData, os.ModePerm); err != nil {
-		p.stdout.Output("Cannot save vars file")
+		p.stdout.Write([]byte("Cannot save vars file"))
 		return errors.Wrap(err, "Cannot save vars to file")
 	}
 
@@ -274,7 +276,6 @@ func (p *Cmd) initLayout() error {
 	log.Printf("Executing %+v", c)
 	_, err := c.Output()
 	if err != nil {
-		log.Println(p.stderr.GetBuffer())
 		return errors.Wrap(err, "Error executing init")
 	}
 

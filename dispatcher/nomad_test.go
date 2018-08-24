@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tsocial/tessellate/storage/types"
 )
 
 func TestMain(m *testing.M) {
@@ -24,5 +25,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestClient_Dispatch(t *testing.T) {
-	assert.Nil(t, Get().Dispatch("job", "workspace", "layout"))
+	job := &types.Job{Id: "job", LayoutId: "layout"}
+	assert.Nil(t, Get().Dispatch("workspace", job))
 }
