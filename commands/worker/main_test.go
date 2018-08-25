@@ -68,6 +68,7 @@ func TestMainRunner(t *testing.T) {
 			jobID:       jID,
 			workspaceID: wID,
 			layoutID:    lID,
+			tmpDir: "success-run",
 		}
 
 		x := mainRunner(store, in)
@@ -80,6 +81,7 @@ func TestMainRunner(t *testing.T) {
 			jobID:       jID,
 			workspaceID: wID,
 			layoutID:    lID,
+			tmpDir: "failed-run",
 		}
 
 		x := mainRunner(store, in)
