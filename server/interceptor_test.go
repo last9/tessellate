@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tsocial/tessellate/storage/consul"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
@@ -28,9 +26,6 @@ func TestInterceptor(t *testing.T) {
 
 		s := Grpc()
 		defer s.GracefulStop()
-
-		store = consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
-		store.Setup()
 
 		RegisterTessellateServer(s, New(store))
 

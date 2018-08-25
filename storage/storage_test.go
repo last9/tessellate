@@ -2,55 +2,19 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 
-	"math/rand"
-	"time"
-
-	"strings"
-
-	"os"
-
-	"fmt"
-
-	"github.com/hashicorp/consul/api"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/tsocial/tessellate/storage/consul"
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/tsocial/tessellate/utils"
 )
 
-// Deletes all the keys in the prefix / on Consul.
-func deleteTree(client *api.Client) error {
-	client.KV().Put(&api.KVPair{}, &api.WriteOptions{})
-
-	if _, err := client.KV().DeleteTree("testing/", &api.WriteOptions{}); err != nil {
-		return errors.Wrap(err, "Cannot delete all keys under prefix /")
-	}
-
-	return nil
-}
-
-func TestMain(m *testing.M) {
-	//Seed Random number generator.
-	rand.Seed(time.Now().UnixNano())
-
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	os.Exit(func() int {
-		//defer deleteTree(store.GetClient())
-
-		y := m.Run()
-		return y
-	}())
-}
+var store Storer
 
 func TestStorer(t *testing.T) {
-	store := consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
-	store.Setup()
-
 	t.Run("Lock tests", func(t *testing.T) {
 		t.Run("Lock a Key", func(t *testing.T) {
 			if err := store.Lock("key3", "c1"); err != nil {
@@ -60,7 +24,7 @@ func TestStorer(t *testing.T) {
 
 		t.Run("Un-Idempotent Lock a Key", func(t *testing.T) {
 			if err := store.Lock("key3", "c12"); err == nil {
-				t.Fatal(err)
+				t.Fatal("Should have raised a key")
 			}
 		})
 
@@ -143,26 +107,27 @@ func TestStorer(t *testing.T) {
 			assert.Equal(t, 2, len(x))
 		})
 
-		t.Run("Get Consul Key", func(t *testing.T) {
+		t.Run("Get absent Key", func(t *testing.T) {
 			d, err := store.GetKey("hello/world")
 			assert.Nil(t, err)
 			assert.Equal(t, []byte{}, d)
 		})
 
-		t.Run("Get Valid Consul Key", func(t *testing.T) {
+		t.Run("Get Valid Key", func(t *testing.T) {
 			key := fmt.Sprintf("workspaces/%v/latest", wid)
 			d, err := store.GetKey(key)
 			assert.Nil(t, err)
 			assert.NotEqual(t, []byte{}, d)
 		})
 
-		t.Run("Get Consul Keys", func(t *testing.T) {
+		t.Run("Get Keys", func(t *testing.T) {
 			prefix := types.WORKSPACE + "/"
 			separator := "/"
 
 			keys, err := store.GetKeys(prefix, separator)
 			assert.Nil(t, err)
 
+			log.Println(keys)
 			for _, k := range keys {
 				splits := strings.Split(k, "/")
 				assert.Equal(t, 3, len(splits))

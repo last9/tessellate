@@ -23,6 +23,12 @@
   revision = "3c58d8115a78a6879e5df75ae900846768d36895"
 
 [[projects]]
+  name = "github.com/coreos/bbolt"
+  packages = ["."]
+  revision = "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
+  version = "v1.3.0"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -293,7 +299,10 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["cpu"]
+  packages = [
+    "cpu",
+    "unix"
+  ]
   revision = "bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e"
 
 [[projects]]
@@ -369,6 +378,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1b72a35794dd42d40143143c2608479f67d501ca6987da9b2cd35e07287f3c50"
+  inputs-digest = "7a9e161b05e930f9b89ac14f9543e531cd5a39d581ea411d29bc99378b62f6a4"
   solver-name = "gps-cdcl"
   solver-version = 1

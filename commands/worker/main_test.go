@@ -4,31 +4,20 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"os"
 	"testing"
 
-	"time"
-
-	"github.com/hashicorp/consul/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/server"
-	"github.com/tsocial/tessellate/storage/consul"
+	"github.com/tsocial/tessellate/storage"
 	"github.com/tsocial/tessellate/storage/types"
 )
+
+var store storage.Storer
 
 func TestMainRunner(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	wID := "w123"
 	lID := "l123"
-
-	log.Printf("waiting for consul")
-	time.Sleep(5 * time.Second)
-	store := consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
-	store.Setup()
-
-	defer func() {
-		store.GetClient().KV().DeleteTree(wID+"/", &api.WriteOptions{})
-	}()
 
 	// Tree for workspace ID.
 	tree := types.MakeTree(wID)

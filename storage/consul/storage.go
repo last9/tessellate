@@ -1,7 +1,6 @@
 package consul
 
 import (
-	"log"
 	"path"
 
 	"time"
@@ -68,7 +67,6 @@ func (e *ConsulStore) GetKeys(prefix string, separator string) ([]string, error)
 
 func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error {
 	path := path.Join(reader.MakePath(tree), version)
-	log.Println(path)
 	// Get the vars for the layout.
 	bytes, _, err := e.client.KV().Get(path, nil)
 	if err != nil {
@@ -192,6 +190,7 @@ func (e *ConsulStore) Teardown() error {
 	return nil
 }
 
-func (e *ConsulStore) GetClient() *api.Client {
-	return e.client
+func (e *ConsulStore) DeleteKeys(prefix string) error {
+	_, err := e.client.KV().DeleteTree(prefix+"/", &api.WriteOptions{})
+	return err
 }

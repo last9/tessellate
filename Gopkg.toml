@@ -72,3 +72,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/meson10/highbrow"
+
+[[constraint]]
+  name = "github.com/coreos/bbolt"
+  version = "1.3.0"
