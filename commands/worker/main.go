@@ -31,12 +31,14 @@ var (
 	workspaceID = kingpin.Flag("workspace", "Workspace ID").Short('w').String()
 	layoutID    = kingpin.Flag("layout", "Layout ID").Short('l').String()
 	consulIP    = kingpin.Flag("consul-host", "Consul IP").Short('c').String()
+	tmpDir      = kingpin.Flag("tmp-dir", "Temporary Dir").Short('d').Default("test-runner").String()
 )
 
 type input struct {
 	jobID       string
 	workspaceID string
 	layoutID    string
+	tmpDir      string
 }
 
 // Make a HTTP Call to the callbacks specified.
@@ -180,7 +182,7 @@ func getCmd(store storage.Storer, in *input) (*runner.Cmd, error) {
 	cmd.SetOp(op)
 	cmd.SetRemotePath(remotePath(in))
 	cmd.SetRemote(*consulIP)
-	cmd.SetDir("/tmp/test_runner")
+	cmd.SetDir(path.Join("/tmp", in.tmpDir))
 	cmd.SetLayout(l.Plan)
 	cmd.SetVars(*v)
 	cmd.SetLogPrefix(j.Id)
@@ -276,6 +278,7 @@ func main() {
 		jobID:       *jobID,
 		workspaceID: *workspaceID,
 		layoutID:    *layoutID,
+		tmpDir:      *tmpDir,
 	}
 
 	os.Exit(mainRunner(store, in))

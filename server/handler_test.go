@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"os"
 	"testing"
 
 	"context"
@@ -10,7 +9,6 @@ import (
 	"io/ioutil"
 
 	"github.com/tsocial/tessellate/storage"
-	"github.com/tsocial/tessellate/storage/consul"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -21,14 +19,6 @@ import (
 
 var store storage.Storer
 var server TessellateServer
-
-func TestMain(m *testing.M) {
-	store = consul.MakeConsulStore(os.Getenv("CONSUL_ADDR"))
-	store.Setup()
-
-	server = New(store)
-	os.Exit(m.Run())
-}
 
 func uglyJson(b []byte) []byte {
 	var t map[string]interface{}

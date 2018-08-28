@@ -1,4 +1,4 @@
-// +build integration
+// +build nomad
 
 package dispatcher
 
