@@ -181,6 +181,26 @@ func (cm *layout) layoutStateGet(_ *kingpin.ParseContext) error {
 	return nil
 }
 
+func (cm *layout) layoutGetOutput(_ *kingpin.ParseContext) error {
+	req := &server.GetOutputRequest{
+		LayoutId:    cm.id,
+		WorkspaceId: cm.workspaceId,
+	}
+
+	resp, err := getClient().GetOutput(makeContext(nil), req)
+	if err != nil {
+		return err
+	}
+
+	var d interface{}
+	if err := json.Unmarshal(resp.Output, &d); err != nil {
+		return err
+	}
+
+	prettyPrint(d)
+	return nil
+}
+
 func getVars(path string) ([]byte, error) {
 	if path == "" {
 		return []byte{}, nil
@@ -214,4 +234,5 @@ func addLayoutCommands(app *kingpin.Application) {
 	dl.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 
 	lCLI.Command("state", "Get layout's current state").Action(clm.layoutStateGet)
+	lCLI.Command("output", "Get layout's output if exist").Action(clm.layoutGetOutput)
 }

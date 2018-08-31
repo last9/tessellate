@@ -1074,3 +1074,103 @@ func (e GetStateResponseValidationError) Error() string {
 }
 
 var _ error = GetStateResponseValidationError{}
+
+// Validate checks the field values on GetOutputRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, an
+// error is returned.
+func (m *GetOutputRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
+		return GetOutputRequestValidationError{
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
+		}
+	}
+
+	if utf8.RuneCountInString(m.GetLayoutId()) < 1 {
+		return GetOutputRequestValidationError{
+			Field:  "LayoutId",
+			Reason: "value length must be at least 1 runes",
+		}
+	}
+
+	return nil
+}
+
+// GetOutputRequestValidationError is the validation error returned by
+// GetOutputRequest.Validate if the designated constraints aren't met.
+type GetOutputRequestValidationError struct {
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
+}
+
+// Error satisfies the builtin error interface
+func (e GetOutputRequestValidationError) Error() string {
+	cause := ""
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
+	}
+
+	key := ""
+	if e.Key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetOutputRequest.%s: %s%s",
+		key,
+		e.Field,
+		e.Reason,
+		cause)
+}
+
+var _ error = GetOutputRequestValidationError{}
+
+// Validate checks the field values on GetOutputResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, an
+// error is returned.
+func (m *GetOutputResponse) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Output
+
+	return nil
+}
+
+// GetOutputResponseValidationError is the validation error returned by
+// GetOutputResponse.Validate if the designated constraints aren't met.
+type GetOutputResponseValidationError struct {
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
+}
+
+// Error satisfies the builtin error interface
+func (e GetOutputResponseValidationError) Error() string {
+	cause := ""
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
+	}
+
+	key := ""
+	if e.Key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetOutputResponse.%s: %s%s",
+		key,
+		e.Field,
+		e.Reason,
+		cause)
+}
+
+var _ error = GetOutputResponseValidationError{}
