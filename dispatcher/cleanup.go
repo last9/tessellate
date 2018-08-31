@@ -10,7 +10,7 @@ import (
 )
 
 func (c *client) GetOrSetCleanup(s string) error {
-	errornConfig := api.DefaultConfig()
+	nConfig := api.DefaultConfig()
 	nConfig.Address = c.cfg.Address
 
 	if c.cfg.Username != "" {
