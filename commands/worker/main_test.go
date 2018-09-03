@@ -38,6 +38,7 @@ func TestMainRunner(t *testing.T) {
 		}
 
 		plan["sleep"] = lBytes
+
 		// Create layout instance to be saved for given ID and plan.
 		layout := types.Layout{Id: lID, Plan: plan}
 
@@ -68,7 +69,7 @@ func TestMainRunner(t *testing.T) {
 			jobID:       jID,
 			workspaceID: wID,
 			layoutID:    lID,
-			tmpDir: "success-run",
+			tmpDir:      "success-run",
 		}
 
 		x := mainRunner(store, in)
@@ -81,7 +82,7 @@ func TestMainRunner(t *testing.T) {
 			jobID:       jID,
 			workspaceID: wID,
 			layoutID:    lID,
-			tmpDir: "failed-run",
+			tmpDir:      "failed-run",
 		}
 
 		x := mainRunner(store, in)

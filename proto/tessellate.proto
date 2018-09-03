@@ -49,6 +49,7 @@ service Tessellate {
   rpc StartWatch (StartWatchRequest) returns (Ok) {}
   rpc StopWatch (StopWatchRequest) returns (Ok) {}
   rpc GetState (GetStateRequest) returns (GetStateResponse) {}
+  rpc GetOutput (GetOutputRequest) returns (GetOutputResponse) {}
   rpc GetAllWorkspaces(Ok) returns (AllWorkspaces) {}
 }
 
@@ -181,4 +182,13 @@ message GetStateRequest {
 
 message GetStateResponse {
   bytes state = 1;
+}
+
+message GetOutputRequest {
+  string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
+  string LayoutId = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetOutputResponse {
+  bytes output = 1;
 }

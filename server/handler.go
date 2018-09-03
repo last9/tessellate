@@ -24,6 +24,16 @@ const (
 	EXT   = ".tf.json"
 )
 
+type Output struct {
+	Outputs map[string]struct {
+		Value interface{} `json:"value"`
+	} `json:"outputs"`
+}
+
+type StateStruct struct {
+	Modules []*Output `json:"modules"`
+}
+
 // SaveWorkspace under workspaces/ .
 func (s *Server) SaveWorkspace(ctx context.Context, in *SaveWorkspaceRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
@@ -335,5 +345,38 @@ func (s *Server) GetState(ctx context.Context, in *GetStateRequest) (*GetStateRe
 
 	return &GetStateResponse{
 		State: data,
+	}, nil
+}
+
+func (s *Server) GetOutput(ctx context.Context, in *GetOutputRequest) (*GetOutputResponse, error) {
+	key := filepath.Join(types.STATE, in.WorkspaceId, in.LayoutId)
+	data, err := s.store.GetKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	out := StateStruct{}
+
+	if err := json.Unmarshal(data, &out); err != nil {
+		return nil, err
+	}
+
+	if len(out.Modules) != 1 {
+		return nil, errors.New("No output found")
+	}
+
+	result := map[string]interface{}{}
+
+	for k := range out.Modules[0].Outputs {
+		result[k] = out.Modules[0].Outputs[k].Value
+	}
+
+	outBytes, err := json.Marshal(result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &GetOutputResponse{
+		Output: outBytes,
 	}, nil
 }
