@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
+	"io"
 	"log"
+	"path"
 
 	"os"
 
@@ -27,28 +30,90 @@ type layout struct {
 	varsPath    string
 }
 
+func defaultBlackList() []string {
+	return []string{"tfvars"}
+}
+
+func defaultManifest() []string {
+	return []string{
+		".tf.json",
+	}
+}
+
+func readFileLines(file string) ([]string, error) {
+	lines := []string{}
+
+	f, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+
+	defer f.Close()
+
+	rd := bufio.NewReader(f)
+	for {
+		line, err := rd.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			return nil, err
+		}
+
+		lines = append(lines, line)
+	}
+	return lines, err
+}
+
+// candidateFiles matches files that should be uploaed or not
+func candidateFiles(dirname string, manifest []string) ([]string, error) {
+	if manifest == nil {
+		manifest = defaultManifest()
+	}
+
+	blacklist := defaultBlackList()
+	var files []string
+	if err := filepath.Walk(dirname, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+
+		for _, b := range blacklist {
+			if strings.Contains(path, b) {
+				log.Printf("skipping %s", path)
+				return nil
+			}
+		}
+
+		for _, m := range manifest {
+			if strings.HasSuffix(path, m) {
+				files = append(files, path)
+				break
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
 func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 	if _, err := os.Stat(cm.dirName); err != nil {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)
 	}
 
-	var files []string
+	manifest, err := readFileLines(path.Join(cm.dirName, ".tsl8"))
+	if err != nil {
+		log.Println(err)
+	}
 
-	if err := filepath.Walk(cm.dirName, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-
-		if !strings.HasSuffix(path, ".tf.json") || strings.Contains(path, "tfvars") {
-			log.Printf("skipping %s", path)
-			return nil
-		}
-
-		files = append(files, path)
-		return nil
-
-	}); err != nil {
-		return err
+	files, err := candidateFiles(cm.dirName, manifest)
+	if err != nil {
+		return errors.Wrap(err, "Cannot get files")
 	}
 
 	if len(files) == 0 {
