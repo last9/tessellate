@@ -3,6 +3,10 @@ package main
 import (
 	"testing"
 
+	"os"
+
+	"strings"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,4 +28,26 @@ func TestCandidateFiles(t *testing.T) {
 
 		assert.Equal(t, f, []string{"testdata/a.txt"})
 	})
+}
+
+func TestReadFileLines(t *testing.T) {
+	t.Run("Should return manifest file contents and return extensions an array of string.", func(t *testing.T) {
+		expected := []string{".txt", ".tmpl"}
+		lines, err := readFileLines("testdata/.tsl8")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(lines) != 2 {
+			t.Fatal("Expected 2 extensions to be read, found %v", len(lines))
+		}
+
+		if strings.Join(lines, ",") != strings.Join(expected, ",") {
+			t.Fatal("Expected %v, Read %v", expected, lines)
+		}
+	})
+}
+
+func TestMain(m *testing.M) {
+	os.Exit(m.Run())
 }

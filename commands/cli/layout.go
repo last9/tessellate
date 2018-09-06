@@ -52,7 +52,7 @@ func readFileLines(file string) ([]string, error) {
 
 	rd := bufio.NewReader(f)
 	for {
-		line, err := rd.ReadString('\n')
+		line, _, err := rd.ReadLine()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -61,7 +61,7 @@ func readFileLines(file string) ([]string, error) {
 			return nil, err
 		}
 
-		lines = append(lines, line)
+		lines = append(lines, string(line))
 	}
 	return lines, err
 }

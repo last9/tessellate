@@ -141,7 +141,9 @@ func (m *AllWorkspaces) Validate() error {
 	for idx, item := range m.GetWorkspaces() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		if v, ok := interface{}(item).(interface {
+			Validate() error
+		}); ok {
 			if err := v.Validate(); err != nil {
 				return AllWorkspacesValidationError{
 					Field:  fmt.Sprintf("Workspaces[%v]", idx),
@@ -197,7 +199,9 @@ func (m *Layouts) Validate() error {
 	for idx, item := range m.GetLayouts() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		if v, ok := interface{}(item).(interface {
+			Validate() error
+		}); ok {
 			if err := v.Validate(); err != nil {
 				return LayoutsValidationError{
 					Field:  fmt.Sprintf("Layouts[%v]", idx),
