@@ -29,8 +29,6 @@ type layout struct {
 	varsPath    string
 }
 
-const TEXT = "unknown"
-
 func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 	if _, err := os.Stat(cm.dirName); err != nil {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)

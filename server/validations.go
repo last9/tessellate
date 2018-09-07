@@ -64,7 +64,7 @@ func providerConflict(input map[string]json.RawMessage, wvars *types.Vars) error
 
 	for fileName, layoutBytes := range input {
 		if filepath.Ext(fileName) != ".json" {
-			break
+			continue
 		}
 		layoutMap := map[string]json.RawMessage{}
 		if err := json.Unmarshal(layoutBytes, &layoutMap); err != nil {
