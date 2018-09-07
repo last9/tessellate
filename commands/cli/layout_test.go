@@ -46,6 +46,17 @@ func TestReadFileLines(t *testing.T) {
 			t.Fatal("Expected %v, Read %v", expected, lines)
 		}
 	})
+
+	t.Run("Should read a single line with no new line character", func(t *testing.T) {
+		expected := []string{".tmpl"}
+		lines, err := readFileLines("testdata/newline.tsl8")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(expected) != len(lines) {
+			t.Fatal("Expected 1 item in array, got %v", len(lines))
+		}
+	})
 }
 
 func TestMain(m *testing.M) {

@@ -52,16 +52,19 @@ func readFileLines(file string) ([]string, error) {
 
 	rd := bufio.NewReader(f)
 	for {
-		line, _, err := rd.ReadLine()
+		line, err := rd.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
+				if len(line) > 0 {
+					lines = append(lines, line)
+				}
 				break
 			}
 
 			return nil, err
 		}
 
-		lines = append(lines, string(line))
+		lines = append(lines, line)
 	}
 	return lines, err
 }
