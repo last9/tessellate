@@ -28,7 +28,7 @@ func TestCandidateFiles(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		assert.Equal(t, f, []string{"testdata/a.txt"})
+		assert.Equal(t, f, []string{"testdata/a.txt", "testdata/hello.tf.json"})
 	})
 
 	t.Run("Should give both tmpl and tf.json files as per manifest", func(t *testing.T) {
