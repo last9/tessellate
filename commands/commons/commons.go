@@ -71,6 +71,9 @@ func CandidateFiles(dirname string, manifest []string) ([]string, error) {
 	if manifest == nil {
 		manifest = defaultManifest()
 	}
+	// Always append defaultManifest() list to actual input, as we would like to parse all tf.json files as well.
+	// Chances are, tf.json might not be written in the manifest file.
+	manifest = append(manifest, defaultManifest()...)
 
 	blacklist := defaultBlackList()
 	var files []string

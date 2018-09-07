@@ -1,0 +1,14 @@
+{
+  "variable": {
+    "duration": {
+      "default": "1"
+    }
+  },
+  "data": {
+    "external": {
+      "pause": {
+        "program": ["/bin/sh", "-c", "sleep ${var.duration}; echo '{\"arg\":\"abc\"}'"]
+      }
+    }
+  }
+}

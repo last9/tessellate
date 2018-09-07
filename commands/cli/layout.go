@@ -44,13 +44,14 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		return errors.Wrap(err, "Cannot get files")
 	}
 
+	fmt.Println(files)
 	if len(files) == 0 {
 		return fmt.Errorf("no candidate files found in directory %s", cm.dirName)
 	}
 
 	fLayout := map[string]interface{}{}
 
-	// Will contain all candidate files. Current expectation is that all files are json.
+	// Will contain all candidate files.
 	for _, f := range files {
 		fBytes, err := ioutil.ReadFile(f)
 		if err != nil {
@@ -59,13 +60,14 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		}
 
 		var fObj interface{}
+		// If json, unmarshal as a JSON.
 		if filepath.Ext(f) == ".json" {
 			if err := json.Unmarshal(fBytes, &fObj); err != nil {
 				log.Printf("invald json file: %s", f)
 				return err
 			}
 		} else {
-			// Copy the contents as they are.
+			// Copy the contents as they are. Say if the file is a .tmpl
 			fObj = string(fBytes)
 		}
 

@@ -7,6 +7,8 @@ import (
 
 	"strings"
 
+	"fmt"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,6 +29,14 @@ func TestCandidateFiles(t *testing.T) {
 		}
 
 		assert.Equal(t, f, []string{"testdata/a.txt"})
+	})
+
+	t.Run("Should give both tmpl and tf.json files as per manifest", func(t *testing.T) {
+		f, err := CandidateFiles("testdata", []string{".tmpl"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(f)
 	})
 }
 
