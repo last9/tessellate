@@ -9,10 +9,9 @@ import (
 	"github.com/tsocial/tessellate/server"
 	"github.com/tsocial/tessellate/storage/consul"
 	"google.golang.org/grpc/reflection"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const Version = "0.1.0"
+const Version = "0.1.2"
 
 var (
 	port      = kingpin.Flag("port", "Port no.").Short('p').Default("9977").String()
