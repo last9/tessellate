@@ -48,6 +48,13 @@ func (e *BoltStore) GetKey(key string) ([]byte, error) {
 	return v, err
 }
 
+func (e *BoltStore) SaveKey(key string, val []byte) error {
+	return e.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(e.bucket)
+		return b.Put([]byte(key), val)
+	})
+}
+
 //GetVersions returns an array of all versions that are available for a given key.
 func (e *BoltStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) ([]string, error) {
 	keys := []string{}
