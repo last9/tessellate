@@ -26,7 +26,7 @@ func TestCandidateFiles(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		assert.Equal(t, f, []string{"testdata/a.txt", "testdata/main.txt", "testdata/movie.txt", "testdata/presentation.txt"})
+		assert.Equal(t, f, []string{"testdata/a.txt"})
 	})
 }
 

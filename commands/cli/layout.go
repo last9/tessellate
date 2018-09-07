@@ -11,6 +11,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"path/filepath"
+
 	"strings"
 
 	"github.com/pkg/errors"
@@ -36,7 +38,7 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 
 	manifest, err := commons.ReadFileLines(path.Join(cm.dirName, ".tsl8"))
 	if err != nil {
-		log.Println(err)
+		log.Println("No manifest file found, moving ahead...")
 	}
 
 	files, err := commons.CandidateFiles(cm.dirName, manifest)
@@ -45,35 +47,32 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 	}
 
 	if len(files) == 0 {
-		return fmt.Errorf("no json file found in directory %s", cm.dirName)
+		return fmt.Errorf("no candidate files found in directory %s", cm.dirName)
 	}
 
 	fLayout := map[string]interface{}{}
 
+	// Will contain all candidate files. Current expectation is that all files are json.
 	for _, f := range files {
-		fType, err := commons.GetFileContentType(f)
+		fBytes, err := ioutil.ReadFile(f)
 		if err != nil {
 			log.Println(err)
 			return err
 		}
-		if fType != TEXT {
-			log.Println("Got another file: %v, Ignoring, ", fType)
-		} else {
-			fBytes, err := ioutil.ReadFile(f)
-			if err != nil {
-				log.Println(err)
-				return err
-			}
 
-			var fObj interface{}
+		var fObj interface{}
+		if filepath.Ext(f) == ".json" {
 			if err := json.Unmarshal(fBytes, &fObj); err != nil {
 				log.Printf("invald json file: %s", f)
 				return err
 			}
-
-			splits := strings.Split(f, "/")
-			fLayout[splits[len(splits)-1]] = fObj
+		} else {
+			// Copy the contents as they are.
+			fObj = string(fBytes)
 		}
+
+		splits := strings.Split(f, "/")
+		fLayout[splits[len(splits)-1]] = fObj
 	}
 
 	layoutBytes, err := json.Marshal(fLayout)

@@ -7,8 +7,6 @@ import (
 	"fmt"
 
 	"log"
-	"regexp"
-
 	"path/filepath"
 
 	"strings"
@@ -21,7 +19,6 @@ import (
 
 const (
 	retry = 5
-	EXT   = ".tf.json"
 )
 
 type Output struct {
@@ -101,14 +98,6 @@ func (s *Server) GetAllWorkspaces(ctx context.Context, in *Ok) (*AllWorkspaces, 
 	return &AllWorkspaces{Workspaces: workspaces}, nil
 }
 
-func checkExt(filename string) (bool, error) {
-	var validExt = regexp.MustCompile(`.*` + EXT)
-	if !validExt.MatchString(filename) {
-		return false, errors.New("invalid extension")
-	}
-	return true, nil
-}
-
 func (s *Server) getWorkspace(id string) (*Workspace, error) {
 	// Make tree for workspace ID.
 	tree := types.MakeTree(id)
@@ -152,16 +141,6 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, er
 	p := map[string]json.RawMessage{}
 	if err := json.Unmarshal(in.Plan, &p); err != nil {
 		return nil, err
-	}
-
-	// Check the extension of the file, and raise an error if the ext is not tf.json.
-	var err error
-
-	for k := range p {
-		_, err = checkExt(k)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	wVars := &types.Vars{}

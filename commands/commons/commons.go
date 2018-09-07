@@ -66,7 +66,7 @@ func ReadFileLines(file string) ([]string, error) {
 	return lines, err
 }
 
-// candidateFiles matches files that should be uploaed or not
+// CandidateFiles matches files that should be uploaed or not
 func CandidateFiles(dirname string, manifest []string) ([]string, error) {
 	if manifest == nil {
 		manifest = defaultManifest()
@@ -88,7 +88,13 @@ func CandidateFiles(dirname string, manifest []string) ([]string, error) {
 
 		for _, m := range manifest {
 			if strings.HasSuffix(path, m) {
-				files = append(files, path)
+				fType, err := GetFileContentType(path)
+				if err != nil {
+					log.Println("cannot read file header, %v", err)
+				}
+				if fType == filetype.Unknown.Extension {
+					files = append(files, path)
+				}
 				break
 			}
 		}

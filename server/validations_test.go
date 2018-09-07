@@ -17,7 +17,7 @@ func TestValidationProvider(t *testing.T) {
 		}
 
 		plan := map[string]json.RawMessage{}
-		plan["provider_file"] = uglyJson(lBytes)
+		plan["provider_file.tf.json"] = uglyJson(lBytes)
 
 		t.Run("Should return nil", func(t *testing.T) {
 			assert.Nil(t, providerConflict(plan, nil))
@@ -45,7 +45,7 @@ func TestValidationProvider(t *testing.T) {
 		}
 
 		plan := map[string]json.RawMessage{}
-		plan["provider_file"] = uglyJson(lBytes)
+		plan["provider_file.tf.json"] = uglyJson(lBytes)
 
 		t.Run("Should return nil", func(t *testing.T) {
 			assert.Nil(t, providerConflict(plan, nil))
@@ -63,23 +63,6 @@ func TestValidationProvider(t *testing.T) {
 		t.Run("Should complain about an overriding provider", func(t *testing.T) {
 			v := &types.Vars{"aws": nil}
 			assert.NotNil(t, providerConflict(plan, v))
-		})
-	})
-
-	t.Run("Validate the extension of tf json files.", func(t *testing.T) {
-		t.Run("Wrong extension file should raise an error.", func(t *testing.T) {
-			// read a file with wrong ext. raise an error.
-			filename := "file1.tfvars.json"
-			valid, _ := checkExt(filename)
-			assert.Equal(t, false, valid)
-		})
-
-		t.Run("Correct extension files should return a true flag.", func(t *testing.T) {
-			// read correct file ext, which returns a true or valid file ext.
-			filename := "validext.tf.json"
-			valid, err := checkExt(filename)
-			assert.Equal(t, nil, err)
-			assert.Equal(t, true, valid)
 		})
 	})
 }
