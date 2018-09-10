@@ -93,7 +93,7 @@ func CandidateFiles(dirname string, manifest []string) ([]string, error) {
 			if strings.HasSuffix(path, m) {
 				fType, err := GetFileContentType(path)
 				if err != nil {
-					log.Println("cannot read file header, %v", err)
+					log.Printf("cannot read file header, %v", err)
 				}
 				if fType == filetype.Unknown.Extension {
 					files = append(files, path)

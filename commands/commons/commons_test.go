@@ -49,11 +49,11 @@ func TestReadFileLines(t *testing.T) {
 		}
 
 		if len(lines) != 2 {
-			t.Fatal("Expected 2 extensions to be read, found %v", len(lines))
+			t.Fatal(fmt.Sprintf("Expected 2 extensions to be read, found %v", len(lines)))
 		}
 
 		if strings.Join(lines, ",") != strings.Join(expected, ",") {
-			t.Fatal("Expected %v, Read %v", expected, lines)
+			t.Fatal(fmt.Sprintf("Expected %v, Read %v", expected, lines))
 		}
 	})
 
@@ -65,11 +65,11 @@ func TestReadFileLines(t *testing.T) {
 		}
 
 		if len(expected) != len(lines) {
-			t.Fatal("Expected 1 item in array, got %v", len(lines))
+			t.Fatal(fmt.Sprintf("Expected 1 item in array, got %v", len(lines)))
 		}
 
 		if strings.Join(lines, ",") != strings.Join(expected, ",") {
-			t.Fatal("Expected %v, Read %v", expected, lines)
+			t.Fatal(fmt.Sprintf("Expected %v, Read %v", expected, lines))
 		}
 	})
 }
@@ -81,7 +81,7 @@ func TestFileType(t *testing.T) {
 			t.Fatal(err)
 		}
 		if fileType != "zip" {
-			t.Fatal("Expected to be a zip file, got %v", fileType)
+			t.Fatal(fmt.Sprintf("Expected to be a zip file, got %v", fileType))
 		}
 
 		fileType2, err := GetFileContentType("testdata/movie.txt")
@@ -89,7 +89,7 @@ func TestFileType(t *testing.T) {
 			t.Fatal(err)
 		}
 		if fileType2 != "mp4" {
-			t.Fatal("Expected to be a mp4 file, got %v", fileType2)
+			t.Fatal(fmt.Sprintf("Expected to be a mp4 file, got %v", fileType2))
 		}
 
 		fileType3, err := GetFileContentType("testdata/main.txt")
@@ -97,7 +97,7 @@ func TestFileType(t *testing.T) {
 			t.Fatal(err)
 		}
 		if fileType3 != "elf" {
-			t.Fatal("Expected to be a mp4 file, got %v", fileType3)
+			t.Fatal(fmt.Sprintf("Expected to be a mp4 file, got %v", fileType3))
 		}
 	})
 
@@ -107,7 +107,7 @@ func TestFileType(t *testing.T) {
 			t.Fatal(err)
 		}
 		if fileType != "unknown" {
-			t.Fatal("Expected to be a text file, got %v", fileType)
+			t.Fatal(fmt.Sprintf("Expected to be a text file, got %v", fileType))
 		}
 
 		fileType2, err := GetFileContentType("testdata/newline.tsl8")
@@ -115,7 +115,7 @@ func TestFileType(t *testing.T) {
 			t.Fatal(err)
 		}
 		if fileType2 != "unknown" {
-			t.Fatal("Expected to be a text file, got %v", fileType2)
+			t.Fatal(fmt.Sprintf("Expected to be a text file, got %v", fileType2))
 		}
 
 		fileType3, err := GetFileContentType("testdata/hello.tf.json")
@@ -123,7 +123,7 @@ func TestFileType(t *testing.T) {
 			t.Fatal(err)
 		}
 		if fileType3 != "unknown" {
-			t.Fatal("Expected to be a text file, got %v", fileType3)
+			t.Fatal(fmt.Sprintf("Expected to be a text file, got %v", fileType3))
 		}
 
 	})
