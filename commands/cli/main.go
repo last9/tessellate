@@ -56,7 +56,9 @@ func main() {
 	certFile = app.Flag("cert-file", "Cert File").String()
 	keyFile = app.Flag("key-file", "Key File").String()
 
-	endpoint = app.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
+	endpoint = app.Flag("tessellate", "endpoint of Tessellate").Short('a').Envar("TESSELLATE_SERVER").
+		Default("localhost:9977").String()
+
 	app.Version(version)
 
 	// Add your command methods here.
