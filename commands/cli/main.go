@@ -11,7 +11,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const version = "0.1.1"
+const version = "0.1.2"
 
 var (
 	endpoint *string
