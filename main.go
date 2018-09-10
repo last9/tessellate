@@ -9,6 +9,7 @@ import (
 	"github.com/tsocial/tessellate/server"
 	"github.com/tsocial/tessellate/storage/consul"
 	"google.golang.org/grpc/reflection"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const Version = "0.1.2"
