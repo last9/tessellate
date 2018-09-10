@@ -4,6 +4,11 @@
 Download the latest Tessellate CLI binary from: https://github.com/tsocial/tessellate/releases 
 Download the binary as per your Operating System: Linux or Mac.
 
+# Setting environment variable for tsl8 server.
+Instead of mentioning the address of the tsl8 server with each command,
+you can export TESSELLATE_SERVER=control.ha.tsengineering.io:9977
+And the address will be set for all commands run using the tsl8 CLI client.
+
 # Terminologies used
 
 ### 1. Workspace

@@ -1,4 +1,4 @@
 FROM hashicorp/terraform:light
 
-COPY tessellate tsl8-grpc-api
+COPY tsl8 tsl8-grpc-api
 ENTRYPOINT ["./tsl8-grpc-api"]
