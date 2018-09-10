@@ -36,6 +36,11 @@ func (e *ConsulStore) GetKey(key string) ([]byte, error) {
 	return bytes.Value, err
 }
 
+func (e *ConsulStore) SaveKey(key string, value []byte) error {
+	_, err := e.client.KV().Put(&api.KVPair{Key: key, Value: value}, nil)
+	return err
+}
+
 func (e *ConsulStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) ([]string, error) {
 	key := reader.MakePath(tree)
 	l, _, err := e.client.KV().Keys(key, "", nil)
