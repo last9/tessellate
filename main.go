@@ -12,7 +12,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const Version = "0.1.0"
+const Version = "0.1.2"
 
 var (
 	port      = kingpin.Flag("port", "Port no.").Short('p').Default("9977").String()
