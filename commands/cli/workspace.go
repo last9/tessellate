@@ -71,7 +71,6 @@ func workspaceAll(_ *kingpin.ParseContext) error {
 	for _, w := range w.Workspaces {
 		out := workspaceMap(w)
 		prettyPrint(out)
-		log.Println("----------------------------------------------")
 	}
 
 	return nil
