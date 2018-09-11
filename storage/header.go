@@ -9,6 +9,7 @@ type Storer interface {
 	Teardown() error
 
 	GetKey(string) ([]byte, error)
+	SaveKey(string, []byte) error
 	GetKeys(prefix string, separator string) ([]string, error)
 	Save(reader types.ReaderWriter, tree *types.Tree) error
 	Get(reader types.ReaderWriter, tree *types.Tree) error
