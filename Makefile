@@ -67,8 +67,8 @@ tessellate_build_linux:
 	go build -o tessellate github.com/tsocial/tessellate/
 
 tessellate_build_mac: build_deps
-	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
-    		cgo github.com/tsocial/tessellate/commands/cli
+	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
+    		cgo github.com/tsocial/tessellate
 
 tessellate: build_deps tessellate_build
 
@@ -77,6 +77,9 @@ cli_build: build_deps
 	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
 
+cli_build_mac: build_deps
+	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
+		cgo github.com/tsocial/tessellate/commands/cli
 # Start tessellate server in background.
 start_server: tessellate
 	nohup ./tessellate --least-cli-version 0.0.4 >/dev/null &
