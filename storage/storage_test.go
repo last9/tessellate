@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/tsocial/tessellate/utils"
@@ -132,6 +133,17 @@ func TestStorer(t *testing.T) {
 				splits := strings.Split(k, "/")
 				assert.Equal(t, 3, len(splits))
 			}
+		})
+
+		t.Run("Save and Get Key", func(t *testing.T) {
+			key := uuid.NewV4().String()
+			val := uuid.NewV4().String()
+
+			assert.Nil(t, store.SaveKey(key, []byte(val)))
+
+			got, err := store.GetKey(key)
+			assert.Nil(t, err)
+			assert.Equal(t, val, string(got))
 		})
 	})
 }
