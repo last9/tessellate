@@ -272,12 +272,6 @@
 
 [[projects]]
   branch = "master"
-  name = "gitlab.com/tsocial/sre/tessellate"
-  packages = ["tmpl"]
-  revision = "ebe2018b6c01a4994332ef51b9ff51660d8b4991"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["blake2b"]
   revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
@@ -378,6 +372,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7a9e161b05e930f9b89ac14f9543e531cd5a39d581ea411d29bc99378b62f6a4"
+  inputs-digest = "5867fbf3dfd8837a346499693eeb0ca50199e99f014d00b14e1382ddc48d74de"
   solver-name = "gps-cdcl"
   solver-version = 1

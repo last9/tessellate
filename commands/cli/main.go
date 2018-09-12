@@ -50,13 +50,15 @@ func getClient() server.TessellateClient {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	app := kingpin.New("tessellate", "Tessellate CLI")
+	app := kingpin.New("tsl8", "Tessellate CLI")
 
 	rootCert = app.Flag("root-cert", "Root Cert File").String()
 	certFile = app.Flag("cert-file", "Cert File").String()
 	keyFile = app.Flag("key-file", "Key File").String()
 
-	endpoint = app.Flag("tessellate", "endpoint of Tessellate").Short('a').Default("localhost:9977").String()
+	endpoint = app.Flag("tsl8_server", "endpoint of Tessellate Server").Short('a').Envar("TESSELLATE_SERVER").
+		Default("localhost:9977").String()
+
 	app.Version(version)
 
 	// Add your command methods here.

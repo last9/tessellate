@@ -46,47 +46,47 @@ http_build:
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 		--grpc-gateway_out=logtostderr=true:${GOPATH}/src \
 		proto/tessellate.proto
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_http -a -installsuffix cgo \
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tsl8_http -a -installsuffix cgo \
 		github.com/tsocial/tessellate/commands/http
 
 http: build_deps http_build
 
 # Build tessellate worker.
 worker_build: build_deps
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_worker -a -installsuffix cgo \
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tsl8_worker -a -installsuffix cgo \
 		github.com/tsocial/tessellate/commands/worker
 
 worker: build_deps worker_build
 
 # Build grpc tessellate server. For OSX and Linux.
 tessellate_build: build_deps
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tsl8_server -a -installsuffix \
 		cgo github.com/tsocial/tessellate/
 
 tessellate_build_linux:
-	go build -o tessellate github.com/tsocial/tessellate/
+	go build -o tsl8_server github.com/tsocial/tessellate/
 
 tessellate_build_mac: build_deps
-	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tessellate -a -installsuffix \
+	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tsl8_server -a -installsuffix \
     		cgo github.com/tsocial/tessellate
 
 tessellate: build_deps tessellate_build
 
 # Build the tessellate cli.
 cli_build: build_deps
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tsl8 -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
 
 cli_build_mac: build_deps
-	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tessellate_cli -a -installsuffix \
+	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tsl8 -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
 # Start tessellate server in background.
 start_server: tessellate
-	nohup ./tessellate --least-cli-version 0.0.4 >/dev/null &
+	nohup ./tsl8_server --least-cli-version 0.0.4 >/dev/null &
 
 # Kill the tessellate server process.
 stop_server:
-	pkill tessellate
+	pkill tsl8_server
 
 # Docker images. Build and Upload.
 build_images: worker_build tessellate_build
