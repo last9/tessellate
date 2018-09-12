@@ -6,7 +6,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
-	"gitlab.com/tsocial/sre/tessellate/tmpl"
+	"github.com/tsocial/tessellate/tmpl"
 )
 
 func (c *client) GetOrSetCleanup(s string) error {
