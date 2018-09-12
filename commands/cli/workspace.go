@@ -68,14 +68,9 @@ func workspaceAll(_ *kingpin.ParseContext) error {
 		return err
 	}
 
-	log.Println("----------------------------------------------")
 	for _, w := range w.Workspaces {
-		if w.Vars != nil && len(w.Vars) > 0 {
-			ppWorkspace(w)
-		} else {
-			prettyPrint(w)
-		}
-		log.Println("----------------------------------------------")
+		out := workspaceMap(w)
+		prettyPrint(out)
 	}
 
 	return nil
@@ -95,6 +90,43 @@ func ppWorkspace(w *server.Workspace) {
 	out["Version"] = w.Version
 	out["Vars"] = vars
 	prettyPrint(out)
+}
+
+func workspaceMap(w *server.Workspace) map[string]interface{} {
+	type Var struct {
+		Provider []map[string]struct {
+			Access_key string
+			Region     string
+			Secret_key string
+			Version    string
+		}
+		Variable struct {
+			Region struct{}
+		}
+	}
+	var vars Var
+	out := make(map[string]interface{})
+	if w.Vars != nil && len(w.Vars) > 0 {
+		if err := json.Unmarshal(w.Vars, &vars); err != nil {
+			log.Println(err)
+			return nil
+		}
+
+		providers := ""
+		for key := range vars.Provider {
+			for k := range vars.Provider[key] {
+				providers = providers + k + ", "
+			}
+		}
+		if len(providers) > 0 {
+			out["Providers"] = providers[:len(providers)-2]
+		}
+	}
+
+	out["Name"] = w.Name
+	out["Version"] = w.Version
+
+	return out
 }
 
 func addWorkspaceCommand(app *kingpin.Application) {
