@@ -34,14 +34,14 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)
 	}
 
-	manifest, err := commons.ReadFileLines(path.Join(cm.dirName, ".tsl8"))
-	if err != nil {
+	manifest, rErr := commons.ReadFileLines(path.Join(cm.dirName, ".tsl8"))
+	if rErr != nil {
 		log.Println("No manifest file found, moving ahead...")
 	}
 
-	files, err := commons.CandidateFiles(cm.dirName, manifest)
-	if err != nil {
-		return errors.Wrap(err, "Cannot get files")
+	files, cErr := commons.CandidateFiles(cm.dirName, manifest)
+	if cErr != nil {
+		return errors.Wrap(cErr, "Cannot get files")
 	}
 
 	if len(files) == 0 {
@@ -52,10 +52,10 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 
 	// Will contain all candidate files.
 	for _, f := range files {
-		fBytes, err := ioutil.ReadFile(f)
-		if err != nil {
-			log.Println(err)
-			return err
+		fBytes, fErr := ioutil.ReadFile(f)
+		if fErr != nil {
+			log.Println(fErr)
+			return fErr
 		}
 
 		var fObj interface{}
@@ -74,10 +74,10 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		fLayout[splits[len(splits)-1]] = fObj
 	}
 
-	layoutBytes, err := json.Marshal(fLayout)
-	if err != nil {
-		log.Println(err)
-		return err
+	layoutBytes, mErr := json.Marshal(fLayout)
+	if mErr != nil {
+		log.Println(mErr)
+		return mErr
 	}
 
 	req := &server.SaveLayoutRequest{
@@ -86,9 +86,7 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		Plan:        layoutBytes,
 	}
 
-	_, err = getClient().SaveLayout(makeContext(nil), req)
-
-	if err != nil {
+	if _, err := getClient().SaveLayout(makeContext(nil), req); err != nil {
 		log.Println(err)
 		return err
 	}

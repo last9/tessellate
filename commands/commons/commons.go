@@ -40,30 +40,30 @@ func GetFileContentType(path string) (string, error) {
 func ReadFileLines(file string) ([]string, error) {
 	lines := []string{}
 
-	f, err := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		return nil, err
+	f, oErr := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+	if oErr != nil {
+		return nil, oErr
 	}
 
 	defer f.Close()
 
 	rd := bufio.NewReader(f)
 	for {
-		line, err := rd.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
+		line, rErr := rd.ReadString('\n')
+		if rErr != nil {
+			if rErr == io.EOF {
 				if len(line) > 0 {
 					lines = append(lines, line)
 				}
 				break
 			}
 
-			return nil, err
+			return nil, rErr
 		}
 
 		lines = append(lines, line)
 	}
-	return lines, err
+	return lines, oErr
 }
 
 // CandidateFiles matches files that should be uploaed or not
