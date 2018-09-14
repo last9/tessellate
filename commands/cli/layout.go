@@ -44,7 +44,6 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		return errors.Wrap(err, "Cannot get files")
 	}
 
-	fmt.Println(files)
 	if len(files) == 0 {
 		return fmt.Errorf("no candidate files found in directory %s", cm.dirName)
 	}
