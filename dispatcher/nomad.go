@@ -61,7 +61,7 @@ job "{{ job_id }}" {
 }
 `
 	cfg := pongo2.Context{
-		"job_id":       j.Id,
+		"job_id":       w + "-" + j.LayoutId + "-" + j.Id,
 		"workspace_id": w,
 		"layout_id":    j.LayoutId,
 		"datacenter":   c.cfg.Datacenter,

@@ -11,6 +11,7 @@ import (
 	"github.com/tsocial/tessellate/storage"
 
 	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/dispatcher"
 	"github.com/tsocial/tessellate/storage/types"
@@ -261,4 +262,46 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, false, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
+}
+
+func TestServer_GetOutput(t *testing.T) {
+	workspace := uuid.NewV4().String()
+	layout := uuid.NewV4().String()
+
+	key := fmt.Sprintf("state/%s/%s", workspace, layout)
+	valBytes, err := ioutil.ReadFile("./testdata/output.tfstate")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.SaveKey(key, valBytes); err != nil {
+		t.Fatal(err)
+	}
+
+	req := &GetOutputRequest{
+		LayoutId:    layout,
+		WorkspaceId: workspace,
+	}
+
+	resp, err := server.GetOutput(context.Background(), req)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := StateStruct{}
+	if err := json.Unmarshal(valBytes, &s); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := map[string]interface{}{}
+	for k := range s.Modules[0].Outputs {
+		expected[k] = s.Modules[0].Outputs[k].Value
+	}
+
+	outMap := map[string]interface{}{}
+	if err := json.Unmarshal(resp.Output, &outMap); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, expected, outMap)
 }

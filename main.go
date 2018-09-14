@@ -12,7 +12,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const Version = "0.1.0"
+const Version = "0.1.2"
 
 var (
 	port      = kingpin.Flag("port", "Port no.").Short('p').Default("9977").String()
@@ -30,7 +30,7 @@ var (
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
-	unlocker = "tessellate_unlock_job"
+	unlocker = "tsl8_unlock_job"
 )
 
 func main() {
