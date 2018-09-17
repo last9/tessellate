@@ -1,4 +1,4 @@
 FROM hashicorp/terraform:light
 
-COPY tsl8 tsl8-grpc-api
+COPY tsl8_server tsl8-grpc-api
 ENTRYPOINT ["./tsl8-grpc-api"]
