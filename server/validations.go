@@ -6,6 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"path/filepath"
+
 	"github.com/tsocial/tessellate/storage/types"
 )
 
@@ -60,7 +62,10 @@ func providerConflict(input map[string]json.RawMessage, wvars *types.Vars) error
 		return nil
 	}
 
-	for _, layoutBytes := range input {
+	for fileName, layoutBytes := range input {
+		if filepath.Ext(fileName) != ".json" {
+			continue
+		}
 		layoutMap := map[string]json.RawMessage{}
 		if err := json.Unmarshal(layoutBytes, &layoutMap); err != nil {
 			return errors.Wrap(err, "Cannot parse files")

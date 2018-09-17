@@ -369,9 +369,19 @@
   revision = "947dcec5ba9c011838740e680966fd7087a71d0d"
   version = "v2.2.6"
 
+[[projects]]
+  name = "gopkg.in/h2non/filetype.v1"
+  packages = [
+    ".",
+    "matchers",
+    "types"
+  ]
+  revision = "cc14fdc9ca0e4c2bafad7458f6ff79fd3947cfbb"
+  version = "v1.0.5"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5867fbf3dfd8837a346499693eeb0ca50199e99f014d00b14e1382ddc48d74de"
+  inputs-digest = "118eaf6a051d1c4d4b5f33eff3e0afb45f2dd5076271e06ec2c89c9e45991abf"
   solver-name = "gps-cdcl"
   solver-version = 1

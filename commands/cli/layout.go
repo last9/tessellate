@@ -2,19 +2,21 @@ package main
 
 import (
 	"log"
+	"path"
 
 	"os"
-
-	"path/filepath"
 
 	"fmt"
 
 	"encoding/json"
 	"io/ioutil"
 
+	"path/filepath"
+
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/tsocial/tessellate/commands/commons"
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -32,52 +34,50 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)
 	}
 
-	var files []string
+	manifest, rErr := commons.ReadFileLines(path.Join(cm.dirName, ".tsl8"))
+	if rErr != nil {
+		log.Println("No manifest file found, moving ahead...")
+	}
 
-	if err := filepath.Walk(cm.dirName, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-
-		if !strings.HasSuffix(path, ".tf.json") || strings.Contains(path, "tfvars") {
-			log.Printf("skipping %s", path)
-			return nil
-		}
-
-		files = append(files, path)
-		return nil
-
-	}); err != nil {
-		return err
+	files, cErr := commons.CandidateFiles(cm.dirName, manifest)
+	if cErr != nil {
+		return errors.Wrap(cErr, "Cannot get files")
 	}
 
 	if len(files) == 0 {
-		return fmt.Errorf("no json file found in directory %s", cm.dirName)
+		return fmt.Errorf("no candidate files found in directory %s", cm.dirName)
 	}
 
 	fLayout := map[string]interface{}{}
 
+	// Will contain all candidate files.
 	for _, f := range files {
-		fBytes, err := ioutil.ReadFile(f)
-		if err != nil {
-			log.Println(err)
-			return err
+		fBytes, fErr := ioutil.ReadFile(f)
+		if fErr != nil {
+			log.Println(fErr)
+			return fErr
 		}
 
 		var fObj interface{}
-		if err := json.Unmarshal(fBytes, &fObj); err != nil {
-			log.Printf("invald json file: %s", f)
-			return err
+		// If json, unmarshal as a JSON.
+		if filepath.Ext(f) == ".json" {
+			if err := json.Unmarshal(fBytes, &fObj); err != nil {
+				log.Printf("invald json file: %s", f)
+				return err
+			}
+		} else {
+			// Copy the contents as they are. Say if the file is a .tmpl
+			fObj = string(fBytes)
 		}
 
 		splits := strings.Split(f, "/")
 		fLayout[splits[len(splits)-1]] = fObj
 	}
 
-	layoutBytes, err := json.Marshal(fLayout)
-	if err != nil {
-		log.Println(err)
-		return err
+	layoutBytes, mErr := json.Marshal(fLayout)
+	if mErr != nil {
+		log.Println(mErr)
+		return mErr
 	}
 
 	req := &server.SaveLayoutRequest{
@@ -86,9 +86,7 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		Plan:        layoutBytes,
 	}
 
-	_, err = getClient().SaveLayout(makeContext(nil), req)
-
-	if err != nil {
+	if _, err := getClient().SaveLayout(makeContext(nil), req); err != nil {
 		log.Println(err)
 		return err
 	}

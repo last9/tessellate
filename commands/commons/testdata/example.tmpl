@@ -1,0 +1,7 @@
+data "template_file" "init" {
+  template = "$${consul_address}:1234"
+
+  vars {
+    consul_address = "hello"
+  }
+}
