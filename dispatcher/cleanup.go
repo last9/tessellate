@@ -38,7 +38,7 @@ func (c *client) GetOrSetCleanup(s string) error {
 }
 
 func cleanupCmd(nomadHost, consulHost string) string {
-	return fmt.Sprintf(`curl -XGET http://%v/v1/kv/lock/?keys | jq -c '.[]' | tr -d '\"' | xargs -i bash -c 'echo {} > /tmp/job_id && curl -XGET %v/v1/kv/{}' | jq -c '.[] | (.Value)' | tr -d '\"' | base64 --decode | xargs -i curl -XGET %v/v1/job/{} | jq 'select( .Status == \"dead\")' && curl -XDELETE http://%v/v1/kv/$(cat /tmp/job_id)`,
+	return fmt.Sprintf(`keys=$(curl -XGET http://%v/v1/kv/lock/?keys | jq -c '.[]' | tr -d '\"' | tail -1); result=$(curl -XGET http://%v/v1/kv/$keys); value=$(echo $result | jq -c '.[] .Value' | tr -d '\"'| base64 --decode); key=$(echo $result| jq -c '.[] .Key' | tr -d '\"' | cut -d "/"  --output-delimiter=" " -f 2-); curl -XGET http://%v/v1/job/$key-$value | jq 'select( .Status == "dead")'; curl -XDELETE http://%v/v1/kv/$keys`,
 		consulHost, consulHost, nomadHost, consulHost)
 }
 
