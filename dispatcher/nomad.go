@@ -33,11 +33,11 @@ func NewNomadClient(cfg NomadConfig) *client {
 func (c *client) Dispatch(w string, j *types.Job) error {
 	// Create a nomad job using go template
 	var tmplStr = `
-job "{{ job_id }}" {
+job "{{ job_name }}" {
   datacenters = ["{{ datacenter }}"]
   type        = "batch"
 
-  group "{{ job_id }}" {
+  group "{{ job_name }}" {
     count = 1
 
 	restart {
@@ -61,7 +61,8 @@ job "{{ job_id }}" {
 }
 `
 	cfg := pongo2.Context{
-		"job_id":       w + "-" + j.LayoutId + "-" + j.Id,
+		"job_name":     w + "-" + j.LayoutId + "-" + j.Id,
+		"job_id":       j.Id,
 		"workspace_id": w,
 		"layout_id":    j.LayoutId,
 		"datacenter":   c.cfg.Datacenter,
