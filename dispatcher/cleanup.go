@@ -9,6 +9,26 @@ import (
 	"github.com/tsocial/tessellate/tmpl"
 )
 
+const CLEANUP_PYTHON = `
+import urllib2
+import json
+import requests
+
+keys = json.loads(urllib2.urlopen("http://%v/v1/kv/lock/?keys").read().decode('utf-8'))[1:]
+if len(keys) > 0:
+    print("Keys are : " + ', '.join(keys))
+    for key in keys:
+        response = json.loads(urllib2.urlopen("http://%v/v1/kv/" + key).read().decode('utf-8'))[0]
+        k = response['Key'].split('/')[1]
+        v = response['Value'].decode('base64')
+        print("Fetching Nomad Job details for Nomad Job Name: " + k + "-" + v)
+
+        status = json.loads(urllib2.urlopen("http://%v/v1/job/" + k + "-" + v).read().decode('utf-8'))['Status']
+        if status == 'dead':
+            print("Deleting lock from Consul for dead Nomad Job: " + key)
+            requests.delete("http://%v/v1/kv/" + key)
+`
+
 func (c *client) GetOrSetCleanup(s string) error {
 	nConfig := api.DefaultConfig()
 	nConfig.Address = c.cfg.Address
@@ -38,7 +58,7 @@ func (c *client) GetOrSetCleanup(s string) error {
 }
 
 func cleanupCmd(nomadHost, consulHost string) string {
-	return fmt.Sprintf(`keys=$(curl -XGET http://%v/v1/kv/lock/?keys | jq -c '.[]' | tr -d '\"' | tail -1); result=$(curl -XGET http://%v/v1/kv/$keys); value=$(echo $result | jq -c '.[] .Value' | tr -d '\"'| base64 --decode); key=$(echo $result| jq -c '.[] .Key' | tr -d '\"' | cut -d "/"  --output-delimiter=" " -f 2-); curl -XGET http://%v/v1/job/$key-$value | jq 'select( .Status == "dead")'; curl -XDELETE http://%v/v1/kv/$keys`,
+	return fmt.Sprintf(CLEANUP_PYTHON,
 		consulHost, consulHost, nomadHost, consulHost)
 }
 
