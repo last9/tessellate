@@ -12,7 +12,6 @@ import (
 const CLEANUP_PYTHON = `
 import urllib2
 import json
-import requests
 
 keys = json.loads(urllib2.urlopen("http://%v/v1/kv/lock/?keys").read().decode('utf-8'))[1:]
 if len(keys) > 0:
@@ -26,7 +25,9 @@ if len(keys) > 0:
         status = json.loads(urllib2.urlopen("http://%v/v1/job/" + k + "-" + v).read().decode('utf-8'))['Status']
         if status == 'dead':
             print("Deleting lock from Consul for dead Nomad Job: " + key)
-            requests.delete("http://%v/v1/kv/" + key)
+			opener = urllib2.build_opener(urllib2.HTTPHandler)
+            request = urllib2.Request("http://%v/v1/kv/" + key, data='')
+            request.get_method = lambda: 'DELETE'
 `
 
 func (c *client) GetOrSetCleanup(s string) error {
