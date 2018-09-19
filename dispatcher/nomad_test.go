@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/storage/types"
-	"github.com/hashicorp/nomad/api"
 )
 
 func TestMain(m *testing.M) {
@@ -32,20 +32,34 @@ func TestClient_Dispatch(t *testing.T) {
 
 func TestDispatched_Job(t *testing.T) {
 	job := &types.Job{Id: "job", LayoutId: "layout"}
-	workspaceID := "workspace"
+	var runningJob *api.Job
 
-	nomadClient , err := api.NewClient(api.DefaultConfig())
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Run("Should contain workspace and layout id in the nomad job.", func(t *testing.T) {
+		workspaceID := "workspace"
 
-	jobID := workspaceID + "-" + job.LayoutId + "-" + job.Id
+		nomadClient, err := api.NewClient(api.DefaultConfig())
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	runningJob,_, err := nomadClient.Jobs().Info(jobID, nil)
-	if err!= nil {
-		t.Fatal(err)
-	}
+		jobName := workspaceID + "-" + job.LayoutId + "-" + job.Id
 
-	assert.Equal(t, jobID, *runningJob.Name)
+		if runningJob, _, err = nomadClient.Jobs().Info(jobName, nil); err != nil {
+			t.Fatal(err)
+		}
 
+		assert.Equal(t, jobName, *runningJob.Name)
+
+	})
+
+	t.Run("Only job ID should be appended in the task config, not workspace and layout ID", func(t *testing.T) {
+		tasks := runningJob.TaskGroups[0]
+		for _, val := range tasks.Tasks {
+			jobID := val.Config["entrypoint"].([]interface{})[2]
+
+			if jobID != job.Id {
+				t.Fatal("Job ID expected %v, Got %v", job.Id, jobID)
+			}
+		}
+	})
 }
