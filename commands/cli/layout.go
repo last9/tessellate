@@ -132,7 +132,7 @@ func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
 		return err
 	}
 
-	prettyPrint("JobID = " + resp.Id)
+	prettyPrint("Check the link for job status: " + resp.Id)
 	return nil
 }
 
