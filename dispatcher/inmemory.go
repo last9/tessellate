@@ -16,7 +16,7 @@ func (c *Mem) Dispatch(w string, j *types.Job) (string, error) {
 	defer c.Unlock()
 
 	c.Store = append(c.Store, j.Id)
-	return "",nil
+	return j.Id,nil
 }
 
 func NewInMemory() *Mem {
