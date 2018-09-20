@@ -48,6 +48,14 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		return fmt.Errorf("no candidate files found in directory %s", cm.dirName)
 	}
 
+	wreq := server.GetWorkspaceRequest{Id: strings.ToLower(cm.workspaceId)}
+
+	_, err := getClient().GetWorkspace(makeContext(nil), &wreq)
+	if err != nil {
+		log.Println(fmt.Sprintf("Workspace %v does not exist", cm.workspaceId))
+		return err
+	}
+
 	fLayout := map[string]interface{}{}
 
 	// Will contain all candidate files.
