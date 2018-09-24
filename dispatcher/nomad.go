@@ -2,7 +2,9 @@ package dispatcher
 
 import (
 	"log"
-
+	"net/url"
+	"path"
+	
 	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
 	"github.com/tsocial/tessellate/storage/types"
@@ -115,6 +117,11 @@ job "{{ job_name }}" {
 	}
 
 	log.Printf("successfully dispatched the job: %+v", resp)
-	link := c.cfg.Address +"/ui/jobs/"+ w + "-" + j.LayoutId + "-" + j.Id
+	u, err := url.Parse(c.cfg.Address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	u.Path = path.Join(u.Path, "ui", "jobs", w+"-"+j.LayoutId+"-"+j.Id)
+	link := u.String()
 	return link, nil
 }
