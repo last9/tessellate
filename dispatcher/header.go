@@ -3,7 +3,7 @@ package dispatcher
 import "github.com/tsocial/tessellate/storage/types"
 
 type Dispatcher interface {
-	Dispatch(workspaceID string, job *types.Job) error
+	Dispatch(workspaceID string, job *types.Job) (string, error)
 }
 
 var instance Dispatcher

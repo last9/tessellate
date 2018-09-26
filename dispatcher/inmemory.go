@@ -11,12 +11,12 @@ type Mem struct {
 	sync.Mutex
 }
 
-func (c *Mem) Dispatch(w string, j *types.Job) error {
+func (c *Mem) Dispatch(w string, j *types.Job) (string, error) {
 	c.Lock()
 	defer c.Unlock()
 
 	c.Store = append(c.Store, j.Id)
-	return nil
+	return j.Id,nil
 }
 
 func NewInMemory() *Mem {

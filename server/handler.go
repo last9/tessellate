@@ -237,7 +237,6 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	if err := s.store.Save(&j, tree); err != nil {
 		return nil, err
 	}
-
 	job := &JobStatus{Id: j.Id, Status: JobState(j.Status)}
 
 	// Lock for workspace and layout.
@@ -248,8 +247,9 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	}); err != nil {
 		return nil, err
 	}
-
-	return job, dispatcher.Get().Dispatch(wID, &j)
+	link, error := dispatcher.Get().Dispatch(wID, &j)
+	job.Id = link
+	return job, error
 }
 
 // ApplyLayout job.

@@ -2,7 +2,9 @@ package dispatcher
 
 import (
 	"log"
-
+	"net/url"
+	"path"
+	
 	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
 	"github.com/tsocial/tessellate/storage/types"
@@ -30,7 +32,7 @@ func NewNomadClient(cfg NomadConfig) *client {
 	return &client{cfg}
 }
 
-func (c *client) Dispatch(w string, j *types.Job) error {
+func (c *client) Dispatch(w string, j *types.Job) (string, error) {
 	// Create a nomad job using go template
 	var tmplStr = `
 job "{{ job_name }}" {
@@ -80,7 +82,7 @@ job "{{ job_name }}" {
 	nomadJob, err := tmpl.Parse(tmplStr, cfg)
 	if err != nil {
 		log.Printf("error while job parsing: %+v", err)
-		return err
+		return "", err
 	}
 
 	log.Println(nomadJob)
@@ -98,22 +100,28 @@ job "{{ job_name }}" {
 	cl, err := api.NewClient(nConfig)
 	if err != nil {
 		log.Printf("error while creating nomad client: %+v", err)
-		return err
+		return "", err
 	}
 
 	jobs := cl.Jobs()
 	job, err := jobs.ParseHCL(nomadJob, true)
 	if err != nil {
 		log.Printf("error while parsing job hcl: %+v", err)
-		return err
+		return "", err
 	}
 
 	resp, _, err := jobs.Register(job, nil)
 	if err != nil {
 		log.Printf("error while registering nomad job: %+v", err)
-		return err
+		return "", err
 	}
 
 	log.Printf("successfully dispatched the job: %+v", resp)
-	return nil
+	u, err := url.Parse(c.cfg.Address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	u.Path = path.Join(u.Path, "ui", "jobs", w+"-"+j.LayoutId+"-"+j.Id)
+	link := u.String()
+	return link, nil
 }
