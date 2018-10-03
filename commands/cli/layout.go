@@ -92,13 +92,14 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
 		Plan:        layoutBytes,
+		Dry: 		 cm.dry,
 	}
-
-	if _, err := getClient().SaveLayout(makeContext(nil), req); err != nil {
+	resp, err := getClient().SaveLayout(makeContext(nil), req)
+	if err != nil {
 		log.Println(err)
 		return err
 	}
-
+	prettyPrint("Your Layout id is: "+ resp.LayoutId)
 	return nil
 }
 
@@ -225,6 +226,7 @@ func addLayoutCommands(app *kingpin.Application) {
 
 	clm := &layout{}
 	cl := lCLI.Command("create", "Create Layout").Action(clm.layoutCreate)
+	cl.Flag("dry", "Dry save for plan").BoolVar(&clm.dry)
 
 	lCLI.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
 	lCLI.Flag("workspace_id", "Workspace name").Required().Short('w').StringVar(&clm.workspaceId)
