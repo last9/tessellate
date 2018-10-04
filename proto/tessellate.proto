@@ -142,7 +142,7 @@ message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
   bytes Plan = 3;
-  bool dry = 4;
+  bool Dry = 4;
 }
 
 message SaveLayoutResponse {

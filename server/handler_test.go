@@ -81,7 +81,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		assert.Equal(t, resp, &Ok{})
+		assert.Equal(t, resp.LayoutId, layoutId)
 	})
 
 	t.Run("Layout with provider conflict without worksapce should not error", func(t *testing.T) {

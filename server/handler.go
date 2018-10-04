@@ -20,8 +20,8 @@ import (
 
 const (
 	retry = 5
-	State = "state"
-	Dry = "-dry"
+	state = "state"
+	drysuffix = "-dry"
 )
 
 type Output struct {
@@ -136,18 +136,17 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLa
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
-
+	layoutId := in.Id
 	if in.Dry{
 		// copy old state to dry layout or create new
-		key := path.Join(State, in.WorkspaceId, in.Id)
+		key := path.Join(state, in.WorkspaceId, layoutId)
 		stateValue, err := s.store.GetKey(key)
 		if err != nil {
 			return nil, err
 		}
-		in.Id = in.Id+ Dry
+		layoutId = layoutId+ drysuffix
 		if len(string(stateValue)) > 0 {
-			fmt.Println("nil state found")
-			key = path.Join(State, in.WorkspaceId, in.Id)
+			key = path.Join(state, in.WorkspaceId, layoutId)
 			err = s.store.SaveKey(key, stateValue)
 			if err != nil {
 				return nil, err
@@ -174,7 +173,7 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLa
 	}
 
 	// Create layout instance to be saved for given ID and plan.
-	layout := types.Layout{Id: in.Id, Plan: p, Status: int32(Status_INACTIVE)}
+	layout := types.Layout{Id: layoutId, Plan: p, Status: int32(Status_INACTIVE)}
 
 	// Save the layout.
 	if err := s.store.Save(&layout, tree); err != nil {
@@ -278,8 +277,8 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
-	if !in.Dry && len(in.Id) > 3 && in.Id[len(in.Id)-4:] == Dry{
-		return nil, errors.New("Dry layouts can only apply with --dry flag")
+	if !in.Dry && len(in.Id) > 3 && in.Id[len(in.Id)-4:] == drysuffix{
+		return nil, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", in.Id))
 	}
 	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry)
 }
