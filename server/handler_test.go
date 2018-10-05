@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"path"
 	"testing"
 
 	"context"
@@ -83,6 +84,41 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 
 		assert.Equal(t, resp.LayoutId, layoutId)
 	})
+
+	t.Run("Should create a layout in the workspace with dry flag", func(t *testing.T) {
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry:true}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp.LayoutId, layoutId+drysuffix)
+	})
+
+	t.Run("Should create a layout in the workspace with dry flag and copy state file", func(t *testing.T) {
+		//temporary saving state
+		key := path.Join(state, workspaceId, layoutId)
+		value := "some test value"
+		store.SaveKey(key, []byte(value))
+
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry:true}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp.LayoutId, layoutId+drysuffix)
+
+		key = path.Join(state, workspaceId, layoutId+drysuffix)
+		newvalue, err := store.GetKey(key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, value, string(newvalue))
+	})
+
 
 	t.Run("Layout with provider conflict without worksapce should not error", func(t *testing.T) {
 		id := fmt.Sprintf("workspace-conflict")
@@ -204,6 +240,18 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, int32(Operation_APPLY), job.Op)
 		assert.Equal(t, true, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
+	})
+
+	t.Run("Should not apply a dry layout without dry flag", func(t *testing.T) {
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId+drysuffix,
+			Dry:         false,
+			Vars:        vBytes,
+		}
+
+		_, err := server.ApplyLayout(context.Background(), req)
+		assert.Error(t, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", layoutId+drysuffix)), err)
 	})
 
 	lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
