@@ -277,7 +277,7 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
-	if !in.Dry && len(in.Id) > 3 && in.Id[len(in.Id)-4:] == drysuffix{
+	if !in.Dry && strings.HasSuffix(in.Id, drysuffix){
 		return nil, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", in.Id))
 	}
 	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry)

@@ -94,6 +94,19 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		}
 
 		assert.Equal(t, resp.LayoutId, layoutId+drysuffix)
+
+		tree := types.MakeTree(workspaceId)
+		l := types.Layout{
+			Id:   layoutId+drysuffix,
+			Plan: map[string]json.RawMessage{},
+		}
+
+		vAfterSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, 2, len(vAfterSave))
 	})
 
 	t.Run("Should create a layout in the workspace with dry flag and copy state file", func(t *testing.T) {
@@ -101,6 +114,17 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		key := path.Join(state, workspaceId, layoutId)
 		value := "some test value"
 		store.SaveKey(key, []byte(value))
+
+		tree := types.MakeTree(workspaceId)
+		l := types.Layout{
+			Id:   layoutId,
+			Plan: map[string]json.RawMessage{},
+		}
+
+		vBeforeSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry:true}
 		resp, err := server.SaveLayout(context.Background(), req)
@@ -117,6 +141,13 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 			t.Fatal(err)
 		}
 		assert.Equal(t, value, string(newvalue))
+
+		vAfterSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, len(vBeforeSave), len(vAfterSave))
 	})
 
 
