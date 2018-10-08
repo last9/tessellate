@@ -60,7 +60,7 @@ func TestReadFileLines(t *testing.T) {
 	})
 
 	t.Run("Should read a single line with no new line character", func(t *testing.T) {
-		expected := []string{".tmpl\n"}
+		expected := []string{".tmpl"}
 		lines, err := ReadFileLines("testdata/newline.tsl8")
 		if err != nil {
 			t.Fatal(err)
