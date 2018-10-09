@@ -44,7 +44,7 @@ func TestCandidateFiles(t *testing.T) {
 
 func TestReadFileLines(t *testing.T) {
 	t.Run("Should return manifest file contents and return extensions as an array of string.", func(t *testing.T) {
-		expected := []string{".txt\n", ".tmpl"}
+		expected := []string{".txt", ".tmpl"}
 		lines, err := ReadFileLines("testdata/.tsl8")
 		if err != nil {
 			t.Fatal(err)
