@@ -60,8 +60,8 @@ func ReadFileLines(file string) ([]string, error) {
 
 			return nil, rErr
 		}
-
-		lines = append(lines, line)
+		// Trim carriage return and newline.
+		lines = append(lines, strings.Trim(line, "\r\n"))
 	}
 	return lines, oErr
 }
