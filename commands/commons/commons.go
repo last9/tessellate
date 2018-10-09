@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"regexp"
-
 	"gopkg.in/h2non/filetype.v1"
 )
 
@@ -63,9 +61,7 @@ func ReadFileLines(file string) ([]string, error) {
 			return nil, rErr
 		}
 		// Trim carriage return and newline.
-		re := regexp.MustCompile(`\r?\n`)
-		line = re.ReplaceAllString(line, "")
-		lines = append(lines, line)
+		lines = append(lines, strings.Trim(line, "\r\n"))
 	}
 	return lines, oErr
 }
