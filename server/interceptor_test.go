@@ -18,7 +18,7 @@ func TestInterceptor(t *testing.T) {
 	port := 59999
 	go func() {
 		*support = "0.0.4"
-		*middleware.ConfigFile = "$GOPATH/src/github.com/tsocial/tessellate/server/testdata/2fa.json"
+		*middleware.ConfigFile = "$HOME/gopath/src/github.com/tsocial/tessellate/server/testdata/2fa.json"
 
 		listenAddr := fmt.Sprintf(":%v", port)
 		lis, err := net.Listen("tcp", listenAddr)
