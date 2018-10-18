@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 
+	"strings"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -18,30 +20,24 @@ var (
 )
 
 const (
-	LAYOUT    = "layout"
-	WORKSPACE = "workspace"
-
-	GET     = "get"
-	CREATE  = "create"
-	APPLY   = "apply"
+	GET     = "GetLayout"
+	CREATE  = "CreateLayout"
+	APPLY   = "ApplyLayout"
 	DEFAULT = "*"
 )
 
 type TwoFAConfig struct {
-	Layout    []string            `json:"layout"`
-	Workspace []string            `json:"workspace"`
-	Apply     map[string][]string `json:"apply"`
-	Create    map[string][]string `json:"create"`
+	ApplyLayout  map[string][]string `json:"ApplyLayout"`
+	CreateLayout map[string][]string `json:"CreateLayout"`
 }
 
 type TwoFA struct {
-	Object    string   `json: object`
-	Operation string   `json: operation`
+	Operation string
 	Id        string   `json: id`
 	Codes     []string `json: codes`
 }
 
-func getTwoFA(ctx context.Context) (*TwoFA, error) {
+func getTwoFA(ctx context.Context, op string) (*TwoFA, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		log.Println("Cannot get header metadata from context")
@@ -53,16 +49,9 @@ func getTwoFA(ctx context.Context) (*TwoFA, error) {
 		return nil, err
 	}
 
-	return &obj, nil
-}
+	obj.Operation = op
 
-func contains(items []string, match string) bool {
-	for _, v := range items {
-		if v == match {
-			return true
-		}
-	}
-	return false
+	return &obj, nil
 }
 
 // todo: Update this method.
@@ -77,10 +66,10 @@ func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
 	// fetch emails for id from operation.
 	switch obj.Operation {
 	case APPLY:
-		ids, exists = config.Apply[obj.Id]
+		ids, exists = config.ApplyLayout[obj.Id]
 		if !exists {
 			// fetch the * email.
-			ids, exists = config.Apply[DEFAULT]
+			ids, exists = config.ApplyLayout[DEFAULT]
 			if !exists {
 				// doesn't have a default 2FA enabled for this operation. Allow operation.
 				return nil
@@ -108,7 +97,8 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		var config TwoFAConfig
 
-		obj, err := getTwoFA(ctx)
+		infoList := strings.Split(info.FullMethod, "/")
+		obj, err := getTwoFA(ctx, infoList[len(infoList)-1])
 		if err != nil {
 			log.Println(fmt.Sprintf("Error while fetching 2fa codes: %v", err))
 			return nil, err
@@ -126,15 +116,8 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		// todo: Some restructuring of code logic needed here. Handled using switch cases for now.
-		// check if 2fa exists for object and operation.
-		switch obj.Object {
-		case LAYOUT:
-			if contains(config.Layout, obj.Operation) {
-				fmt.Println("2FA is enabled.")
-				if err := verify2FA(obj, &config); err != nil {
-					return nil, err
-				}
-			}
+		if err := verify2FA(obj, &config); err != nil {
+			return nil, err
 		}
 
 		// this operation never expects a 2FA for the object, allow the operation to be performed.

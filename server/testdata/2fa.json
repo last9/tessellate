@@ -1,13 +1,11 @@
 {
-  "layout" : ["apply", "create"],
-  "workspace": ["create"],
 
-  "apply": {
+  "ApplyLayout": {
     "blink_staging": ["sre@trustingsocial.com", ""],
     "dj_staging": [],
     "*": []
   },
-  "create": {
+  "GetLayout": {
     "aws-mumbai-staging": [],
     "blink_staging": []
   }
