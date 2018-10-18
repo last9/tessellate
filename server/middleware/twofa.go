@@ -133,13 +133,17 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 				if err := verify2FA(obj, &config); err != nil {
 					return nil, err
 				}
-			} else {
-				// this operation never expects a 2FA for the object, allow the operation to be performed.
-				return nil, nil
 			}
 		}
 
-		// call
-		return nil, nil
+		// this operation never expects a 2FA for the object, allow the operation to be performed.
+		resp, err := handler(ctx, req)
+		if err != nil {
+			fmt.Printf("%+v", err)
+			return nil, err
+		}
+
+		// Return handler's response and err.
+		return resp, nil
 	}
 }
