@@ -97,6 +97,7 @@ func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
 			}
 		}
 	}
+	return nil
 }
 
 func TwoFAInterceptor() grpc.UnaryServerInterceptor {
