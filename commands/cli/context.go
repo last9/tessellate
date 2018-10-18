@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"strings"
+	"encoding/json"
+	"log"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -11,8 +12,14 @@ func makeContext(ctx context.Context, twoFA *TwoFA) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	md := metadata.Pairs("version", version, "2faobject", twoFA.object, "2faoperation", twoFA.operation,
-		"2faident", twoFA.id, "2facodes", strings.Join(twoFA.codes, ","))
+
+	b, err := json.Marshal(twoFA)
+	if err != nil {
+		log.Println("Error while marshalling twoFA struct to json.")
+		return nil
+	}
+
+	md := metadata.Pairs("version", version, "2fa", string(b))
 
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
