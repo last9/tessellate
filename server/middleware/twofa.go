@@ -22,9 +22,10 @@ const (
 	LAYOUT    = "layout"
 	WORKSPACE = "workspace"
 
-	GET    = "get"
-	CREATE = "create"
-	APPLY  = "apply"
+	GET     = "get"
+	CREATE  = "create"
+	APPLY   = "apply"
+	DEFAULT = "*"
 )
 
 type TwoFAConfig struct {
@@ -70,6 +71,7 @@ func checkCode(email, code string) (bool, error) {
 	return true, nil
 }
 
+// Matches the codes per email address.
 func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
 	var ids []string
 	var exists bool
@@ -79,7 +81,7 @@ func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
 		ids, exists = config.Apply[obj.Id]
 		if !exists {
 			// fetch the * email.
-			ids, exists = config.Apply["*"]
+			ids, exists = config.Apply[DEFAULT]
 			if !exists {
 				// doesn't have a default 2FA enabled for this operation. Allow operation.
 				return nil
@@ -106,15 +108,15 @@ func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
 func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		var config TwoFAConfig
-		obj, err := getTwoFA(ctx)
 
+		obj, err := getTwoFA(ctx)
 		if err != nil {
 			log.Println(fmt.Sprintf("Error while fetching 2fa codes: %v", err))
 			return nil, err
 		}
 
 		// check if 2FA codes are valid.
-		// todo: currently using in memory, tomorrow use a more efficient store.
+		// todo: currently using in memory.
 		b, rErr := ioutil.ReadFile(*configFile)
 		if rErr != nil {
 			return nil, rErr
@@ -124,7 +126,7 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 			return nil, err
 		}
 
-		// todo: Some restructing of code logic needed here.
+		// todo: Some restructuring of code logic needed here. Handled using switch cases for now.
 		// check if 2fa exists for object and operation.
 		switch obj.Object {
 		case LAYOUT:
