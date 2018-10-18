@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func makeContext(ctx context.Context, totp *twoFA) context.Context {
+func makeContext(ctx context.Context, totp *TwoFA) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -28,50 +27,38 @@ const (
 	APPLY  = "apply"
 )
 
-type twoFAConfig struct {
+type TwoFAConfig struct {
 	Layout    []string            `json:"layout"`
 	Workspace []string            `json:"workspace"`
 	Apply     map[string][]string `json:"apply"`
 	Create    map[string][]string `json:"create"`
 }
 
-type twoFA struct {
-	object    string
-	operation string
-	id        string
-	codes     []string
+type TwoFA struct {
+	Object    string   `json: object`
+	Operation string   `json: operation`
+	Id        string   `json: id`
+	Codes     []string `json: codes`
 }
 
-func NewTwoFA(object, operation, id string, codes []string) *twoFA {
-	return &twoFA{
-		object:    object,
-		operation: operation,
-		id:        id,
-		codes:     codes,
-	}
-}
-
-func getTwoFA(ctx context.Context) (*twoFA, error) {
+func getTwoFA(ctx context.Context) (*TwoFA, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		log.Println("Cannot get header metadata from context")
 		return nil, errors.New("Cannot get header metadata from context")
 	}
 
-	if md["2faobject"] == nil || len(md["2faobject"]) == 0 {
+	if md["2fa"] == nil || len(md["2fa"]) == 0 {
 		return nil, errors.New("2FA Object not found in the header")
 	}
-	if md["2faoperation"] == nil || len(md["2faoperation"]) == 0 {
-		return nil, errors.New("2FA Operation not found in the header")
-	}
-	if md["2faident"] == nil || len(md["2faident"]) == 0 {
-		return nil, errors.New("2FA Ident not found in the header")
-	}
-	if md["2facodes"] == nil || len(md["2facodes"]) < 1 {
-		return nil, errors.New("2FA Ident not found in the header")
+
+	var obj TwoFA
+
+	if err := json.Unmarshal([]byte(md["2fa"][0]), &obj); err != nil {
+		return nil, err
 	}
 
-	return NewTwoFA(md["2faobject"][0], md["2faoperation"][0], md["2faident"][0], strings.Split(md["2facodes"][0], ",")), nil
+	return &obj, nil
 }
 
 func contains(items []string, match string) bool {
@@ -89,7 +76,7 @@ func checkCode(email, code string) (bool, error) {
 
 func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		var config twoFAConfig
+		var config TwoFAConfig
 		obj, err := getTwoFA(ctx)
 		if err != nil {
 			log.Println(fmt.Sprintf("Error while fetching 2fa codes: %v", err))
@@ -108,25 +95,27 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		// check if 2fa exists for object and operation.
-		switch obj.object {
+		switch obj.Object {
 		case LAYOUT:
-			if contains(config.Layout, obj.operation) {
+			if contains(config.Layout, obj.Operation) {
 				fmt.Println("2FA is enabled.")
 			} else {
 				return nil, nil
 			}
 		}
 
-		fmt.Println(obj.codes)
 		// fetch emails for id from operation.
-		switch obj.operation {
+		switch obj.Operation {
 		case APPLY:
-			ids := config.Apply[obj.id]
+			ids := config.Apply[obj.Id]
 			for i := 0; i < len(ids); i++ {
 
 				// todo: Handle this better with passing paramters as a struct.
-				_, err = checkCode(ids[i], obj.codes[i])
+				ok, err := checkCode(ids[i], obj.Codes[i])
 				if err != nil {
+					return nil, err
+				}
+				if !ok {
 					return nil, err
 				}
 			}
