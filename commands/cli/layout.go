@@ -252,5 +252,5 @@ func addLayoutCommands(app *kingpin.Application) {
 	dl.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 
 	lCLI.Command("state", "Get layout's current state").Action(clm.layoutStateGet)
-	lCLI.Command("output", "Get layout's output if exist").Action(clm.layoutGetOutput)
+	lCLI.Command("output", "Get layout's output if exist").Action(clmt.layoutGetOutput)
 }

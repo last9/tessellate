@@ -8,12 +8,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func makeContext(ctx context.Context, twoFA *TwoFA) context.Context {
+func makeContext(ctx context.Context, totp *twoFA) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	b, err := json.Marshal(twoFA)
+	b, err := json.Marshal(totp)
 	if err != nil {
 		log.Println("Error while marshalling twoFA struct to json.")
 		return nil

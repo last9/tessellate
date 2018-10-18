@@ -24,15 +24,15 @@ var (
 var once sync.Once
 var client server.TessellateClient
 
-type TwoFA struct {
+type twoFA struct {
 	object    string
 	operation string
 	id        string
 	codes     []string
 }
 
-func NewTwoFA(object, operation, id string, codes []string) *TwoFA {
-	return &TwoFA{
+func NewTwoFA(object, operation, id string, codes []string) *twoFA {
+	return &twoFA{
 		object:    object,
 		operation: operation,
 		id:        id,
