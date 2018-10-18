@@ -14,8 +14,7 @@ import (
 )
 
 var (
-	configFile = kingpin.Flag("2fa-config", "Config file for 2FA").
-		Default("/home/talina06/workspace/gopath/src/github.com/tsocial/tessellate/server/2fa.json").ExistingFile()
+	ConfigFile = kingpin.Flag("2fa-config", "Config file for 2FA").Required().ExistingFile()
 )
 
 const (
@@ -117,7 +116,7 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 
 		// check if 2FA codes are valid.
 		// todo: currently using in memory.
-		b, rErr := ioutil.ReadFile(*configFile)
+		b, rErr := ioutil.ReadFile(*ConfigFile)
 		if rErr != nil {
 			return nil, rErr
 		}
