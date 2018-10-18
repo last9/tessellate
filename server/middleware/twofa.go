@@ -85,6 +85,10 @@ func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
 				return nil
 			}
 		}
+		// At this point we expect the codes to be passed, if not passed, throw an error.
+		if len(obj.Codes) == 0 {
+			return errors.New("2FA codes not passed, operation not permitted.")
+		}
 		for i := 0; i < len(ids); i++ {
 			// todo: Handle this better with passing paramters as a struct.
 			ok, err := checkCode(ids[i], obj.Codes[i])
@@ -92,7 +96,6 @@ func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
 				return err
 			}
 			if !ok {
-				fmt.Println("Operation not permitted.")
 				return errors.New("Operation not permitted")
 			}
 		}
@@ -104,6 +107,7 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		var config TwoFAConfig
 		obj, err := getTwoFA(ctx)
+
 		if err != nil {
 			log.Println(fmt.Sprintf("Error while fetching 2fa codes: %v", err))
 			return nil, err
