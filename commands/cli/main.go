@@ -18,10 +18,27 @@ var (
 	certFile *string
 	keyFile  *string
 	rootCert *string
+	codes    *[]string
 )
 
 var once sync.Once
 var client server.TessellateClient
+
+type TwoFA struct {
+	object    string
+	operation string
+	id        string
+	codes     []string
+}
+
+func NewTwoFA(object, operation, id string, codes []string) *TwoFA {
+	return &TwoFA{
+		object:    object,
+		operation: operation,
+		id:        id,
+		codes:     codes,
+	}
+}
 
 func getClient() server.TessellateClient {
 	once.Do(func() {
@@ -55,6 +72,7 @@ func main() {
 	rootCert = app.Flag("root-cert", "Root Cert File").String()
 	certFile = app.Flag("cert-file", "Cert File").String()
 	keyFile = app.Flag("key-file", "Key File").String()
+	codes = app.Flag("2fa", "2FA code of the stakeholder").Strings()
 
 	endpoint = app.Flag("tsl8_server", "endpoint of Tessellate Server").Short('a').Envar("TESSELLATE_SERVER").
 		Default("localhost:9977").String()

@@ -37,6 +37,7 @@ func Grpc() *grpc.Server {
 	unaries := []grpc.UnaryServerInterceptor{
 		grpc_recovery.UnaryServerInterceptor(opts...),
 		middleware.UnaryServerInterceptor(*support),
+		middleware.TwoFAInterceptor(),
 	}
 
 	sopts := []grpc.ServerOption{}
