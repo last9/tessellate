@@ -47,11 +47,6 @@ func getTwoFA(ctx context.Context) (*TwoFA, error) {
 		log.Println("Cannot get header metadata from context")
 		return nil, errors.New("Cannot get header metadata from context")
 	}
-
-	if md["2fa"] == nil || len(md["2fa"]) == 0 {
-		return nil, errors.New("2FA Object not found in the header")
-	}
-
 	var obj TwoFA
 
 	if err := json.Unmarshal([]byte(md["2fa"][0]), &obj); err != nil {
@@ -70,8 +65,38 @@ func contains(items []string, match string) bool {
 	return false
 }
 
+// todo: Update this method.
 func checkCode(email, code string) (bool, error) {
 	return true, nil
+}
+
+func verify2FA(obj *TwoFA, config *TwoFAConfig) error {
+	var ids []string
+	var exists bool
+	// fetch emails for id from operation.
+	switch obj.Operation {
+	case APPLY:
+		ids, exists = config.Apply[obj.Id]
+		if !exists {
+			// fetch the * email.
+			ids, exists = config.Apply["*"]
+			if !exists {
+				// doesn't have a default 2FA enabled for this operation. Allow operation.
+				return nil
+			}
+		}
+		for i := 0; i < len(ids); i++ {
+			// todo: Handle this better with passing paramters as a struct.
+			ok, err := checkCode(ids[i], obj.Codes[i])
+			if err != nil {
+				return err
+			}
+			if !ok {
+				fmt.Println("Operation not permitted.")
+				return errors.New("Operation not permitted")
+			}
+		}
+	}
 }
 
 func TwoFAInterceptor() grpc.UnaryServerInterceptor {
@@ -94,30 +119,18 @@ func TwoFAInterceptor() grpc.UnaryServerInterceptor {
 			return nil, err
 		}
 
+		// todo: Some restructing of code logic needed here.
 		// check if 2fa exists for object and operation.
 		switch obj.Object {
 		case LAYOUT:
 			if contains(config.Layout, obj.Operation) {
 				fmt.Println("2FA is enabled.")
+				if err := verify2FA(obj, &config); err != nil {
+					return nil, err
+				}
 			} else {
+				// this operation never expects a 2FA for the object, allow the operation to be performed.
 				return nil, nil
-			}
-		}
-
-		// fetch emails for id from operation.
-		switch obj.Operation {
-		case APPLY:
-			ids := config.Apply[obj.Id]
-			for i := 0; i < len(ids); i++ {
-
-				// todo: Handle this better with passing paramters as a struct.
-				ok, err := checkCode(ids[i], obj.Codes[i])
-				if err != nil {
-					return nil, err
-				}
-				if !ok {
-					return nil, err
-				}
 			}
 		}
 
