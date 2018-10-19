@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tsocial/tessellate/server/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
@@ -18,7 +17,6 @@ func TestInterceptor(t *testing.T) {
 	port := 59999
 	go func() {
 		*support = "0.0.4"
-		*middleware.ConfigFile = "$HOME/gopath/src/github.com/tsocial/tessellate/server/testdata/2fa.json"
 
 		listenAddr := fmt.Sprintf(":%v", port)
 		lis, err := net.Listen("tcp", listenAddr)
@@ -53,7 +51,7 @@ func TestInterceptor(t *testing.T) {
 	t.Run("Should raise an error for non supported lower versions.", func(t *testing.T) {
 		// Get a client instance with new version passed in metadata.
 		// First Request
-		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa", "{}")
+		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1")
 		log.Printf("Context: %+v", ctx)
 
 		resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "test"})
@@ -65,7 +63,7 @@ func TestInterceptor(t *testing.T) {
 
 	t.Run("Valid version. Should forward request to server and return a successful response.", func(t *testing.T) {
 		// 1. Pass same versions.
-		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.6", "2fa", "{}")
+		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.6")
 		// log.Printf("Context: %+v", ctx)
 
 		resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "test"})
@@ -77,7 +75,7 @@ func TestInterceptor(t *testing.T) {
 
 	t.Run("Boundary case: Should pass for the exact version support.", func(t *testing.T) {
 		// 1. Pass same versions.
-		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.4", "2fa", "{\"object\": \"\"}")
+		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.4")
 		// log.Printf("Context: %+v", ctx)
 
 		resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "test"})
