@@ -24,7 +24,7 @@ var (
 	keyFile  = kingpin.Flag("key-file", "Key File").Envar("KEY_FILE").String()
 	support  = (kingpin.Flag("least-cli-version", "Client's least supported version by Tessellate.")).
 			Default(DefaultVersion).OverrideDefaultFromEnvar("LEAST_CLI_VERSION").String()
-	twoFAConfig = io.ReadCloser(*kingpin.Flag("totp-config", "Config file for 2FA").Required().File())
+	twoFAConfig = io.ReadCloser(*kingpin.Flag("totp-config", "Config file for 2FA").File())
 )
 
 func customFunc(t interface{}) error {
