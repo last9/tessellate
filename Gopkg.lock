@@ -364,11 +364,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e70ef8e8a810bf821c966ac8dec71632b166522170f40acae70f4e08d1bf86f9"
+  digest = "1:ee24580b8cfe1d429631051c3d04bab3302f5877dc234f7db511cc4fdb04070f"
   name = "github.com/tsocial/ts2fa"
   packages = ["otp"]
   pruneopts = "UT"
-  revision = "062d85b5532af48ef8926c463e5eced9c266dba5"
+  revision = "b7832c19b1308f5878442dda9961b0f456183564"
 
 [[projects]]
   digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"

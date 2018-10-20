@@ -24,16 +24,27 @@ func Test2FAInterceptor(t *testing.T) {
 	pre_secret, pre_token, v := ts2fa.TestValidator(validator)
 	validator = v
 
-	x := ts2fa.Rules{
-		"SaveWorkspace": {
-			"blink_staging": []string{pre_secret},
-			"dj_staging":    []string{},
-			"*":             []string{"some-secret"},
+	x := ts2fa.Ts2FAConf{
+		Rules: ts2fa.Rules{
+			"blink_staging": {
+				"SaveWorkspace": []string{pre_secret},
+				"*":             []string{},
+			},
+			"dj_staging": {
+				"*": []string{},
+			},
+			"*": {
+				"*": []string{"some-secret"},
+			},
 		},
 	}
 
-	b, _ := json.Marshal(x)
-	twoFAConfig = ioutil.NopCloser(bytes.NewBuffer(b))
+	b, err := json.Marshal(x)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	twofaIO = ioutil.NopCloser(bytes.NewBuffer(b))
 
 	go func() {
 		*support = "0.0.1"
@@ -80,16 +91,18 @@ func Test2FAInterceptor(t *testing.T) {
 
 	t.Run("Key that doesn't need a token", func(t *testing.T) {
 		t.Run("Missing context", func(t *testing.T) {
+			wid := "dj_staging"
 			ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1")
-			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "dj_staging"})
+			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: wid})
 			assert.Contains(t, err.Error(), "invalid no. of Tokens passed. Expected 1 got 0")
 			assert.NotEmpty(t, err)
 			assert.Nil(t, resp)
 		})
 
 		t.Run("Valid context", func(t *testing.T) {
-			ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", "dj_staging")
-			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "dj_staging"})
+			wid := "dj_staging"
+			ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", wid)
+			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: wid})
 
 			assert.Nil(t, err)
 			assert.Equal(t, resp, &Ok{})
@@ -99,20 +112,22 @@ func Test2FAInterceptor(t *testing.T) {
 
 	t.Run("Incorrect token", func(t *testing.T) {
 		t.Run("Specific Id", func(t *testing.T) {
-			ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", "blink_staging", "2fa_token", "123456")
-			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "test"})
+			wid := "blink_staging"
+			ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", wid, "2fa_token", "123456")
+			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: wid})
 
-			assert.Contains(t, err.Error(), fmt.Sprintf("validation failed for Secret: %v", pre_secret))
+			assert.Contains(t, err.Error(), "validation failed for OTP")
 			// Assert for failure.
 			assert.NotEmpty(t, err)
 			assert.Nil(t, resp)
 		})
 
 		t.Run("Catch-all Rule", func(t *testing.T) {
-			ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", "test_staging", "2fa_token", "123456")
-			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "test"})
+			wid := "test_staging"
+			ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", wid, "2fa_token", "123456")
+			resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: wid})
 
-			assert.Contains(t, err.Error(), "validation failed for Secret: some-secret")
+			assert.Contains(t, err.Error(), "validation failed for OTP")
 			// Assert for failure.
 			assert.NotEmpty(t, err)
 			assert.Nil(t, resp)
@@ -120,8 +135,9 @@ func Test2FAInterceptor(t *testing.T) {
 	})
 
 	t.Run("Should Pass for valid tokens", func(t *testing.T) {
-		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", "blink_staging", "2fa_token", pre_token)
-		resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: "test"})
+		wid := "blink_staging"
+		ctx := metadata.AppendToOutgoingContext(context.Background(), "version", "0.0.1", "2fa_key", wid, "2fa_token", pre_token)
+		resp, err := tClient.SaveWorkspace(ctx, &SaveWorkspaceRequest{Id: wid})
 
 		t.Log(resp, err)
 	})

@@ -29,6 +29,10 @@ type layout struct {
 	varsPath    string
 }
 
+func twoFAKey(args ...string) string {
+	return strings.Join(args, "-")
+}
+
 func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 	if _, err := os.Stat(cm.dirName); err != nil {
 		log.Printf("Directory '%s' does not exist\n", cm.dirName)
@@ -95,7 +99,7 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		Plan:        layoutBytes,
 	}
 
-	if _, err := getClient().SaveLayout(makeContext(nil, NewTwoFA(cm.id, *codes)), req); err != nil {
+	if _, err := getClient().SaveLayout(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -109,7 +113,7 @@ func (cm *layout) layoutGet(c *kingpin.ParseContext) error {
 		WorkspaceId: cm.workspaceId,
 	}
 
-	resp, err := getClient().GetLayout(makeContext(nil, NewTwoFA(cm.id, *codes)), req)
+	resp, err := getClient().GetLayout(makeContext(nil, nil), req)
 	if err != nil {
 		return err
 	}
@@ -136,7 +140,7 @@ func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
 		Dry:         cm.dry,
 	}
 
-	resp, err := getClient().ApplyLayout(makeContext(nil, NewTwoFA(cm.id, *codes)), req)
+	resp, err := getClient().ApplyLayout(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req)
 	if err != nil {
 		return err
 	}
@@ -157,7 +161,7 @@ func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
 		Vars:        vars,
 	}
 
-	resp, err := getClient().DestroyLayout(makeContext(nil, NewTwoFA(cm.id, *codes)), req)
+	resp, err := getClient().DestroyLayout(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req)
 	if err != nil {
 		return err
 	}
@@ -174,7 +178,7 @@ func (cm *layout) layoutStateGet(_ *kingpin.ParseContext) error {
 		WorkspaceId: cm.workspaceId,
 	}
 
-	resp, err := getClient().GetState(makeContext(nil, NewTwoFA(cm.id, *codes)), req)
+	resp, err := getClient().GetState(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req)
 	if err != nil {
 		return err
 	}
@@ -194,7 +198,7 @@ func (cm *layout) layoutGetOutput(_ *kingpin.ParseContext) error {
 		WorkspaceId: cm.workspaceId,
 	}
 
-	resp, err := getClient().GetOutput(makeContext(nil, NewTwoFA(cm.id, *codes)), req)
+	resp, err := getClient().GetOutput(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req)
 	if err != nil {
 		return err
 	}

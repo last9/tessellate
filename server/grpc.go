@@ -24,13 +24,14 @@ var (
 	keyFile  = kingpin.Flag("key-file", "Key File").Envar("KEY_FILE").String()
 	support  = (kingpin.Flag("least-cli-version", "Client's least supported version by Tessellate.")).
 			Default(DefaultVersion).OverrideDefaultFromEnvar("LEAST_CLI_VERSION").String()
-	twoFAConfig = io.ReadCloser(*kingpin.Flag("totp-config", "Config file for 2FA").File())
+	twoFAConfig = kingpin.Flag("totp-config", "Config file for 2FA").File()
 )
 
 func customFunc(t interface{}) error {
 	return fault.Printer(t)
 }
 
+var twofaIO io.ReadCloser
 var validator = totp.Validate
 
 func Grpc() *grpc.Server {
@@ -40,10 +41,14 @@ func Grpc() *grpc.Server {
 		grpc_recovery.WithRecoveryHandler(customFunc),
 	}
 
+	if twofaIO == nil {
+		twofaIO = io.ReadCloser(*twoFAConfig)
+	}
+
 	unaries := []grpc.UnaryServerInterceptor{
 		grpc_recovery.UnaryServerInterceptor(opts...),
 		middleware.UnaryServerInterceptor(*support),
-		middleware.TwoFAInterceptor(twoFAConfig, validator),
+		middleware.TwoFAInterceptor(twofaIO, validator),
 	}
 
 	sopts := []grpc.ServerOption{}

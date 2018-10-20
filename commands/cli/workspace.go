@@ -31,7 +31,8 @@ func workspaceAdd(_ *kingpin.ParseContext) error {
 		log.Println("warning: no provider file given")
 	}
 
-	if _, err := client.SaveWorkspace(makeContext(nil, nil), &req); err != nil {
+	// NOTE: Creating an existing workspace can be dangerous. Use 2FA.
+	if _, err := client.SaveWorkspace(makeContext(nil, NewTwoFA(wid, *codes)), &req); err != nil {
 		log.Println(err)
 		return err
 	}

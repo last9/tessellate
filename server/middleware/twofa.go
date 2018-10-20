@@ -25,23 +25,19 @@ func getTotpPayload(ctx context.Context, op string) (*ts2fa.Payload, error) {
 	}
 
 	var key string
-	if k, ok := md["2fa_key"]; ok && len(k) == 1 {
+	if k := md.Get("2fa_key"); len(k) == 1 {
 		key = k[0]
 	}
 
-	codes := []string{}
-	if c, ok := md["2fa_token"]; ok && len(c) == 1 {
-		codes = strings.Split(c[0], ",")
-	}
-
-	obj := ts2fa.NewPayload(op, key, codes...)
+	codes := md.Get("2fa_token")
+	obj := ts2fa.NewPayload(key, op, codes...)
 	return obj, nil
 }
 
 func TwoFAInterceptor(c io.ReadCloser, validator func(string, string) bool) grpc.UnaryServerInterceptor {
 	// check if 2FA codes are valid.
 	// todo: currently using in memory.
-	var rules ts2fa.Rules
+	var config ts2fa.Ts2FAConf
 
 	b, rErr := ioutil.ReadAll(c)
 	if rErr != nil {
@@ -50,14 +46,12 @@ func TwoFAInterceptor(c io.ReadCloser, validator func(string, string) bool) grpc
 
 	defer c.Close()
 
-	if err := json.Unmarshal(b, &rules); err != nil {
+	if err := json.Unmarshal(b, &config); err != nil {
 		log.Println(err)
 	}
 
-	tfa := ts2fa.New(&ts2fa.Ts2FAConf{
-		Rules:     rules,
-		Validator: validator,
-	})
+	config.Validator = validator
+	tfa := ts2fa.New(&config)
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		infoList := strings.Split(info.FullMethod, "/")
@@ -68,6 +62,8 @@ func TwoFAInterceptor(c io.ReadCloser, validator func(string, string) bool) grpc
 				log.Println(fmt.Sprintf("Error while fetching 2fa headers: %v", err))
 				return nil, err
 			}
+
+			log.Printf("Validating payload %+v\n", obj)
 
 			valid, err := tfa.Verify(obj)
 			if err != nil {

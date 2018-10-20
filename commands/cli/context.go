@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"strings"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -12,7 +11,12 @@ func makeContext(ctx context.Context, totp *TwoFA) context.Context {
 		ctx = context.Background()
 	}
 
-	md := metadata.Pairs("version", version, "2fa_key", totp.Id, "2fa_token", strings.Join(totp.Codes, ","))
+	md := metadata.Pairs("version", version)
+
+	if totp != nil {
+		md.Set("2fa_key", totp.Id)
+		md.Set("2fa_token", totp.Codes...)
+	}
 
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
