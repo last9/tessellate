@@ -31,7 +31,8 @@ func workspaceAdd(_ *kingpin.ParseContext) error {
 		log.Println("warning: no provider file given")
 	}
 
-	if _, err := client.SaveWorkspace(makeContext(nil), &req); err != nil {
+	// NOTE: Creating an existing workspace can be dangerous. Use 2FA.
+	if _, err := client.SaveWorkspace(makeContext(nil, NewTwoFA(wid, *codes)), &req); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -43,7 +44,7 @@ func workspaceGet(_ *kingpin.ParseContext) error {
 	client := getClient()
 	req := server.GetWorkspaceRequest{Id: strings.ToLower(wid)}
 
-	w, err := client.GetWorkspace(makeContext(nil), &req)
+	w, err := client.GetWorkspace(makeContext(nil, nil), &req)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -62,7 +63,7 @@ func workspaceAll(_ *kingpin.ParseContext) error {
 	client := getClient()
 	req := server.Ok{}
 
-	w, err := client.GetAllWorkspaces(makeContext(nil), &req)
+	w, err := client.GetAllWorkspaces(makeContext(nil, nil), &req)
 	if err != nil {
 		log.Println(err)
 		return err

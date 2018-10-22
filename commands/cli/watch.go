@@ -22,7 +22,7 @@ func (w *watch) watchStart(c *kingpin.ParseContext) error {
 	req := server.StartWatchRequest{WorkspaceId: strings.ToLower(w.workspaceID), Id: strings.ToLower(w.layoutID),
 		SuccessCallback: w.sURL, FailureCallback: w.fURL}
 
-	if _, err := getClient().StartWatch(makeContext(nil), &req); err != nil {
+	if _, err := getClient().StartWatch(makeContext(nil, NewTwoFA(twoFAKey(w.workspaceID, w.layoutID), *codes)), &req); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -35,7 +35,7 @@ func (w *watch) watchStop(c *kingpin.ParseContext) error {
 
 	req := server.StopWatchRequest{WorkspaceId: strings.ToLower(w.workspaceID), Id: strings.ToLower(w.layoutID)}
 
-	if _, err := getClient().StopWatch(makeContext(nil), &req); err != nil {
+	if _, err := getClient().StopWatch(makeContext(nil, NewTwoFA(twoFAKey(w.workspaceID, w.layoutID), *codes)), &req); err != nil {
 		log.Println(err)
 		return err
 	}

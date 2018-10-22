@@ -30,6 +30,7 @@ var (
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
+
 	unlocker = "tsl8_unlock_job"
 )
 
