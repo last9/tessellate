@@ -11,17 +11,30 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const version = "0.1.2"
+const version = "0.2.0"
 
 var (
 	endpoint *string
 	certFile *string
 	keyFile  *string
 	rootCert *string
+	codes    *[]string
 )
 
 var once sync.Once
 var client server.TessellateClient
+
+type TwoFA struct {
+	Id    string
+	Codes []string
+}
+
+func NewTwoFA(id string, codes []string) *TwoFA {
+	return &TwoFA{
+		Id:    id,
+		Codes: codes,
+	}
+}
 
 func getClient() server.TessellateClient {
 	once.Do(func() {
@@ -55,6 +68,7 @@ func main() {
 	rootCert = app.Flag("root-cert", "Root Cert File").String()
 	certFile = app.Flag("cert-file", "Cert File").String()
 	keyFile = app.Flag("key-file", "Key File").String()
+	codes = app.Flag("2fa", "2FA code of the stakeholder").Strings()
 
 	endpoint = app.Flag("tsl8_server", "endpoint of Tessellate Server").Short('a').Envar("TESSELLATE_SERVER").
 		Default("localhost:9977").String()
