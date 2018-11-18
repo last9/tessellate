@@ -1,12 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"strings"
-
-	"io/ioutil"
-
-	"encoding/json"
 
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -16,6 +14,15 @@ var (
 	wid              string
 	providerFilePath string
 )
+
+type Provider struct {
+	Region string
+}
+
+type WorkspaceVars struct {
+	Providers []map[string]Provider `json:"provider"`
+	Variables interface{}           `json:"variable"`
+}
 
 func workspaceAdd(_ *kingpin.ParseContext) error {
 	client := getClient()
@@ -72,6 +79,43 @@ func workspaceAll(_ *kingpin.ParseContext) error {
 	for _, w := range w.Workspaces {
 		out := workspaceMap(w)
 		prettyPrint(out)
+	}
+
+	return nil
+}
+
+func workspaceAllLayouts(_ *kingpin.ParseContext) error {
+	client := getClient()
+
+	reqW := server.GetWorkspaceRequest{Id: wid}
+
+	w, err := client.GetWorkspace(makeContext(nil, nil), &reqW)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var vars WorkspaceVars
+
+	if err := json.Unmarshal(w.Vars, &vars); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	for _, p := range vars.Providers {
+		prettyPrint(p)
+	}
+
+	req := server.GetWorkspaceLayoutsRequest{Id: wid}
+
+	wL, err := client.GetWorkspaceLayouts(makeContext(nil, nil), &req)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	prettyPrint("--------------------layouts----------------")
+	for _, l := range wL.Layouts {
+		prettyPrint(l.Id)
 	}
 
 	return nil
@@ -139,6 +183,9 @@ func addWorkspaceCommand(app *kingpin.Application) {
 
 	wg := w.Command("get", "Get a workspace.").Action(workspaceGet)
 	wg.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
+
+	wl := w.Command("layouts", "Get All Layouts.").Action(workspaceAllLayouts)
+	wl.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
 
 	w.Command("list", "Get All Workspaces.").Action(workspaceAll)
 }

@@ -3,12 +3,9 @@ package server
 import (
 	"context"
 	"encoding/json"
-
 	"fmt"
-
 	"log"
 	"path/filepath"
-
 	"strings"
 
 	"github.com/meson10/highbrow"
@@ -17,9 +14,7 @@ import (
 	"github.com/tsocial/tessellate/storage/types"
 )
 
-const (
-	retry = 5
-)
+const saveRetry = 5
 
 type Output struct {
 	Outputs map[string]struct {
@@ -128,6 +123,26 @@ func (s *Server) getWorkspace(id string) (*Workspace, error) {
 	return &w, err
 }
 
+func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayoutsRequest) (*Layouts, error) {
+	keys, err := s.store.GetKeys(types.WORKSPACE+"/"+in.Id+"/"+types.LAYOUT+"/", "/")
+	if err != nil {
+		return nil, err
+	}
+
+	var layouts []*Layout
+	for _, k := range keys {
+		splits := strings.Split(k, "/")
+		if len(splits) != 5 {
+			log.Printf("skipping %s, len = %d\n", k, len(splits))
+			continue
+		}
+
+		layouts = append(layouts, &Layout{Workspaceid: in.Id, Id: splits[len(splits)-2]})
+	}
+
+	return &Layouts{Layouts: layouts}, nil
+}
+
 // SaveLayout under the mentioned workspace ID.
 func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*Ok, error) {
 	if err := in.Validate(); err != nil {
@@ -193,7 +208,7 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 }
 
 // Operation layout for APPLY and DESTROY operations on the layout.
-func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*JobStatus, error) {
+func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retry int64) (*JobStatus, error) {
 	lyt := types.Layout{Id: lID}
 	tree := types.MakeTree(wID)
 	layoutTree := types.MakeTree(wID, lID)
@@ -230,7 +245,6 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		Status:        int32(JobState_PENDING),
 		VarsVersion:   varID,
 		Op:            op,
-		Dry:           dry,
 	}
 
 	// Save this job in workspace tree.
@@ -242,12 +256,12 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	// Lock for workspace and layout.
 	key := fmt.Sprintf("%v-%v", wID, lID)
 
-	if err := highbrow.Try(retry, func() error {
+	if err := highbrow.Try(saveRetry, func() error {
 		return s.store.Lock(key, job.Id)
 	}); err != nil {
 		return nil, err
 	}
-	link, error := dispatcher.Get().Dispatch(wID, &j)
+	link, error := dispatcher.Get().Dispatch(wID, &j, retry)
 	job.Id = link
 	return job, error
 }
@@ -258,7 +272,7 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry)
+	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry, in.Retry)
 }
 
 // DestroyLayout job.
@@ -267,7 +281,7 @@ func (s *Server) DestroyLayout(ctx context.Context, in *DestroyLayoutRequest) (*
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_DESTROY), in.Vars, false)
+	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_DESTROY), in.Vars, false, in.Retry)
 }
 
 // AbortJob to halt.

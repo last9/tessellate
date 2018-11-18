@@ -1,18 +1,13 @@
 package main
 
 import (
-	"log"
-	"path"
-
-	"os"
-
-	"fmt"
-
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-
+	"log"
+	"os"
+	"path"
 	"path/filepath"
-
 	"strings"
 
 	"github.com/pkg/errors"
@@ -21,12 +16,15 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
+const defaultAttempts = "3"
+
 type layout struct {
 	id          string
 	workspaceId string
 	dirName     string
 	dry         bool
 	varsPath    string
+	retry       int64
 }
 
 func twoFAKey(args ...string) string {
@@ -138,6 +136,7 @@ func (cm *layout) layoutApply(c *kingpin.ParseContext) error {
 		WorkspaceId: cm.workspaceId,
 		Vars:        vars,
 		Dry:         cm.dry,
+		Retry:       cm.retry,
 	}
 
 	resp, err := getClient().ApplyLayout(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req)
@@ -159,6 +158,7 @@ func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
 		Id:          cm.id,
 		WorkspaceId: cm.workspaceId,
 		Vars:        vars,
+		Retry:       cm.retry,
 	}
 
 	resp, err := getClient().DestroyLayout(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req)
@@ -241,6 +241,7 @@ func addLayoutCommands(app *kingpin.Application) {
 	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 
 	al.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
+	al.Flag("retry", "Number of retry on layout apply").Default(defaultAttempts).Int64Var(&clm.retry)
 	al.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 
 	dl.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
