@@ -245,6 +245,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retr
 		Status:        int32(JobState_PENDING),
 		VarsVersion:   varID,
 		Op:            op,
+		Dry:           dry,
 	}
 
 	// Save this job in workspace tree.

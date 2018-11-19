@@ -214,7 +214,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, layoutId, job.LayoutId)
 		assert.Equal(t, int32(JobState_PENDING), job.Status)
 		assert.Equal(t, int32(Operation_APPLY), job.Op)
-		//assert.Equal(t, true, job.Dry)
+		assert.Equal(t, true, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 
