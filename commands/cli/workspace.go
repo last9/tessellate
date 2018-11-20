@@ -15,15 +15,6 @@ var (
 	providerFilePath string
 )
 
-type Provider struct {
-	Region string
-}
-
-type WorkspaceVars struct {
-	Providers []map[string]Provider `json:"provider"`
-	Variables interface{}           `json:"variable"`
-}
-
 func workspaceAdd(_ *kingpin.ParseContext) error {
 	client := getClient()
 	req := server.SaveWorkspaceRequest{Id: strings.ToLower(wid)}
@@ -87,25 +78,6 @@ func workspaceAll(_ *kingpin.ParseContext) error {
 func workspaceAllLayouts(_ *kingpin.ParseContext) error {
 	client := getClient()
 
-	reqW := server.GetWorkspaceRequest{Id: wid}
-
-	w, err := client.GetWorkspace(makeContext(nil, nil), &reqW)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	var vars WorkspaceVars
-
-	if err := json.Unmarshal(w.Vars, &vars); err != nil {
-		log.Println(err)
-		return err
-	}
-
-	for _, p := range vars.Providers {
-		prettyPrint(p)
-	}
-
 	req := server.GetWorkspaceLayoutsRequest{Id: wid}
 
 	wL, err := client.GetWorkspaceLayouts(makeContext(nil, nil), &req)
@@ -113,7 +85,6 @@ func workspaceAllLayouts(_ *kingpin.ParseContext) error {
 		log.Println(err)
 		return err
 	}
-	prettyPrint("--------------------layouts----------------")
 	for _, l := range wL.Layouts {
 		prettyPrint(l.Id)
 	}
@@ -184,7 +155,7 @@ func addWorkspaceCommand(app *kingpin.Application) {
 	wg := w.Command("get", "Get a workspace.").Action(workspaceGet)
 	wg.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
 
-	wl := w.Command("layouts", "Get All Layouts.").Action(workspaceAllLayouts)
+	wl := w.Command("list-layouts", "Get All Layouts.").Action(workspaceAllLayouts)
 	wl.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
 
 	w.Command("list", "Get All Workspaces.").Action(workspaceAll)
