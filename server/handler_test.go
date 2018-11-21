@@ -1,20 +1,18 @@
 package server
 
 import (
-	"encoding/json"
-	"path"
-	"testing"
-
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	"github.com/tsocial/tessellate/storage"
+	"path"
+	"testing"
 
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/dispatcher"
+	"github.com/tsocial/tessellate/storage"
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/tsocial/tessellate/utils"
 )
@@ -84,72 +82,6 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 
 		assert.Equal(t, resp.LayoutId, layoutId)
 	})
-
-	t.Run("Should create a layout in the workspace with dry flag", func(t *testing.T) {
-		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry:true}
-		resp, err := server.SaveLayout(context.Background(), req)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		assert.Equal(t, resp.LayoutId, layoutId+drysuffix)
-
-		tree := types.MakeTree(workspaceId)
-		l := types.Layout{
-			Id:   layoutId+drysuffix,
-			Plan: map[string]json.RawMessage{},
-		}
-
-		vAfterSave, err := store.GetVersions(&l, tree)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		assert.Equal(t, 2, len(vAfterSave))
-	})
-
-	t.Run("Should create a layout in the workspace with dry flag and copy state file", func(t *testing.T) {
-		//temporary saving state
-		key := path.Join(state, workspaceId, layoutId)
-		value := "some test value"
-		store.SaveKey(key, []byte(value))
-
-		tree := types.MakeTree(workspaceId)
-		l := types.Layout{
-			Id:   layoutId,
-			Plan: map[string]json.RawMessage{},
-		}
-
-		vBeforeSave, err := store.GetVersions(&l, tree)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry:true}
-		resp, err := server.SaveLayout(context.Background(), req)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		assert.Equal(t, resp.LayoutId, layoutId+drysuffix)
-
-		key = path.Join(state, workspaceId, layoutId+drysuffix)
-		newvalue, err := store.GetKey(key)
-		if err != nil {
-			t.Fatal(err)
-		}
-		assert.Equal(t, value, string(newvalue))
-
-		vAfterSave, err := store.GetVersions(&l, tree)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		assert.Equal(t, len(vBeforeSave), len(vAfterSave))
-	})
-
 
 	t.Run("Layout with provider conflict without worksapce should not error", func(t *testing.T) {
 		id := fmt.Sprintf("workspace-conflict")
@@ -273,18 +205,6 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 
-	t.Run("Should not apply a dry layout without dry flag", func(t *testing.T) {
-		req := &ApplyLayoutRequest{
-			WorkspaceId: workspaceId,
-			Id:          layoutId+drysuffix,
-			Dry:         false,
-			Vars:        vBytes,
-		}
-
-		_, err := server.ApplyLayout(context.Background(), req)
-		assert.Error(t, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", layoutId+drysuffix)), err)
-	})
-
 	lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
 
 	t.Run("Should Lock a run till completed by worker", func(t *testing.T) {
@@ -340,6 +260,108 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, int32(Operation_DESTROY), job.Op)
 		assert.Equal(t, false, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
+	})
+}
+
+func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
+	workspaceId := fmt.Sprintf("workspace-%s", utils.RandString(8))
+	layoutId := fmt.Sprintf("layout-%s", utils.RandString(8))
+
+	jobQueue := dispatcher.NewInMemory()
+	dispatcher.Set(jobQueue)
+
+	plan := map[string]json.RawMessage{}
+
+	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	plan["sleep.tf.json"] = uglyJson(lBytes)
+
+	vBytes, err := ioutil.ReadFile("../tmpl/testdata/vars.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	pBytes, _ := json.Marshal(plan)
+	vBytes = uglyJson(vBytes)
+
+	t.Run("Should create a layout in the workspace with dry flag", func(t *testing.T) {
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry: true}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+		newLayoutID := layoutId + drysuffix
+		assert.Equal(t, resp.LayoutId, newLayoutID)
+
+		tree := types.MakeTree(workspaceId)
+		l := types.Layout{
+			Id:   newLayoutID,
+			Plan: map[string]json.RawMessage{},
+		}
+
+		vAfterSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, 1, len(vAfterSave))
+	})
+
+	t.Run("Should create a layout in the workspace with dry flag and copy state file", func(t *testing.T) {
+		//temporary saving state
+		key := path.Join(state, workspaceId, layoutId)
+		value := "some test value"
+		store.SaveKey(key, []byte(value))
+
+		tree := types.MakeTree(workspaceId)
+		l := types.Layout{
+			Id:   layoutId,
+			Plan: map[string]json.RawMessage{},
+		}
+
+		vBeforeSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry: true}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp.LayoutId, layoutId+drysuffix)
+
+		key = path.Join(state, workspaceId, layoutId+drysuffix)
+		newvalue, err := store.GetKey(key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, value, string(newvalue))
+
+		vAfterSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, len(vBeforeSave), len(vAfterSave))
+	})
+
+	t.Run("Should not apply a dry layout without dry flag", func(t *testing.T) {
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId + drysuffix,
+			Dry:         false,
+			Vars:        vBytes,
+		}
+
+		_, err := server.ApplyLayout(context.Background(), req)
+		assert.Error(t, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", layoutId+drysuffix)), err)
 	})
 }
 
