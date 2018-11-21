@@ -243,7 +243,8 @@ func addLayoutCommands(app *kingpin.Application) {
 	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
 
 	al.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
-	al.Flag("retry", "Number of retry on layout apply").Default(defaultAttempts).Int64Var(&clm.retry)
+	al.Flag("retry", "Number of retries on layout apply, make it 0 for no retries, default is 3").
+		Default(defaultAttempts).Int64Var(&clm.retry)
 	al.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 
 	dl.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)

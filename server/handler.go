@@ -130,7 +130,7 @@ func (s *Server) getWorkspace(id string) (*Workspace, error) {
 }
 
 func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayoutsRequest) (*Layouts, error) {
-	keys, err := s.store.GetKeys(types.WORKSPACE+"/"+in.Id+"/"+types.LAYOUT+"/", "/")
+	keys, err := s.store.GetKeys(filepath.Join(types.WORKSPACE, in.Id, types.LAYOUT)+"/", "/")
 	if err != nil {
 		return nil, err
 	}
