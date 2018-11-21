@@ -24,7 +24,9 @@ service Tessellate {
       get: "/v1/workspace/{Id}/layouts"
     };
   }
-  rpc SaveLayout (SaveLayoutRequest) returns (Ok) {
+ // rpc GetWorkspaceLayouts (GetWorkspaceLayoutsRequest) returns (Layouts) {}
+
+  rpc SaveLayout (SaveLayoutRequest) returns (SaveLayoutResponse) {
     option (google.api.http) = {
       post: "/v1/workspace/{WorkspaceId}/layout"
       body: "*"
@@ -145,7 +147,13 @@ message SaveLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
   bytes Plan = 3;
+  bool Dry = 4;
 }
+
+message SaveLayoutResponse {
+  string LayoutId = 1;
+}
+
 
 message SetLayoutStatusRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];

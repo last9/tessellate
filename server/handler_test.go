@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"path"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -79,7 +81,17 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		assert.Equal(t, resp, &Ok{})
+		assert.Equal(t, resp.LayoutId, layoutId)
+
+		//get saved layout and match content
+		getReq := &LayoutRequest{WorkspaceId: workspaceId, Id: layoutId}
+		gResp, err := server.GetLayout(context.Background(), getReq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, gResp.Plan, pBytes)
+		assert.Equal(t, gResp.Id, layoutId)
+		assert.Equal(t, gResp.Workspaceid, workspaceId)
 	})
 
 	t.Run("Layout with provider conflict without worksapce should not error", func(t *testing.T) {
@@ -273,6 +285,120 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, int32(Operation_DESTROY), job.Op)
 		assert.Equal(t, false, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
+	})
+}
+
+func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
+	workspaceId := fmt.Sprintf("workspace-%s", utils.RandString(8))
+	layoutId := fmt.Sprintf("layout-%s", utils.RandString(8))
+
+	jobQueue := dispatcher.NewInMemory()
+	dispatcher.Set(jobQueue)
+
+	plan := map[string]json.RawMessage{}
+
+	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	plan["sleep.tf.json"] = uglyJson(lBytes)
+
+	vBytes, err := ioutil.ReadFile("../tmpl/testdata/vars.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	pBytes, _ := json.Marshal(plan)
+	vBytes = uglyJson(vBytes)
+
+	t.Run("Should create a layout in the workspace with dry flag with empty state", func(t *testing.T) {
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry: true}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+		newLayoutId := layoutId + drysuffix
+		assert.Equal(t, newLayoutId, resp.LayoutId)
+
+		tree := types.MakeTree(workspaceId)
+		l := types.Layout{
+			Id:   newLayoutId,
+			Plan: map[string]json.RawMessage{},
+		}
+
+		vAfterSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, 1, len(vAfterSave))
+
+		//get saved layout and match content
+		getReq := &LayoutRequest{WorkspaceId: workspaceId, Id: newLayoutId}
+		gResp, err := server.GetLayout(context.Background(), getReq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, gResp.Plan, pBytes)
+		assert.Equal(t, gResp.Id, newLayoutId)
+		assert.Equal(t, gResp.Workspaceid, workspaceId)
+	})
+
+	t.Run("Should create a layout in the workspace with dry flag with existing state", func(t *testing.T) {
+		//temporary saving state
+		key := path.Join(state, workspaceId, layoutId)
+		value := "some test value"
+		store.SaveKey(key, []byte(value))
+
+		tree := types.MakeTree(workspaceId)
+		l := types.Layout{
+			Id:   layoutId,
+			Plan: map[string]json.RawMessage{},
+		}
+
+		vBeforeSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry: true}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+		newLayoutId := layoutId + drysuffix
+		assert.Equal(t, resp.LayoutId, newLayoutId)
+
+		key = path.Join(state, workspaceId, newLayoutId)
+		newvalue, err := store.GetKey(key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, value, string(newvalue))
+
+		vAfterSave, err := store.GetVersions(&l, tree)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, len(vBeforeSave), len(vAfterSave))
+	})
+
+	t.Run("Should not apply a dry layout without dry flag", func(t *testing.T) {
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId + drysuffix,
+			Dry:         false,
+			Vars:        vBytes,
+		}
+
+		_, err := server.ApplyLayout(context.Background(), req)
+		assert.NotNil(t, err)
+		assert.Equal(t, fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan",
+			layoutId+drysuffix), err.Error())
 	})
 }
 
