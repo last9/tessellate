@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	saveRetry     = 5
+	saveRetry = 5
 	state     = "state"
 	drysuffix = "-dry"
 	Latest    = "latest"
@@ -147,6 +147,8 @@ func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayout
 	}
 
 	return &Layouts{Layouts: layouts}, nil
+}
+
 // copy old state to dry layout or create new
 func createDryLayout(s *Server, in *SaveLayoutRequest) (*SaveLayoutResponse, error) {
 	key := path.Join(state, in.WorkspaceId, in.Id)
