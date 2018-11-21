@@ -81,6 +81,16 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		}
 
 		assert.Equal(t, resp.LayoutId, layoutId)
+
+		//get saved layout and match content
+		getReq := &LayoutRequest{WorkspaceId: workspaceId, Id: layoutId}
+		gResp, err := server.GetLayout(context.Background(), getReq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, gResp.Plan, pBytes)
+		assert.Equal(t, gResp.Id, layoutId)
+		assert.Equal(t, gResp.Workspaceid, workspaceId)
 	})
 
 	t.Run("Layout with provider conflict without worksapce should not error", func(t *testing.T) {
@@ -287,19 +297,19 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 	pBytes, _ := json.Marshal(plan)
 	vBytes = uglyJson(vBytes)
 
-	t.Run("Should create a layout in the workspace with dry flag", func(t *testing.T) {
+	t.Run("Should create a layout in the workspace with dry flag with empty state", func(t *testing.T) {
 		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes, Dry: true}
 		resp, err := server.SaveLayout(context.Background(), req)
 
 		if err != nil {
 			t.Fatal(err)
 		}
-		newLayoutID := layoutId + drysuffix
-		assert.Equal(t, resp.LayoutId, newLayoutID)
+		newLayoutId := layoutId + drysuffix
+		assert.Equal(t, newLayoutId, resp.LayoutId)
 
 		tree := types.MakeTree(workspaceId)
 		l := types.Layout{
-			Id:   newLayoutID,
+			Id:   newLayoutId,
 			Plan: map[string]json.RawMessage{},
 		}
 
@@ -309,9 +319,19 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 		}
 
 		assert.Equal(t, 1, len(vAfterSave))
+
+		//get saved layout and match content
+		getReq := &LayoutRequest{WorkspaceId: workspaceId, Id: newLayoutId}
+		gResp, err := server.GetLayout(context.Background(), getReq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, gResp.Plan, pBytes)
+		assert.Equal(t, gResp.Id, newLayoutId)
+		assert.Equal(t, gResp.Workspaceid, workspaceId)
 	})
 
-	t.Run("Should create a layout in the workspace with dry flag and copy state file", func(t *testing.T) {
+	t.Run("Should create a layout in the workspace with dry flag with existing state", func(t *testing.T) {
 		//temporary saving state
 		key := path.Join(state, workspaceId, layoutId)
 		value := "some test value"
@@ -334,10 +354,10 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		newLayoutId := layoutId + drysuffix
+		assert.Equal(t, resp.LayoutId, newLayoutId)
 
-		assert.Equal(t, resp.LayoutId, layoutId+drysuffix)
-
-		key = path.Join(state, workspaceId, layoutId+drysuffix)
+		key = path.Join(state, workspaceId, newLayoutId)
 		newvalue, err := store.GetKey(key)
 		if err != nil {
 			t.Fatal(err)
@@ -361,7 +381,9 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 		}
 
 		_, err := server.ApplyLayout(context.Background(), req)
-		assert.Error(t, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", layoutId+drysuffix)), err)
+		assert.NotNil(t, err)
+		assert.Equal(t, fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan",
+			layoutId+drysuffix), err.Error())
 	})
 }
 
