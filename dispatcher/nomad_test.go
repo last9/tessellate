@@ -1,4 +1,4 @@
-// +build nomad
+// +build integration
 
 package dispatcher
 
@@ -59,7 +59,7 @@ func TestDispatched_Job(t *testing.T) {
 			jobID := val.Config["entrypoint"].([]interface{})[2]
 
 			if jobID != job.Id {
-				t.Fatal("Job ID expected %v, Got %v", job.Id, jobID)
+				t.Errorf("Job ID expected %v, Got %v", job.Id, jobID)
 			}
 		}
 	})
