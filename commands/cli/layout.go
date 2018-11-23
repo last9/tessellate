@@ -167,9 +167,7 @@ func (cm *layout) layoutDestroy(c *kingpin.ParseContext) error {
 		return err
 	}
 
-	state := resp.Status
-
-	prettyPrint(state)
+	prettyPrint("Check the link for job status: " + resp.Id)
 	return nil
 }
 

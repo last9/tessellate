@@ -552,11 +552,8 @@ func TestServer_SaveApplyAndDestroyLayoutWithRetry(t *testing.T) {
 		assert.Equal(t, false, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
 		assert.Equal(t, int64(4), job.Retry)
-	})
 
-	lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
-
-	t.Run("Unlocking is Idempotent", func(t *testing.T) {
+		lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
 		if err := store.Unlock(lockKey); err != nil {
 			t.Fatal(err)
 		}
