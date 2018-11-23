@@ -30,7 +30,7 @@ func NewNomadClient(cfg NomadConfig) *client {
 	return &client{cfg}
 }
 
-func (c *client) Dispatch(w string, j *types.Job, retry int64) (string, error) {
+func MakeNomadJob(w string, c *client, j *types.Job) (string, error) {
 	// Create a nomad job using go template
 	var tmplStr = `
 job "{{ job_name }}" {
@@ -70,14 +70,19 @@ job "{{ job_name }}" {
 		"cpu":          c.cfg.CPU,
 		"memory":       c.cfg.Memory,
 		"consul_addr":  c.cfg.ConsulAddr,
-		"attempts":     retry,
+		"attempts":     j.Retry,
 	}
 
 	if j.Dry {
 		cfg["attempts"] = 0
 	}
 
-	nomadJob, err := tmpl.Parse(tmplStr, cfg)
+	return tmpl.Parse(tmplStr, cfg)
+
+}
+
+func (c *client) Dispatch(w string, j *types.Job) (string, error) {
+	nomadJob, err := MakeNomadJob(w, c, j)
 	if err != nil {
 		log.Printf("error while job parsing: %+v", err)
 		return "", err

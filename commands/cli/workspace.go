@@ -75,23 +75,6 @@ func workspaceAll(_ *kingpin.ParseContext) error {
 	return nil
 }
 
-func workspaceAllLayouts(_ *kingpin.ParseContext) error {
-	client := getClient()
-
-	req := server.GetWorkspaceLayoutsRequest{Id: wid}
-
-	wL, err := client.GetWorkspaceLayouts(makeContext(nil, nil), &req)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	for _, l := range wL.Layouts {
-		prettyPrint(l.Id)
-	}
-
-	return nil
-}
-
 func ppWorkspace(w *server.Workspace) {
 	var vars map[string]interface{}
 
@@ -154,9 +137,6 @@ func addWorkspaceCommand(app *kingpin.Application) {
 
 	wg := w.Command("get", "Get a workspace.").Action(workspaceGet)
 	wg.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
-
-	wl := w.Command("list-layouts", "Get All Layouts.").Action(workspaceAllLayouts)
-	wl.Flag("workspace_id", "Workspace Id").Short('w').Required().StringVar(&wid)
 
 	w.Command("list", "Get All Workspaces.").Action(workspaceAll)
 }

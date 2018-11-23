@@ -304,6 +304,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retr
 		VarsVersion:   varID,
 		Op:            op,
 		Dry:           dry,
+		Retry:         retry,
 	}
 
 	// Save this job in workspace tree.
@@ -320,7 +321,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retr
 	}); err != nil {
 		return nil, err
 	}
-	link, error := dispatcher.Get().Dispatch(wID, &j, retry)
+	link, error := dispatcher.Get().Dispatch(wID, &j)
 	job.Id = link
 	return job, error
 }

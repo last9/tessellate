@@ -11,7 +11,7 @@ type Mem struct {
 	sync.Mutex
 }
 
-func (c *Mem) Dispatch(w string, j *types.Job, _ int64) (string, error) {
+func (c *Mem) Dispatch(w string, j *types.Job) (string, error) {
 	c.Lock()
 	defer c.Unlock()
 

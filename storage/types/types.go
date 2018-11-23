@@ -1,10 +1,8 @@
 package types
 
 import (
-	"path"
-
 	"encoding/json"
-
+	"path"
 	"strings"
 
 	"github.com/satori/go.uuid"
@@ -181,6 +179,7 @@ type Job struct {
 	VarsVersion   string `json:"vars_version"`
 	Op            int32  `json:"op"`
 	Dry           bool   `json:"dry"`
+	Retry         int64  `json:"retry"`
 }
 
 func (v *Job) SaveId(id string) {

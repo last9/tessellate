@@ -226,29 +226,52 @@ func getVars(path string) ([]byte, error) {
 	return b, nil
 }
 
+func (cm *layout) workspaceAllLayouts(_ *kingpin.ParseContext) error {
+	client := getClient()
+	req := server.GetWorkspaceLayoutsRequest{Id: cm.workspaceId}
+
+	wL, err := client.GetWorkspaceLayouts(makeContext(nil, nil), &req)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	for _, l := range wL.Layouts {
+		prettyPrint(l.Id)
+	}
+
+	return nil
+}
+
 func addLayoutCommands(app *kingpin.Application) {
 	lCLI := app.Command("layout", "Commands for layout")
 
 	clm := &layout{}
+
+	lCLI.Flag("workspace_id", "Workspace name").Required().Short('w').StringVar(&clm.workspaceId)
+	lCLI.Command("list", "Get All Layouts.").Action(clm.workspaceAllLayouts)
+
 	cl := lCLI.Command("create", "Create Layout").Action(clm.layoutCreate)
 	cl.Flag("dry", "Saves a temporary layout for review").BoolVar(&clm.dry)
-
-	lCLI.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
-	lCLI.Flag("workspace_id", "Workspace name").Required().Short('w').StringVar(&clm.workspaceId)
+	cl.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
 	cl.Flag("dir", "Absolute path of directory where layout files exist").Required().Short('d').StringVar(&clm.dirName)
 
-	lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
+	gl := lCLI.Command("get", "Get Layout").Action(clm.layoutGet)
+	gl.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
 
 	al := lCLI.Command("apply", "Apply layout").Action(clm.layoutApply)
-	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
-
+	al.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
 	al.Flag("dry", "Dry apply for in memory plan").BoolVar(&clm.dry)
 	al.Flag("retry", "Number of retries on layout apply, make it 0 for no retries, default is 3").
 		Default(defaultAttempts).Int64Var(&clm.retry)
 	al.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 
+	dl := lCLI.Command("destroy", "Destroy layout").Action(clm.layoutDestroy)
+	dl.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
 	dl.Flag("vars", "Path of vars file.").Short('v').StringVar(&clm.varsPath)
 
-	lCLI.Command("state", "Get layout's current state").Action(clm.layoutStateGet)
-	lCLI.Command("output", "Get layout's output if exist").Action(clm.layoutGetOutput)
+	sl := lCLI.Command("state", "Get layout's current state").Action(clm.layoutStateGet)
+	sl.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
+
+	ol := lCLI.Command("output", "Get layout's output if exist").Action(clm.layoutGetOutput)
+	ol.Flag("layout_id", "Name of the layout").Required().Short('l').StringVar(&clm.id)
 }

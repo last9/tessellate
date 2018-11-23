@@ -166,14 +166,14 @@ message ApplyLayoutRequest {
   string Id = 2 [(validate.rules).string.min_len = 1];
   bytes Vars = 3;
   bool dry = 4;
-  int64 Retry = 5;
+  int64 Retry = 5 [(validate.rules).int64.gte = 0];
 }
 
 message DestroyLayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
   bytes Vars = 3;
-  int64 Retry = 5;
+  int64 Retry = 4 [(validate.rules).int64.gte = 0];
 }
 
 message StartWatchRequest {
