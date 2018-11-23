@@ -4,14 +4,12 @@ import (
 	"log"
 	"net/url"
 	"path"
-	
+
 	"github.com/flosch/pongo2"
 	"github.com/hashicorp/nomad/api"
 	"github.com/tsocial/tessellate/storage/types"
 	"github.com/tsocial/tessellate/tmpl"
 )
-
-const defaultAttempts = 3
 
 type client struct {
 	cfg NomadConfig
@@ -32,7 +30,7 @@ func NewNomadClient(cfg NomadConfig) *client {
 	return &client{cfg}
 }
 
-func (c *client) Dispatch(w string, j *types.Job) (string, error) {
+func MakeNomadJob(w string, c *client, j *types.Job) (string, error) {
 	// Create a nomad job using go template
 	var tmplStr = `
 job "{{ job_name }}" {
@@ -72,14 +70,19 @@ job "{{ job_name }}" {
 		"cpu":          c.cfg.CPU,
 		"memory":       c.cfg.Memory,
 		"consul_addr":  c.cfg.ConsulAddr,
-		"attempts":     defaultAttempts,
+		"attempts":     j.Retry,
 	}
 
 	if j.Dry {
 		cfg["attempts"] = 0
 	}
 
-	nomadJob, err := tmpl.Parse(tmplStr, cfg)
+	return tmpl.Parse(tmplStr, cfg)
+
+}
+
+func (c *client) Dispatch(w string, j *types.Job) (string, error) {
+	nomadJob, err := MakeNomadJob(w, c, j)
 	if err != nil {
 		log.Printf("error while job parsing: %+v", err)
 		return "", err

@@ -1,4 +1,4 @@
-// +build nomad
+// +build integration
 
 package dispatcher
 
@@ -27,7 +27,9 @@ func TestMain(m *testing.M) {
 
 func TestClient_Dispatch(t *testing.T) {
 	job := &types.Job{Id: "job", LayoutId: "layout"}
-	assert.Nil(t, Get().Dispatch("workspace", job))
+	j, err := Get().Dispatch("workspace", job)
+	assert.Nil(t, err)
+	assert.NotNil(t, j)
 }
 
 func TestDispatched_Job(t *testing.T) {
@@ -51,14 +53,13 @@ func TestDispatched_Job(t *testing.T) {
 		assert.Equal(t, jobName, *runningJob.Name)
 
 	})
-
 	t.Run("Only job ID should be appended in the task config, not workspace and layout ID", func(t *testing.T) {
 		tasks := runningJob.TaskGroups[0]
 		for _, val := range tasks.Tasks {
 			jobID := val.Config["entrypoint"].([]interface{})[2]
 
 			if jobID != job.Id {
-				t.Fatal("Job ID expected %v, Got %v", job.Id, jobID)
+				t.Errorf("Job ID expected %v, Got %v", job.Id, jobID)
 			}
 		}
 	})

@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	retry     = 5
+	saveRetry = 5
 	state     = "state"
 	drysuffix = "-dry"
 	Latest    = "latest"
@@ -127,6 +127,26 @@ func (s *Server) getWorkspace(id string) (*Workspace, error) {
 	// Return the workspace, with latest version and vars.
 	w := Workspace{Name: string(workspace), Vars: bytes, Version: versions[1], Versions: versions}
 	return &w, err
+}
+
+func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayoutsRequest) (*Layouts, error) {
+	keys, err := s.store.GetKeys(filepath.Join(types.WORKSPACE, in.Id, types.LAYOUT)+"/", "/")
+	if err != nil {
+		return nil, err
+	}
+
+	var layouts []*Layout
+	for _, k := range keys {
+		splits := strings.Split(k, "/")
+		if len(splits) != 5 {
+			log.Printf("skipping %s, len = %d\n", k, len(splits))
+			continue
+		}
+
+		layouts = append(layouts, &Layout{Workspaceid: in.Id, Id: splits[len(splits)-2]})
+	}
+
+	return &Layouts{Layouts: layouts}, nil
 }
 
 // copy old state to dry layout or create new
@@ -246,11 +266,10 @@ func (s *Server) GetLayout(ctx context.Context, in *LayoutRequest) (*Layout, err
 }
 
 // Operation layout for APPLY and DESTROY operations on the layout.
-func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*JobStatus, error) {
+func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retry int64) (*JobStatus, error) {
 	lyt := types.Layout{Id: lID}
 	tree := types.MakeTree(wID)
 	layoutTree := types.MakeTree(wID, lID)
-
 	// GET versions of the layout.
 	versions, err := s.store.GetVersions(&lyt, tree)
 	log.Print(versions)
@@ -284,8 +303,8 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 		VarsVersion:   varID,
 		Op:            op,
 		Dry:           dry,
+		Retry:         retry,
 	}
-
 	// Save this job in workspace tree.
 	if err := s.store.Save(&j, tree); err != nil {
 		return nil, err
@@ -295,7 +314,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool) (*Jo
 	// Lock for workspace and layout.
 	key := fmt.Sprintf("%v-%v", wID, lID)
 
-	if err := highbrow.Try(retry, func() error {
+	if err := highbrow.Try(saveRetry, func() error {
 		return s.store.Lock(key, job.Id)
 	}); err != nil {
 		return nil, err
@@ -310,10 +329,11 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 	if err := in.Validate(); err != nil {
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
+
 	if !in.Dry && strings.HasSuffix(in.Id, drysuffix) {
 		return nil, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", in.Id))
 	}
-	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry)
+	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry, in.Retry)
 }
 
 // DestroyLayout job.
@@ -322,7 +342,7 @@ func (s *Server) DestroyLayout(ctx context.Context, in *DestroyLayoutRequest) (*
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_DESTROY), in.Vars, false)
+	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_DESTROY), in.Vars, false, in.Retry)
 }
 
 // AbortJob to halt.

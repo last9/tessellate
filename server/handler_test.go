@@ -154,6 +154,51 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, resp.Plan, pBytes)
 	})
 
+	t.Run("Should get all the layout that was created", func(t *testing.T) {
+		wid := workspaceId
+		lid := "l1"
+
+		req := &SaveLayoutRequest{Id: lid, WorkspaceId: wid, Plan: pBytes}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp.LayoutId, lid)
+
+		//get saved layout and match content
+		getReq := &LayoutRequest{WorkspaceId: wid, Id: lid}
+		gResp, err := server.GetLayout(context.Background(), getReq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, pBytes, gResp.Plan)
+		assert.Equal(t, lid, gResp.Id)
+		assert.Equal(t, wid, gResp.Workspaceid)
+
+		nReq := &GetWorkspaceLayoutsRequest{Id: workspaceId}
+		nResp, err := server.GetWorkspaceLayouts(context.Background(), nReq)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+		layouts := []*Layout{&Layout{Workspaceid: workspaceId, Id: lid},
+			&Layout{Workspaceid: workspaceId, Id: layoutId}}
+		assert.Equal(t, 2, len(nResp.Layouts))
+		assert.ElementsMatch(t, layouts, nResp.Layouts)
+	})
+
+	t.Run("Should get empty layout list when workspace not exist", func(t *testing.T) {
+		nReq := &GetWorkspaceLayoutsRequest{Id: "fakeworkspace"}
+		nResp, err := server.GetWorkspaceLayouts(context.Background(), nReq)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, 0, len(nResp.Layouts))
+	})
+
 	t.Run("Should save a watch", func(t *testing.T) {
 		req := &StartWatchRequest{
 			WorkspaceId:     workspaceId,
@@ -213,6 +258,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, int32(Operation_APPLY), job.Op)
 		assert.Equal(t, true, job.Dry)
 		assert.NotEmpty(t, job.LayoutVersion)
+		assert.Equal(t, int64(0), job.Retry)
 	})
 
 	lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
@@ -269,6 +315,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, int32(JobState_PENDING), job.Status)
 		assert.Equal(t, int32(Operation_DESTROY), job.Op)
 		assert.Equal(t, false, job.Dry)
+		assert.Equal(t, int64(0), job.Retry)
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 }
@@ -427,4 +474,147 @@ func TestServer_GetOutput(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, outMap)
+}
+
+func TestServer_SaveApplyAndDestroyLayoutWithRetry(t *testing.T) {
+	workspaceId := fmt.Sprintf("workspace-%s", utils.RandString(8))
+	layoutId := fmt.Sprintf("layout-%s", utils.RandString(8))
+
+	jobQueue := dispatcher.NewInMemory()
+	dispatcher.Set(jobQueue)
+
+	plan := map[string]json.RawMessage{}
+
+	lBytes, err := ioutil.ReadFile("../runner/testdata/sleep.tf.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	plan["sleep.tf.json"] = uglyJson(lBytes)
+
+	vBytes, err := ioutil.ReadFile("../tmpl/testdata/vars.json")
+	if err != nil {
+		t.Error(err)
+	}
+
+	pBytes, _ := json.Marshal(plan)
+	vBytes = uglyJson(vBytes)
+
+	t.Run("Should create a layout in the workspace", func(t *testing.T) {
+		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes}
+		resp, err := server.SaveLayout(context.Background(), req)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, resp.LayoutId, layoutId)
+
+		//get saved layout and match content
+		getReq := &LayoutRequest{WorkspaceId: workspaceId, Id: layoutId}
+		gResp, err := server.GetLayout(context.Background(), getReq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, gResp.Plan, pBytes)
+		assert.Equal(t, gResp.Id, layoutId)
+		assert.Equal(t, gResp.Workspaceid, workspaceId)
+	})
+
+	t.Run("Should apply a layout with retry 4", func(t *testing.T) {
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId,
+			Dry:         false,
+			Vars:        vBytes,
+			Retry:       4,
+		}
+
+		resp, err := server.ApplyLayout(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, JobState_PENDING, resp.Status)
+		assert.NotEmpty(t, resp.Id)
+
+		assert.Equal(t, jobQueue.Store, []string{resp.Id})
+
+		job := types.Job{Id: resp.Id, LayoutId: layoutId}
+		tree := types.MakeTree(workspaceId)
+		if err := store.Get(&job, tree); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, layoutId, job.LayoutId)
+		assert.Equal(t, int32(JobState_PENDING), job.Status)
+		assert.Equal(t, int32(Operation_APPLY), job.Op)
+		assert.Equal(t, false, job.Dry)
+		assert.NotEmpty(t, job.LayoutVersion)
+		assert.Equal(t, int64(4), job.Retry)
+
+		lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
+		if err := store.Unlock(lockKey); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Should raise validation error when `retry=<nagetive_value>` while applying a layout", func(t *testing.T) {
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId,
+			Dry:         false,
+			Vars:        vBytes,
+			Retry:       -3,
+		}
+
+		_, err := server.ApplyLayout(context.Background(), req)
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "ApplyLayoutRequest.Retry: value must be greater than or equal to 0")
+	})
+
+	t.Run("Should raise validation error when `retry=<nagetive_value>` while destroying a layout", func(t *testing.T) {
+		req := &DestroyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId,
+			Vars:        vBytes,
+			Retry:       -5,
+		}
+
+		_, err := server.DestroyLayout(context.Background(), req)
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "DestroyLayoutRequest.Retry: value must be greater than or equal to 0")
+	})
+
+	t.Run("Should destroy a layout with retry 6", func(t *testing.T) {
+		req := &DestroyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId,
+			Vars:        vBytes,
+			Retry:       6,
+		}
+
+		resp, err := server.DestroyLayout(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, JobState_PENDING, resp.Status)
+		assert.NotEmpty(t, resp.Id)
+
+		assert.Equal(t, jobQueue.Store[len(jobQueue.Store)-1], resp.Id, fmt.Sprintf("%v", jobQueue.Store))
+
+		job := types.Job{Id: resp.Id, LayoutId: layoutId}
+		tree := types.MakeTree(workspaceId)
+		if err := store.Get(&job, tree); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, layoutId, job.LayoutId)
+		assert.Equal(t, int32(JobState_PENDING), job.Status)
+		assert.Equal(t, int32(Operation_DESTROY), job.Op)
+		assert.Equal(t, false, job.Dry)
+		assert.Equal(t, int64(6), job.Retry)
+		assert.NotEmpty(t, job.LayoutVersion)
+	})
 }

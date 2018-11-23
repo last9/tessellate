@@ -1170,6 +1170,13 @@ func (m *ApplyLayoutRequest) Validate() error {
 
 	// no validation rules for Dry
 
+	if m.GetRetry() < 0 {
+		return ApplyLayoutRequestValidationError{
+			field:  "Retry",
+			reason: "value must be greater than or equal to 0",
+		}
+	}
+
 	return nil
 }
 
@@ -1252,6 +1259,13 @@ func (m *DestroyLayoutRequest) Validate() error {
 	}
 
 	// no validation rules for Vars
+
+	if m.GetRetry() < 0 {
+		return DestroyLayoutRequestValidationError{
+			field:  "Retry",
+			reason: "value must be greater than or equal to 0",
+		}
+	}
 
 	return nil
 }

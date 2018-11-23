@@ -1,12 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"strings"
-
-	"io/ioutil"
-
-	"encoding/json"
 
 	"github.com/tsocial/tessellate/server"
 	"gopkg.in/alecthomas/kingpin.v2"

@@ -11,6 +11,11 @@ before_script:
   - sudo unzip terraform.zip -d /opt/terraform
   - sudo ln -s /opt/terraform/terraform /usr/bin/terraform
   - rm -f terraform.zip
+  - curl -fSL https://releases.hashicorp.com/nomad/0.8.6/nomad_0.8.6_linux_amd64.zip -o nomad.zip
+  - sudo unzip nomad.zip -d /opt/nomad
+  - sudo ln -s /opt/nomad/nomad /usr/bin/nomad
+  - rm -f nomad_0.8.6_linux_amd64.zip
+  - nohup nomad agent --dev &
 
 script:
   - make protodep
