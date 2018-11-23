@@ -270,7 +270,6 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retr
 	lyt := types.Layout{Id: lID}
 	tree := types.MakeTree(wID)
 	layoutTree := types.MakeTree(wID, lID)
-
 	// GET versions of the layout.
 	versions, err := s.store.GetVersions(&lyt, tree)
 	log.Print(versions)
@@ -306,7 +305,6 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retr
 		Dry:           dry,
 		Retry:         retry,
 	}
-
 	// Save this job in workspace tree.
 	if err := s.store.Save(&j, tree); err != nil {
 		return nil, err

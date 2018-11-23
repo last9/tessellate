@@ -315,6 +315,7 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 		assert.Equal(t, int32(JobState_PENDING), job.Status)
 		assert.Equal(t, int32(Operation_DESTROY), job.Op)
 		assert.Equal(t, false, job.Dry)
+		assert.Equal(t, int64(0), job.Retry)
 		assert.NotEmpty(t, job.LayoutVersion)
 	})
 }
@@ -475,7 +476,7 @@ func TestServer_GetOutput(t *testing.T) {
 	assert.Equal(t, expected, outMap)
 }
 
-func TestServer_SaveAndApplyLayoutWithRetry(t *testing.T) {
+func TestServer_SaveApplyAndDestroyLayoutWithRetry(t *testing.T) {
 	workspaceId := fmt.Sprintf("workspace-%s", utils.RandString(8))
 	layoutId := fmt.Sprintf("layout-%s", utils.RandString(8))
 
@@ -553,6 +554,14 @@ func TestServer_SaveAndApplyLayoutWithRetry(t *testing.T) {
 		assert.Equal(t, int64(4), job.Retry)
 	})
 
+	lockKey := fmt.Sprintf("%v-%v", workspaceId, layoutId)
+
+	t.Run("Unlocking is Idempotent", func(t *testing.T) {
+		if err := store.Unlock(lockKey); err != nil {
+			t.Fatal(err)
+		}
+	})
+
 	t.Run("Should raise validation error when `retry=<nagetive_value>` while applying a layout", func(t *testing.T) {
 		req := &ApplyLayoutRequest{
 			WorkspaceId: workspaceId,
@@ -565,5 +574,50 @@ func TestServer_SaveAndApplyLayoutWithRetry(t *testing.T) {
 		_, err := server.ApplyLayout(context.Background(), req)
 		assert.NotNil(t, err)
 		assert.Contains(t, err.Error(), "ApplyLayoutRequest.Retry: value must be greater than or equal to 0")
+	})
+
+	t.Run("Should raise validation error when `retry=<nagetive_value>` while destroying a layout", func(t *testing.T) {
+		req := &DestroyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId,
+			Vars:        vBytes,
+			Retry:       -5,
+		}
+
+		_, err := server.DestroyLayout(context.Background(), req)
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "DestroyLayoutRequest.Retry: value must be greater than or equal to 0")
+	})
+
+	t.Run("Should destroy a layout with retry 6", func(t *testing.T) {
+		req := &DestroyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          layoutId,
+			Vars:        vBytes,
+			Retry:       6,
+		}
+
+		resp, err := server.DestroyLayout(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, JobState_PENDING, resp.Status)
+		assert.NotEmpty(t, resp.Id)
+
+		assert.Equal(t, jobQueue.Store[len(jobQueue.Store)-1], resp.Id, fmt.Sprintf("%v", jobQueue.Store))
+
+		job := types.Job{Id: resp.Id, LayoutId: layoutId}
+		tree := types.MakeTree(workspaceId)
+		if err := store.Get(&job, tree); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, layoutId, job.LayoutId)
+		assert.Equal(t, int32(JobState_PENDING), job.Status)
+		assert.Equal(t, int32(Operation_DESTROY), job.Op)
+		assert.Equal(t, false, job.Dry)
+		assert.Equal(t, int64(6), job.Retry)
+		assert.NotEmpty(t, job.LayoutVersion)
 	})
 }
