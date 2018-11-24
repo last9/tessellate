@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/commands/commons"
 	"github.com/tsocial/tessellate/server"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const defaultAttempts = "3"
@@ -97,12 +97,18 @@ func (cm *layout) layoutCreate(c *kingpin.ParseContext) error {
 		Plan:        layoutBytes,
 		Dry:         cm.dry,
 	}
-	resp, err := getClient().SaveLayout(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, cm.id), *codes)), req)
+
+	layoutID := req.Id
+	if req.Dry {
+		layoutID = layoutID + "-dry"
+	}
+
+	resp, err := getClient().SaveLayout(makeContext(nil, NewTwoFA(twoFAKey(cm.workspaceId, layoutID), *codes)), req)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	prettyPrint("Layout created sucessfully. ID: " + resp.LayoutId)
+	prettyPrint("Layout created successfully. ID: " + resp.LayoutId)
 	return nil
 }
 
