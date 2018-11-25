@@ -365,7 +365,7 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		assert.Equal(t, 1, len(vAfterSave))
+		assert.Equal(t, 2, len(vAfterSave))
 
 		//get saved layout and match content
 		getReq := &LayoutRequest{WorkspaceId: workspaceId, Id: newLayoutId}
@@ -431,6 +431,75 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan",
 			layoutId+drysuffix), err.Error())
+	})
+
+	t.Run("Should apply a layout", func(t *testing.T) {
+		newLayoutId := layoutId + drysuffix
+		req := &ApplyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          newLayoutId,
+			Dry:         true,
+			Vars:        vBytes,
+		}
+		resp, err := server.ApplyLayout(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, JobState_PENDING, resp.Status)
+		assert.NotEmpty(t, resp.Id)
+
+		assert.Equal(t, jobQueue.Store, []string{resp.Id})
+
+		job := types.Job{Id: resp.Id, LayoutId: newLayoutId}
+		tree := types.MakeTree(workspaceId)
+		if err := store.Get(&job, tree); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, newLayoutId, job.LayoutId)
+		assert.Equal(t, int32(JobState_PENDING), job.Status)
+		assert.Equal(t, int32(Operation_APPLY), job.Op)
+		assert.Equal(t, true, job.Dry)
+		assert.NotEmpty(t, job.LayoutVersion)
+		assert.Equal(t, int64(0), job.Retry)
+
+		lockKey := fmt.Sprintf("%v-%v", workspaceId, newLayoutId)
+		if err := store.Unlock(lockKey); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Should destroy a layout", func(t *testing.T) {
+		newLayoutId := layoutId + drysuffix
+		req := &DestroyLayoutRequest{
+			WorkspaceId: workspaceId,
+			Id:          newLayoutId,
+			Vars:        vBytes,
+		}
+
+		resp, err := server.DestroyLayout(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, JobState_PENDING, resp.Status)
+		assert.NotEmpty(t, resp.Id)
+
+		assert.Equal(t, jobQueue.Store[len(jobQueue.Store)-1], resp.Id, fmt.Sprintf("%v", jobQueue.Store))
+
+		job := types.Job{Id: resp.Id, LayoutId: newLayoutId}
+		tree := types.MakeTree(workspaceId)
+		if err := store.Get(&job, tree); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, newLayoutId, job.LayoutId)
+		assert.Equal(t, int32(JobState_PENDING), job.Status)
+		assert.Equal(t, int32(Operation_DESTROY), job.Op)
+		assert.Equal(t, false, job.Dry)
+		assert.Equal(t, int64(0), job.Retry)
+		assert.NotEmpty(t, job.LayoutVersion)
 	})
 }
 

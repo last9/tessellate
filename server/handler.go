@@ -184,13 +184,8 @@ func createDryLayout(s *Server, in *SaveLayoutRequest) (*SaveLayoutResponse, err
 	// Create layout instance to be saved for given ID and plan.
 	layout := types.Layout{Id: layoutId, Plan: p, Status: int32(Status_INACTIVE)}
 
-	b, err := layout.Marshal()
-	if err != nil {
-		return nil, err
-	}
 	// Save the layout.
-	key = filepath.Join(types.WORKSPACE, in.WorkspaceId, types.LAYOUT, layoutId, Latest)
-	if err := s.store.SaveKey(key, b); err != nil {
+	if err := s.store.Save(&layout, tree); err != nil {
 		return nil, err
 	}
 
