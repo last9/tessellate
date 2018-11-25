@@ -149,20 +149,28 @@ func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayout
 	return &Layouts{Layouts: layouts}, nil
 }
 
-// copy old state to dry layout or create new
-func createDryLayout(s *Server, in *SaveLayoutRequest) (*SaveLayoutResponse, error) {
-	key := path.Join(state, in.WorkspaceId, in.Id)
-	stateValue, err := s.store.GetKey(key)
-	if err != nil {
-		return nil, err
+// SaveLayout under the mentioned workspace ID.
+func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLayoutResponse, error) {
+	if err := in.Validate(); err != nil {
+		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
-	layoutId := in.Id + drysuffix
-	if len(string(stateValue)) > 0 {
-		key = path.Join(state, in.WorkspaceId, layoutId)
-		if err := s.store.SaveKey(key, stateValue); err != nil {
+	layoutId := in.Id
+	if in.Dry {
+		// copy old state to dry layout or create new
+		key := path.Join(state, in.WorkspaceId, in.Id)
+		stateValue, err := s.store.GetKey(key)
+		if err != nil {
 			return nil, err
 		}
+		layoutId = in.Id + drysuffix
+		if len(string(stateValue)) > 0 {
+			key = path.Join(state, in.WorkspaceId, layoutId)
+			if err := s.store.SaveKey(key, stateValue); err != nil {
+				return nil, err
+			}
+		}
 	}
+
 	// Make tree for workspace ID dir.
 	tree := types.MakeTree(in.WorkspaceId)
 
@@ -183,45 +191,6 @@ func createDryLayout(s *Server, in *SaveLayoutRequest) (*SaveLayoutResponse, err
 
 	// Create layout instance to be saved for given ID and plan.
 	layout := types.Layout{Id: layoutId, Plan: p, Status: int32(Status_INACTIVE)}
-
-	// Save the layout.
-	if err := s.store.Save(&layout, tree); err != nil {
-		return nil, err
-	}
-
-	return &SaveLayoutResponse{LayoutId: layoutId}, nil
-}
-
-// SaveLayout under the mentioned workspace ID.
-func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLayoutResponse, error) {
-	if err := in.Validate(); err != nil {
-		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
-	}
-	if in.Dry {
-		// copy old state to dry layout or create new
-		return createDryLayout(s, in)
-	}
-
-	// Make tree for workspace ID dir.
-	tree := types.MakeTree(in.WorkspaceId)
-
-	// Unmarshal layout plan as map.
-	p := map[string]json.RawMessage{}
-	if err := json.Unmarshal(in.Plan, &p); err != nil {
-		return nil, err
-	}
-
-	wVars := &types.Vars{}
-	s.store.Get(wVars, tree)
-
-	// Check if this workspace supports providers by default.
-	// If a workspace already supplies provider, then you must supply an Alias.
-	if err := providerConflict(p, wVars); err != nil {
-		return nil, errors.Wrap(err, "Provider conflict")
-	}
-
-	// Create layout instance to be saved for given ID and plan.
-	layout := types.Layout{Id: in.Id, Plan: p, Status: int32(Status_INACTIVE)}
 
 	// Save the layout.
 	if err := s.store.Save(&layout, tree); err != nil {
