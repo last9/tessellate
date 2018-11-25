@@ -37,7 +37,12 @@ build_deps: proto deps clean
 # Run unit tests.
 test: build_deps
 	go test -v ./...
+
+integration_tests:
 	go test -v -tags integration ./...
+
+
+all_test: test integration_tests
 
 # Build http tessellate server.
 http_build:

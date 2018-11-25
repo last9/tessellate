@@ -18,8 +18,7 @@ import (
 const (
 	saveRetry = 5
 	state     = "state"
-	drysuffix = "-dry"
-	Latest    = "latest"
+	drySuffix = "-dry"
 )
 
 type Output struct {
@@ -149,6 +148,24 @@ func (s *Server) GetWorkspaceLayouts(ctx context.Context, in *GetWorkspaceLayout
 	return &Layouts{Layouts: layouts}, nil
 }
 
+func (s *Server) createDry(wID, lID string) (string, error) {
+	key := path.Join(state, wID, lID)
+	stateValue, err := s.store.GetKey(key)
+	if err != nil {
+		return "", err
+	}
+
+	lID = lID + drySuffix
+	if len(string(stateValue)) > 0 {
+		key = path.Join(state, wID, lID)
+		if err := s.store.SaveKey(key, stateValue); err != nil {
+			return "", err
+		}
+	}
+
+	return lID, nil
+}
+
 // SaveLayout under the mentioned workspace ID.
 func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLayoutResponse, error) {
 	if err := in.Validate(); err != nil {
@@ -157,17 +174,10 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLa
 	layoutId := in.Id
 	if in.Dry {
 		// copy old state to dry layout or create new
-		key := path.Join(state, in.WorkspaceId, in.Id)
-		stateValue, err := s.store.GetKey(key)
+		var err error
+		layoutId, err = s.createDry(in.WorkspaceId, in.Id)
 		if err != nil {
 			return nil, err
-		}
-		layoutId = in.Id + drysuffix
-		if len(string(stateValue)) > 0 {
-			key = path.Join(state, in.WorkspaceId, layoutId)
-			if err := s.store.SaveKey(key, stateValue); err != nil {
-				return nil, err
-			}
 		}
 	}
 
@@ -181,7 +191,9 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLa
 	}
 
 	wVars := &types.Vars{}
-	s.store.Get(wVars, tree)
+	if err := s.store.Get(wVars, tree); err != nil {
+		return nil, err
+	}
 
 	// Check if this workspace supports providers by default.
 	// If a workspace already supplies provider, then you must supply an Alias.
@@ -283,9 +295,9 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retr
 	}); err != nil {
 		return nil, err
 	}
-	link, error := dispatcher.Get().Dispatch(wID, &j)
+	link, err := dispatcher.Get().Dispatch(wID, &j)
 	job.Id = link
-	return job, error
+	return job, err
 }
 
 // ApplyLayout job.
@@ -294,7 +306,7 @@ func (s *Server) ApplyLayout(ctx context.Context, in *ApplyLayoutRequest) (*JobS
 		return nil, errors.Wrap(err, Errors_INVALID_VALUE.String())
 	}
 
-	if !in.Dry && strings.HasSuffix(in.Id, drysuffix) {
+	if !in.Dry && strings.HasSuffix(in.Id, drySuffix) {
 		return nil, errors.New(fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan", in.Id))
 	}
 	return s.opLayout(in.WorkspaceId, in.Id, int32(Operation_APPLY), in.Vars, in.Dry, in.Retry)

@@ -351,7 +351,7 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		newLayoutId := layoutId + drysuffix
+		newLayoutId := layoutId + drySuffix
 		assert.Equal(t, newLayoutId, resp.LayoutId)
 
 		tree := types.MakeTree(workspaceId)
@@ -401,7 +401,7 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		newLayoutId := layoutId + drysuffix
+		newLayoutId := layoutId + drySuffix
 		assert.Equal(t, resp.LayoutId, newLayoutId)
 
 		key = path.Join(state, workspaceId, newLayoutId)
@@ -422,7 +422,7 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 	t.Run("Should not apply a dry layout without dry flag", func(t *testing.T) {
 		req := &ApplyLayoutRequest{
 			WorkspaceId: workspaceId,
-			Id:          layoutId + drysuffix,
+			Id:          layoutId + drySuffix,
 			Dry:         false,
 			Vars:        vBytes,
 		}
@@ -430,11 +430,11 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 		_, err := server.ApplyLayout(context.Background(), req)
 		assert.NotNil(t, err)
 		assert.Equal(t, fmt.Sprintf("Operation not allowed, on %s, use --dry to run a terraform plan",
-			layoutId+drysuffix), err.Error())
+			layoutId+drySuffix), err.Error())
 	})
 
 	t.Run("Should apply a layout", func(t *testing.T) {
-		newLayoutId := layoutId + drysuffix
+		newLayoutId := layoutId + drySuffix
 		req := &ApplyLayoutRequest{
 			WorkspaceId: workspaceId,
 			Id:          newLayoutId,
@@ -471,7 +471,7 @@ func TestServer_SaveAndGetLayout_Dry(t *testing.T) {
 	})
 
 	t.Run("Should destroy a layout", func(t *testing.T) {
-		newLayoutId := layoutId + drysuffix
+		newLayoutId := layoutId + drySuffix
 		req := &DestroyLayoutRequest{
 			WorkspaceId: workspaceId,
 			Id:          newLayoutId,
