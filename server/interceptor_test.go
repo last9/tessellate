@@ -20,9 +20,7 @@ func TestInterceptor(t *testing.T) {
 
 		listenAddr := fmt.Sprintf(":%v", port)
 		lis, err := net.Listen("tcp", listenAddr)
-		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
-		}
+		assert.Nil(t, err, fmt.Sprintf("failed to listen: %v", err))
 
 		s := Grpc()
 		defer s.GracefulStop()
@@ -33,18 +31,15 @@ func TestInterceptor(t *testing.T) {
 		reflection.Register(s)
 
 		log.Printf("Serving on %v\n", listenAddr)
-		if err := s.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %v", err)
-		}
+		err = s.Serve(lis)
+		assert.Nil(t, err, fmt.Sprintf("failed to listen: %v", err))
 	}()
 
 	opts := []grpc.DialOption{}
 	opts = append(opts, grpc.WithInsecure())
 
 	conn, err := grpc.Dial(fmt.Sprintf("127.0.0.1:%v", port), opts...)
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
 
 	tClient := NewTessellateClient(conn)
 

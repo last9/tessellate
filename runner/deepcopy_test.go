@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -145,9 +146,6 @@ func TestDeepCopy(t *testing.T) {
 
 	for _, tc := range testCases {
 		_, err := DeepCopy(tc.original)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		assert.Nil(t, err)
 	}
 }

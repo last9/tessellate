@@ -2,6 +2,7 @@ package runner
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"path"
 	"testing"
@@ -25,14 +26,10 @@ func TestCmd_SetVars(t *testing.T) {
 func TestCmd_SetLayout(t *testing.T) {
 	l := json.RawMessage{}
 	d, err := ioutil.ReadFile("./testdata/sleep.tf.json")
-	if err != nil {
-		t.Error(err)
-	}
+	assert.Nil(t, err)
 
-	if err := json.Unmarshal(d, &l); err != nil {
-		t.Fatal(err)
-		return
-	}
+	err = json.Unmarshal(d, &l)
+	assert.Nil(t, err)
 
 	out := map[string]json.RawMessage{}
 	out["sleep"] = l
@@ -42,9 +39,7 @@ func TestCmd_SetLayout(t *testing.T) {
 func TestCmd_ZRun(t *testing.T) {
 	cmd.skipInit = true
 	err := cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 }
 
 func TestMain(m *testing.M) {

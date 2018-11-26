@@ -29,14 +29,11 @@ func TestTmpl(t *testing.T) {
 
 	t.Run("Should parse an array as an Error", func(t *testing.T) {
 		d, err := ioutil.ReadFile("./testdata/array.tmpl")
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.Nil(t, err)
 
 		y := pongo2.Context{}
-		if _, err := ParseLayout(d, y); err != nil {
-			t.Fatal(err)
-		}
+		_, err = ParseLayout(d, y)
+		assert.Nil(t, err)
 	})
 
 	t.Run("Should not render template", func(t *testing.T) {

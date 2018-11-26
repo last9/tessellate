@@ -40,9 +40,7 @@ func Test2FAInterceptor(t *testing.T) {
 	}
 
 	b, err := json.Marshal(x)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 
 	twofaIO = ioutil.NopCloser(bytes.NewBuffer(b))
 
@@ -64,18 +62,15 @@ func Test2FAInterceptor(t *testing.T) {
 		reflection.Register(s)
 
 		log.Printf("Serving on %v\n", listenAddr)
-		if err := s.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %v", err)
-		}
+		err = s.Serve(lis)
+		assert.Nil(t, err, fmt.Sprintf("failed to serve: %v", err))
 	}()
 
 	opts := []grpc.DialOption{}
 	opts = append(opts, grpc.WithInsecure())
 
 	conn, err := grpc.Dial(fmt.Sprintf("127.0.0.1:%v", port), opts...)
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
 
 	tClient := NewTessellateClient(conn)
 

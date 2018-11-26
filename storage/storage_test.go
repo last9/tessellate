@@ -18,27 +18,23 @@ var store Storer
 func TestStorer(t *testing.T) {
 	t.Run("Lock tests", func(t *testing.T) {
 		t.Run("Lock a Key", func(t *testing.T) {
-			if err := store.Lock("key3", "c1"); err != nil {
-				t.Fatal(err)
-			}
+			err := store.Lock("key3", "c1")
+			assert.Nil(t, err)
 		})
 
 		t.Run("Un-Idempotent Lock a Key", func(t *testing.T) {
-			if err := store.Lock("key3", "c12"); err == nil {
-				t.Fatal("Should have raised a key")
-			}
+			err := store.Lock("key3", "c12")
+			assert.NotNil(t, err, "Should have raised a key")
 		})
 
 		t.Run("Release a Key", func(t *testing.T) {
-			if err := store.Unlock("key3"); err != nil {
-				t.Fatal(err)
-			}
+			err := store.Unlock("key3")
+			assert.Nil(t, err)
 		})
 
 		t.Run("Idempotent Release a Key", func(t *testing.T) {
-			if err := store.Unlock("key3"); err != nil {
-				t.Fatal(err)
-			}
+			err := store.Unlock("key3")
+			assert.Nil(t, err)
 		})
 	})
 
@@ -49,35 +45,27 @@ func TestStorer(t *testing.T) {
 		workspace := types.Workspace(wid)
 
 		t.Run("Workspace does not exist", func(t *testing.T) {
-			if err := store.Get(&workspace, tree); err == nil {
-				t.Fatal("Should have failed with an Error")
-			}
+			err := store.Get(&workspace, tree)
+			assert.NotNil(t, err, "Should have failed with an Error")
 		})
 
 		t.Run("Get a Workspace after creation", func(t *testing.T) {
 			err := store.Save(&workspace, tree)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.Nil(t, err)
 
-			if err := store.Get(&workspace, tree); err != nil {
-				t.Fatal(err)
-			}
+			err = store.Get(&workspace, tree)
+			assert.Nil(t, err)
 		})
 
 		t.Run("Re-saving a Workspace doesn't raise an Error", func(t *testing.T) {
-			if err := store.Save(&workspace, tree); err != nil {
-				t.Fatal(err)
-			}
+			err := store.Save(&workspace, tree)
+			assert.Nil(t, err)
 
-			if err := store.Get(&workspace, tree); err != nil {
-				t.Fatal(err)
-			}
+			err = store.Get(&workspace, tree)
+			assert.Nil(t, err)
 
 			v, err := store.GetVersions(&workspace, tree)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.Nil(t, err)
 
 			assert.Equal(t, 3, len(v))
 			assert.Contains(t, strings.Join(v, ""), "latest")
@@ -90,20 +78,16 @@ func TestStorer(t *testing.T) {
 				Plan: map[string]json.RawMessage{},
 			}
 
-			if err := store.Save(&l, tree); err != nil {
-				t.Fatal(err)
-			}
+			err := store.Save(&l, tree)
+			assert.Nil(t, err)
 
-			ltree := types.MakeTree(wid, "test-hello")
+			lTree := types.MakeTree(wid, "test-hello")
 			v := types.Vars(map[string]interface{}{})
-			if err := store.Save(&v, ltree); err != nil {
-				t.Fatal(err)
-			}
+			err = store.Save(&v, lTree)
+			assert.Nil(t, err)
 
 			x, err := store.GetVersions(&l, tree)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.Nil(t, err)
 
 			assert.Equal(t, 2, len(x))
 		})
