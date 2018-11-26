@@ -192,7 +192,7 @@ func (s *Server) SaveLayout(ctx context.Context, in *SaveLayoutRequest) (*SaveLa
 
 	wVars := &types.Vars{}
 	if err := s.store.Get(wVars, tree); err != nil {
-		return nil, err
+		log.Printf("Vars not found %+v", err)
 	}
 
 	// Check if this workspace supports providers by default.

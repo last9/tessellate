@@ -75,19 +75,13 @@ func TestServer_SaveAndGetLayout(t *testing.T) {
 	t.Run("Should create a layout in the workspace", func(t *testing.T) {
 		req := &SaveLayoutRequest{Id: layoutId, WorkspaceId: workspaceId, Plan: pBytes}
 		resp, err := server.SaveLayout(context.Background(), req)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
+		assert.Nil(t, err)
 		assert.Equal(t, resp.LayoutId, layoutId)
 
 		//get saved layout and match content
 		getReq := &LayoutRequest{WorkspaceId: workspaceId, Id: layoutId}
 		gResp, err := server.GetLayout(context.Background(), getReq)
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.Nil(t, err)
 		assert.Equal(t, gResp.Plan, pBytes)
 		assert.Equal(t, gResp.Id, layoutId)
 		assert.Equal(t, gResp.Workspaceid, workspaceId)
