@@ -54,7 +54,7 @@ func TestDispatched_Job(t *testing.T) {
 		tasks := runningJob.TaskGroups[0]
 		for _, val := range tasks.Tasks {
 			jobID := val.Config["entrypoint"].([]interface{})[2]
-            assert.NotEqual(t, jobID, job.Id)
+            assert.Equal(t, jobID, job.Id)
 		}
 	})
 }
