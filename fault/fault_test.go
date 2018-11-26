@@ -2,6 +2,8 @@ package fault
 
 import (
 	"errors"
+	"fmt"
+	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 )
@@ -22,9 +24,7 @@ func TestFaultHandlerIntError(t *testing.T) {
 	}()
 
 	wg.Wait()
-	if expected != actual {
-		t.Errorf("Expected %v Got %v", expected, actual)
-	}
+	assert.Equal(t, expected, actual, fmt.Sprintf("Expected %v Got %v", expected, actual))
 }
 
 func TestFaultHandlerStringError(t *testing.T) {
@@ -43,9 +43,7 @@ func TestFaultHandlerStringError(t *testing.T) {
 	}()
 
 	wg.Wait()
-	if expected != actual {
-		t.Errorf("Expected %v Got %v", expected, actual)
-	}
+	assert.Equal(t, expected, actual, fmt.Sprintf("Expected %v Got %v", expected, actual))
 }
 
 func TestFaultHandlerError(t *testing.T) {
@@ -64,9 +62,7 @@ func TestFaultHandlerError(t *testing.T) {
 	}()
 
 	wg.Wait()
-	if expected != actual {
-		t.Errorf("Expected %v Got %v", expected, actual)
-	}
+	assert.Equal(t, expected, actual, fmt.Sprintf("Expected %v Got %v", expected, actual))
 }
 
 func TestFaultHandlerNoError(t *testing.T) {
@@ -85,7 +81,6 @@ func TestFaultHandlerNoError(t *testing.T) {
 
 	wg.Wait()
 	if counter != 1 {
-		t.Log("Counter", counter)
-		t.Errorf("Fault handler should not have been called")
+		assert.NotEqual(t, 1, counter, fmt.Sprintf("Fault handler should not have been called, counter %+v", counter))
 	}
 }

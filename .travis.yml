@@ -24,7 +24,7 @@ script:
   - docker-compose -f docker-compose.yaml up -d consul
   - sleep 5
   - make cli_build
-  - make test
+  - make all_test
   - make build_images
 
 deploy:

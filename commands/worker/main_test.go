@@ -25,17 +25,14 @@ func TestMainRunner(t *testing.T) {
 	func() {
 		// Create a new types.Workspace instance to be returned.
 		workspace := types.Workspace(wID)
-		if err := store.Save(&workspace, tree); err != nil {
-			t.Fatal(err)
-		}
+		err := store.Save(&workspace, tree)
+		assert.Nil(t, err)
 	}()
 
 	layoutSave := func(path string) {
 		plan := map[string]json.RawMessage{}
 		lBytes, err := ioutil.ReadFile(path)
-		if err != nil {
-			t.Error(err)
-		}
+		assert.Nil(t, err)
 
 		plan["sleep"] = lBytes
 
@@ -43,9 +40,8 @@ func TestMainRunner(t *testing.T) {
 		layout := types.Layout{Id: lID, Plan: plan}
 
 		// Save the layout.
-		if err := store.Save(&layout, tree); err != nil {
-			t.Fatal(err)
-		}
+		err = store.Save(&layout, tree)
+		assert.Nil(t, err)
 	}
 
 	jID := func() string {
@@ -56,9 +52,8 @@ func TestMainRunner(t *testing.T) {
 		}
 
 		// Save this job in workspace tree.
-		if err := store.Save(&j, tree); err != nil {
-			t.Fatal(err)
-		}
+		err := store.Save(&j, tree)
+		assert.Nil(t, err)
 
 		return j.Id
 	}()

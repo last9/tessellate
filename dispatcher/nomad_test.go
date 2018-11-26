@@ -40,15 +40,12 @@ func TestDispatched_Job(t *testing.T) {
 		workspaceID := "workspace"
 
 		nomadClient, err := api.NewClient(api.DefaultConfig())
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.Nil(t, err)
 
 		jobName := workspaceID + "-" + job.LayoutId + "-" + job.Id
 
-		if runningJob, _, err = nomadClient.Jobs().Info(jobName, nil); err != nil {
-			t.Fatal(err)
-		}
+		runningJob, _, err = nomadClient.Jobs().Info(jobName, nil)
+		assert.Nil(t, err)
 
 		assert.Equal(t, jobName, *runningJob.Name)
 
@@ -57,10 +54,7 @@ func TestDispatched_Job(t *testing.T) {
 		tasks := runningJob.TaskGroups[0]
 		for _, val := range tasks.Tasks {
 			jobID := val.Config["entrypoint"].([]interface{})[2]
-
-			if jobID != job.Id {
-				t.Errorf("Job ID expected %v, Got %v", job.Id, jobID)
-			}
+            assert.Equal(t, jobID, job.Id)
 		}
 	})
 }
