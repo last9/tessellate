@@ -11,7 +11,7 @@ endif
 # Make proto file for tessellate.
 protodep:
 	go get -v github.com/golang/protobuf/protoc-gen-go
-	cd ${GOPATH}/src/github.com/golang/protobuf/protoc-gen-go && git checkout tags/v1.2.0 -b v1.2.0 
+	cd ${GOPATH}/src/github.com/golang/protobuf/protoc-gen-go && git checkout tags/v1.2.0
 	go get -v github.com/lyft/protoc-gen-validate
 	go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	protoc --version || /bin/bash install_protobuf.sh
