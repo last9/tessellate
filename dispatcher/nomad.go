@@ -52,14 +52,13 @@ job "{{ job_name }}" {
         image = "{{ image }}"
         entrypoint = ["./tsl8", "-j", "{{ job_id }}", "-w", "{{ workspace_id }}", "-l", "{{ layout_id }}", "--consul-host", "{{ consul_addr }}"]
 
-		logging {                                                                                                                                                                                                  
-          type = "syslog"                                                                                                                                                                                          
-                                                                                                                                                                                                                   
-          config {                                                                                                                                                                                                 
-            syslog-format  = "rfc3164"                                                                                                                                                                             
-            syslog-address = "{{ log_destination }}"                                                                                                                                                
-            tag            = "tsl8-worker"                                                                                                                                                         
-          }                                                                                                                                                                                                        
+		logging {
+		  type = "syslog"
+		  config {
+		    syslog-format  = "rfc3164"
+		    syslog-address = "{{ log_destination }}"
+		    tag            = "tsl8-worker"
+          }
         }
       }
 
