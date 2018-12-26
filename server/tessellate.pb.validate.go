@@ -44,8 +44,8 @@ func (m *GetWorkspaceRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return GetWorkspaceRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -55,58 +55,33 @@ func (m *GetWorkspaceRequest) Validate() error {
 // GetWorkspaceRequestValidationError is the validation error returned by
 // GetWorkspaceRequest.Validate if the designated constraints aren't met.
 type GetWorkspaceRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetWorkspaceRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetWorkspaceRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetWorkspaceRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetWorkspaceRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetWorkspaceRequestValidationError) ErrorName() string {
-	return "GetWorkspaceRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e GetWorkspaceRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sGetWorkspaceRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = GetWorkspaceRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetWorkspaceRequestValidationError{}
 
 // Validate checks the field values on Workspace with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
@@ -127,56 +102,33 @@ func (m *Workspace) Validate() error {
 // WorkspaceValidationError is the validation error returned by
 // Workspace.Validate if the designated constraints aren't met.
 type WorkspaceValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e WorkspaceValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e WorkspaceValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e WorkspaceValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e WorkspaceValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e WorkspaceValidationError) ErrorName() string { return "WorkspaceValidationError" }
 
 // Error satisfies the builtin error interface
 func (e WorkspaceValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sWorkspace.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = WorkspaceValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = WorkspaceValidationError{}
 
 // Validate checks the field values on AllWorkspaces with the rules defined in
 // the proto definition for this message. If any rules are violated, an error
@@ -189,12 +141,14 @@ func (m *AllWorkspaces) Validate() error {
 	for idx, item := range m.GetWorkspaces() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		if v, ok := interface{}(item).(interface {
+			Validate() error
+		}); ok {
 			if err := v.Validate(); err != nil {
 				return AllWorkspacesValidationError{
-					field:  fmt.Sprintf("Workspaces[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
+					Field:  fmt.Sprintf("Workspaces[%v]", idx),
+					Reason: "embedded message failed validation",
+					Cause:  err,
 				}
 			}
 		}
@@ -207,56 +161,33 @@ func (m *AllWorkspaces) Validate() error {
 // AllWorkspacesValidationError is the validation error returned by
 // AllWorkspaces.Validate if the designated constraints aren't met.
 type AllWorkspacesValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e AllWorkspacesValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e AllWorkspacesValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e AllWorkspacesValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e AllWorkspacesValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e AllWorkspacesValidationError) ErrorName() string { return "AllWorkspacesValidationError" }
 
 // Error satisfies the builtin error interface
 func (e AllWorkspacesValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sAllWorkspaces.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = AllWorkspacesValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = AllWorkspacesValidationError{}
 
 // Validate checks the field values on Layouts with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
@@ -268,12 +199,14 @@ func (m *Layouts) Validate() error {
 	for idx, item := range m.GetLayouts() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		if v, ok := interface{}(item).(interface {
+			Validate() error
+		}); ok {
 			if err := v.Validate(); err != nil {
 				return LayoutsValidationError{
-					field:  fmt.Sprintf("Layouts[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
+					Field:  fmt.Sprintf("Layouts[%v]", idx),
+					Reason: "embedded message failed validation",
+					Cause:  err,
 				}
 			}
 		}
@@ -286,56 +219,33 @@ func (m *Layouts) Validate() error {
 // LayoutsValidationError is the validation error returned by Layouts.Validate
 // if the designated constraints aren't met.
 type LayoutsValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e LayoutsValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e LayoutsValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e LayoutsValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e LayoutsValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e LayoutsValidationError) ErrorName() string { return "LayoutsValidationError" }
 
 // Error satisfies the builtin error interface
 func (e LayoutsValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sLayouts.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = LayoutsValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = LayoutsValidationError{}
 
 // Validate checks the field values on Layout with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
@@ -358,56 +268,33 @@ func (m *Layout) Validate() error {
 // LayoutValidationError is the validation error returned by Layout.Validate if
 // the designated constraints aren't met.
 type LayoutValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e LayoutValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e LayoutValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e LayoutValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e LayoutValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e LayoutValidationError) ErrorName() string { return "LayoutValidationError" }
 
 // Error satisfies the builtin error interface
 func (e LayoutValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sLayout.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = LayoutValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = LayoutValidationError{}
 
 // Validate checks the field values on SaveWorkspaceRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -419,8 +306,8 @@ func (m *SaveWorkspaceRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return SaveWorkspaceRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -432,58 +319,33 @@ func (m *SaveWorkspaceRequest) Validate() error {
 // SaveWorkspaceRequestValidationError is the validation error returned by
 // SaveWorkspaceRequest.Validate if the designated constraints aren't met.
 type SaveWorkspaceRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SaveWorkspaceRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SaveWorkspaceRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SaveWorkspaceRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SaveWorkspaceRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SaveWorkspaceRequestValidationError) ErrorName() string {
-	return "SaveWorkspaceRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e SaveWorkspaceRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sSaveWorkspaceRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = SaveWorkspaceRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SaveWorkspaceRequestValidationError{}
 
 // Validate checks the field values on GetWorkspaceLayoutsRequest with the
 // rules defined in the proto definition for this message. If any rules are
@@ -495,8 +357,8 @@ func (m *GetWorkspaceLayoutsRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return GetWorkspaceLayoutsRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -506,58 +368,33 @@ func (m *GetWorkspaceLayoutsRequest) Validate() error {
 // GetWorkspaceLayoutsRequestValidationError is the validation error returned
 // by GetWorkspaceLayoutsRequest.Validate if the designated constraints aren't met.
 type GetWorkspaceLayoutsRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetWorkspaceLayoutsRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetWorkspaceLayoutsRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetWorkspaceLayoutsRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetWorkspaceLayoutsRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetWorkspaceLayoutsRequestValidationError) ErrorName() string {
-	return "GetWorkspaceLayoutsRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e GetWorkspaceLayoutsRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sGetWorkspaceLayoutsRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = GetWorkspaceLayoutsRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetWorkspaceLayoutsRequestValidationError{}
 
 // Validate checks the field values on JobStatus with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
@@ -576,56 +413,33 @@ func (m *JobStatus) Validate() error {
 // JobStatusValidationError is the validation error returned by
 // JobStatus.Validate if the designated constraints aren't met.
 type JobStatusValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e JobStatusValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e JobStatusValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e JobStatusValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e JobStatusValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e JobStatusValidationError) ErrorName() string { return "JobStatusValidationError" }
 
 // Error satisfies the builtin error interface
 func (e JobStatusValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sJobStatus.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = JobStatusValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = JobStatusValidationError{}
 
 // Validate checks the field values on Vars with the rules defined in the proto
 // definition for this message. If any rules are violated, an error is returned.
@@ -642,56 +456,33 @@ func (m *Vars) Validate() error {
 // VarsValidationError is the validation error returned by Vars.Validate if the
 // designated constraints aren't met.
 type VarsValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e VarsValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e VarsValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e VarsValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e VarsValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e VarsValidationError) ErrorName() string { return "VarsValidationError" }
 
 // Error satisfies the builtin error interface
 func (e VarsValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sVars.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = VarsValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = VarsValidationError{}
 
 // Validate checks the field values on JobRequest with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
@@ -702,8 +493,8 @@ func (m *JobRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return JobRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -713,56 +504,33 @@ func (m *JobRequest) Validate() error {
 // JobRequestValidationError is the validation error returned by
 // JobRequest.Validate if the designated constraints aren't met.
 type JobRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e JobRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e JobRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e JobRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e JobRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e JobRequestValidationError) ErrorName() string { return "JobRequestValidationError" }
 
 // Error satisfies the builtin error interface
 func (e JobRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sJobRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = JobRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = JobRequestValidationError{}
 
 // Validate checks the field values on Ok with the rules defined in the proto
 // definition for this message. If any rules are violated, an error is returned.
@@ -777,56 +545,33 @@ func (m *Ok) Validate() error {
 // OkValidationError is the validation error returned by Ok.Validate if the
 // designated constraints aren't met.
 type OkValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e OkValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e OkValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e OkValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e OkValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e OkValidationError) ErrorName() string { return "OkValidationError" }
 
 // Error satisfies the builtin error interface
 func (e OkValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sOk.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = OkValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = OkValidationError{}
 
 // Validate checks the field values on LayoutRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, an error
@@ -838,15 +583,15 @@ func (m *LayoutRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return LayoutRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return LayoutRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -856,56 +601,33 @@ func (m *LayoutRequest) Validate() error {
 // LayoutRequestValidationError is the validation error returned by
 // LayoutRequest.Validate if the designated constraints aren't met.
 type LayoutRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e LayoutRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e LayoutRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e LayoutRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e LayoutRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e LayoutRequestValidationError) ErrorName() string { return "LayoutRequestValidationError" }
 
 // Error satisfies the builtin error interface
 func (e LayoutRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sLayoutRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = LayoutRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = LayoutRequestValidationError{}
 
 // Validate checks the field values on SaveLayoutRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
@@ -917,15 +639,15 @@ func (m *SaveLayoutRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return SaveLayoutRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return SaveLayoutRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -939,58 +661,33 @@ func (m *SaveLayoutRequest) Validate() error {
 // SaveLayoutRequestValidationError is the validation error returned by
 // SaveLayoutRequest.Validate if the designated constraints aren't met.
 type SaveLayoutRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SaveLayoutRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SaveLayoutRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SaveLayoutRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SaveLayoutRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SaveLayoutRequestValidationError) ErrorName() string {
-	return "SaveLayoutRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e SaveLayoutRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sSaveLayoutRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = SaveLayoutRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SaveLayoutRequestValidationError{}
 
 // Validate checks the field values on SaveLayoutResponse with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1008,58 +705,33 @@ func (m *SaveLayoutResponse) Validate() error {
 // SaveLayoutResponseValidationError is the validation error returned by
 // SaveLayoutResponse.Validate if the designated constraints aren't met.
 type SaveLayoutResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SaveLayoutResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SaveLayoutResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SaveLayoutResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SaveLayoutResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SaveLayoutResponseValidationError) ErrorName() string {
-	return "SaveLayoutResponseValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e SaveLayoutResponseValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sSaveLayoutResponse.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = SaveLayoutResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SaveLayoutResponseValidationError{}
 
 // Validate checks the field values on SetLayoutStatusRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1071,15 +743,15 @@ func (m *SetLayoutStatusRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return SetLayoutStatusRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return SetLayoutStatusRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -1091,58 +763,33 @@ func (m *SetLayoutStatusRequest) Validate() error {
 // SetLayoutStatusRequestValidationError is the validation error returned by
 // SetLayoutStatusRequest.Validate if the designated constraints aren't met.
 type SetLayoutStatusRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SetLayoutStatusRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SetLayoutStatusRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SetLayoutStatusRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SetLayoutStatusRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SetLayoutStatusRequestValidationError) ErrorName() string {
-	return "SetLayoutStatusRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e SetLayoutStatusRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sSetLayoutStatusRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = SetLayoutStatusRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SetLayoutStatusRequestValidationError{}
 
 // Validate checks the field values on ApplyLayoutRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1154,15 +801,15 @@ func (m *ApplyLayoutRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return ApplyLayoutRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return ApplyLayoutRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -1172,8 +819,8 @@ func (m *ApplyLayoutRequest) Validate() error {
 
 	if m.GetRetry() < 0 {
 		return ApplyLayoutRequestValidationError{
-			field:  "Retry",
-			reason: "value must be greater than or equal to 0",
+			Field:  "Retry",
+			Reason: "value must be greater than or equal to 0",
 		}
 	}
 
@@ -1183,58 +830,33 @@ func (m *ApplyLayoutRequest) Validate() error {
 // ApplyLayoutRequestValidationError is the validation error returned by
 // ApplyLayoutRequest.Validate if the designated constraints aren't met.
 type ApplyLayoutRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ApplyLayoutRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ApplyLayoutRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ApplyLayoutRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ApplyLayoutRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ApplyLayoutRequestValidationError) ErrorName() string {
-	return "ApplyLayoutRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e ApplyLayoutRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sApplyLayoutRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = ApplyLayoutRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ApplyLayoutRequestValidationError{}
 
 // Validate checks the field values on DestroyLayoutRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1246,15 +868,15 @@ func (m *DestroyLayoutRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return DestroyLayoutRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return DestroyLayoutRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -1262,8 +884,8 @@ func (m *DestroyLayoutRequest) Validate() error {
 
 	if m.GetRetry() < 0 {
 		return DestroyLayoutRequestValidationError{
-			field:  "Retry",
-			reason: "value must be greater than or equal to 0",
+			Field:  "Retry",
+			Reason: "value must be greater than or equal to 0",
 		}
 	}
 
@@ -1273,58 +895,33 @@ func (m *DestroyLayoutRequest) Validate() error {
 // DestroyLayoutRequestValidationError is the validation error returned by
 // DestroyLayoutRequest.Validate if the designated constraints aren't met.
 type DestroyLayoutRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e DestroyLayoutRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e DestroyLayoutRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e DestroyLayoutRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e DestroyLayoutRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e DestroyLayoutRequestValidationError) ErrorName() string {
-	return "DestroyLayoutRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e DestroyLayoutRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sDestroyLayoutRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = DestroyLayoutRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = DestroyLayoutRequestValidationError{}
 
 // Validate checks the field values on StartWatchRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
@@ -1336,15 +933,15 @@ func (m *StartWatchRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return StartWatchRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return StartWatchRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -1358,58 +955,33 @@ func (m *StartWatchRequest) Validate() error {
 // StartWatchRequestValidationError is the validation error returned by
 // StartWatchRequest.Validate if the designated constraints aren't met.
 type StartWatchRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e StartWatchRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e StartWatchRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e StartWatchRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e StartWatchRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e StartWatchRequestValidationError) ErrorName() string {
-	return "StartWatchRequestValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e StartWatchRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sStartWatchRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = StartWatchRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = StartWatchRequestValidationError{}
 
 // Validate checks the field values on StopWatchRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
@@ -1421,15 +993,15 @@ func (m *StopWatchRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return StopWatchRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		return StopWatchRequestValidationError{
-			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			Field:  "Id",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -1439,56 +1011,33 @@ func (m *StopWatchRequest) Validate() error {
 // StopWatchRequestValidationError is the validation error returned by
 // StopWatchRequest.Validate if the designated constraints aren't met.
 type StopWatchRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e StopWatchRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e StopWatchRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e StopWatchRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e StopWatchRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e StopWatchRequestValidationError) ErrorName() string { return "StopWatchRequestValidationError" }
 
 // Error satisfies the builtin error interface
 func (e StopWatchRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sStopWatchRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = StopWatchRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = StopWatchRequestValidationError{}
 
 // Validate checks the field values on GetStateRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
@@ -1500,15 +1049,15 @@ func (m *GetStateRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return GetStateRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetLayoutId()) < 1 {
 		return GetStateRequestValidationError{
-			field:  "LayoutId",
-			reason: "value length must be at least 1 runes",
+			Field:  "LayoutId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -1518,56 +1067,33 @@ func (m *GetStateRequest) Validate() error {
 // GetStateRequestValidationError is the validation error returned by
 // GetStateRequest.Validate if the designated constraints aren't met.
 type GetStateRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e GetStateRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetStateRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetStateRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetStateRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetStateRequestValidationError) ErrorName() string { return "GetStateRequestValidationError" }
 
 // Error satisfies the builtin error interface
 func (e GetStateRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sGetStateRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = GetStateRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetStateRequestValidationError{}
 
 // Validate checks the field values on GetStateResponse with the rules defined
 // in the proto definition for this message. If any rules are violated, an
@@ -1585,56 +1111,33 @@ func (m *GetStateResponse) Validate() error {
 // GetStateResponseValidationError is the validation error returned by
 // GetStateResponse.Validate if the designated constraints aren't met.
 type GetStateResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e GetStateResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetStateResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetStateResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetStateResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetStateResponseValidationError) ErrorName() string { return "GetStateResponseValidationError" }
 
 // Error satisfies the builtin error interface
 func (e GetStateResponseValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sGetStateResponse.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = GetStateResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetStateResponseValidationError{}
 
 // Validate checks the field values on GetOutputRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
@@ -1646,15 +1149,15 @@ func (m *GetOutputRequest) Validate() error {
 
 	if utf8.RuneCountInString(m.GetWorkspaceId()) < 1 {
 		return GetOutputRequestValidationError{
-			field:  "WorkspaceId",
-			reason: "value length must be at least 1 runes",
+			Field:  "WorkspaceId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetLayoutId()) < 1 {
 		return GetOutputRequestValidationError{
-			field:  "LayoutId",
-			reason: "value length must be at least 1 runes",
+			Field:  "LayoutId",
+			Reason: "value length must be at least 1 runes",
 		}
 	}
 
@@ -1664,56 +1167,33 @@ func (m *GetOutputRequest) Validate() error {
 // GetOutputRequestValidationError is the validation error returned by
 // GetOutputRequest.Validate if the designated constraints aren't met.
 type GetOutputRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
-
-// Field function returns field value.
-func (e GetOutputRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetOutputRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetOutputRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetOutputRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetOutputRequestValidationError) ErrorName() string { return "GetOutputRequestValidationError" }
 
 // Error satisfies the builtin error interface
 func (e GetOutputRequestValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sGetOutputRequest.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = GetOutputRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetOutputRequestValidationError{}
 
 // Validate checks the field values on GetOutputResponse with the rules defined
 // in the proto definition for this message. If any rules are violated, an
@@ -1731,55 +1211,30 @@ func (m *GetOutputResponse) Validate() error {
 // GetOutputResponseValidationError is the validation error returned by
 // GetOutputResponse.Validate if the designated constraints aren't met.
 type GetOutputResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetOutputResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetOutputResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetOutputResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetOutputResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetOutputResponseValidationError) ErrorName() string {
-	return "GetOutputResponseValidationError"
+	Field  string
+	Reason string
+	Cause  error
+	Key    bool
 }
 
 // Error satisfies the builtin error interface
 func (e GetOutputResponseValidationError) Error() string {
 	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	if e.Cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.Cause)
 	}
 
 	key := ""
-	if e.key {
+	if e.Key {
 		key = "key for "
 	}
 
 	return fmt.Sprintf(
 		"invalid %sGetOutputResponse.%s: %s%s",
 		key,
-		e.field,
-		e.reason,
+		e.Field,
+		e.Reason,
 		cause)
 }
 
 var _ error = GetOutputResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetOutputResponseValidationError{}
