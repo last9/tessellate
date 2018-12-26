@@ -30,6 +30,7 @@ var (
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
+	logDestination = kingpin.Flag("log-dest", "Logger aggregation destination address").OverrideDefaultFromEnvar("LOG_DESTINATION").String()
 
 	unlocker = "tsl8_unlock_job"
 )
@@ -54,14 +55,15 @@ func main() {
 
 	// TODO: validate config first.
 	nomadClient := dispatcher.NewNomadClient(dispatcher.NomadConfig{
-		Address:    *nomadAddr,
-		Username:   *nomadHttpAuthUsername,
-		Password:   *nomadHttpAuthPassword,
-		Datacenter: *nomadDc,
-		Image:      *workerImage,
-		CPU:        *workerCPU,
-		Memory:     *workerMemory,
-		ConsulAddr: *consulAddr,
+		Address:        *nomadAddr,
+		Username:       *nomadHttpAuthUsername,
+		Password:       *nomadHttpAuthPassword,
+		Datacenter:     *nomadDc,
+		Image:          *workerImage,
+		CPU:            *workerCPU,
+		Memory:         *workerMemory,
+		ConsulAddr:     *consulAddr,
+		LogDestination: *logDestination,
 	})
 
 	dispatcher.Set(nomadClient)
