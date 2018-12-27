@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 		Image:      "redis",
 		CPU:        "32",
 		Memory:     "32",
-		Log: &jobLog{
+		Log: &JobLog{
 			Destination: "",
 		},
 	})

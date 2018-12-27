@@ -18,7 +18,7 @@ type client struct {
 	cfg NomadConfig
 }
 
-type jobLog struct {
+type JobLog struct {
 	Destination    string
 	Aggregator     string
 	PapertrailHost string
@@ -33,7 +33,7 @@ type NomadConfig struct {
 	CPU        string
 	Memory     string
 	ConsulAddr string
-	Log        *jobLog
+	Log        *JobLog
 }
 
 func NewNomadClient(cfg NomadConfig) *client {
