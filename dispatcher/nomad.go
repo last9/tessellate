@@ -16,14 +16,15 @@ type client struct {
 }
 
 type NomadConfig struct {
-	Address    string
-	Username   string
-	Password   string
-	Datacenter string
-	Image      string
-	CPU        string
-	Memory     string
-	ConsulAddr string
+	Address        string
+	Username       string
+	Password       string
+	Datacenter     string
+	Image          string
+	CPU            string
+	Memory         string
+	ConsulAddr     string
+	LogDestination string
 }
 
 func NewNomadClient(cfg NomadConfig) *client {
@@ -50,6 +51,15 @@ job "{{ job_name }}" {
       config {
         image = "{{ image }}"
         entrypoint = ["./tsl8", "-j", "{{ job_id }}", "-w", "{{ workspace_id }}", "-l", "{{ layout_id }}", "--consul-host", "{{ consul_addr }}"]
+
+		logging {
+		  type = "syslog"
+		  config {
+		    syslog-format  = "rfc3164"
+		    syslog-address = "{{ log_destination }}"
+		    tag            = "tsl8w-{{ job_name }}"
+          }
+        }
       }
 
       resources {
@@ -61,16 +71,17 @@ job "{{ job_name }}" {
 }
 `
 	cfg := pongo2.Context{
-		"job_name":     w + "-" + j.LayoutId + "-" + j.Id,
-		"job_id":       j.Id,
-		"workspace_id": w,
-		"layout_id":    j.LayoutId,
-		"datacenter":   c.cfg.Datacenter,
-		"image":        c.cfg.Image,
-		"cpu":          c.cfg.CPU,
-		"memory":       c.cfg.Memory,
-		"consul_addr":  c.cfg.ConsulAddr,
-		"attempts":     j.Retry,
+		"job_name":        w + "-" + j.LayoutId + "-" + j.Id,
+		"job_id":          j.Id,
+		"workspace_id":    w,
+		"layout_id":       j.LayoutId,
+		"datacenter":      c.cfg.Datacenter,
+		"image":           c.cfg.Image,
+		"cpu":             c.cfg.CPU,
+		"memory":          c.cfg.Memory,
+		"consul_addr":     c.cfg.ConsulAddr,
+		"attempts":        j.Retry,
+		"log_destination": c.cfg.LogDestination,
 	}
 
 	if j.Dry {
