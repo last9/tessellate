@@ -65,9 +65,9 @@ func main() {
 		CPU:        *workerCPU,
 		Memory:     *workerMemory,
 		ConsulAddr: *consulAddr,
-		Log: &dispatcher.Log{
-			LogDestination: *logDestination,
-			LogAggregator:  *logAggregator,
+		Log: &dispatcher.jobLog{
+			Destination:    *logDestination,
+			Aggregator:     *logAggregator,
 			PapertrailHost: *papertrailHost,
 		},
 	})

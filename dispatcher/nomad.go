@@ -18,9 +18,9 @@ type client struct {
 	cfg NomadConfig
 }
 
-type Log struct {
-	LogDestination string
-	LogAggregator  string
+type jobLog struct {
+	Destination    string
+	Aggregator     string
 	PapertrailHost string
 }
 
@@ -33,7 +33,7 @@ type NomadConfig struct {
 	CPU        string
 	Memory     string
 	ConsulAddr string
-	Log        *Log
+	Log        *jobLog
 }
 
 func NewNomadClient(cfg NomadConfig) *client {
@@ -90,7 +90,7 @@ job "{{ job_name }}" {
 		"memory":          c.cfg.Memory,
 		"consul_addr":     c.cfg.ConsulAddr,
 		"attempts":        j.Retry,
-		"log_destination": c.cfg.Log.LogDestination,
+		"log_destination": c.cfg.Log.Destination,
 	}
 
 	if j.Dry {
@@ -147,7 +147,7 @@ func (c *client) Dispatch(w string, j *types.Job) (string, error) {
 
 	var link string
 
-	if c.cfg.Log.LogAggregator == Papertrail {
+	if c.cfg.Log.Aggregator == Papertrail {
 		jobFilter := fmt.Sprintf("tsl8w-%s-%s-%s", w, j.LayoutId, j.Id)
 		link = fmt.Sprintf("%s/events?q=program%%3A%s", c.cfg.Log.PapertrailHost, jobFilter)
 	} else {

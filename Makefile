@@ -20,6 +20,7 @@ proto: protodep
 	protoc \
 		-I. \
 		-I${GOPATH}/src \
+		-I/usr/local/include \
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 		--go_out=plugins=grpc:${GOPATH}/src \
 		--validate_out="lang=go:${GOPATH}/src" \
