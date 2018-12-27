@@ -90,7 +90,7 @@ job "{{ job_name }}" {
 		"memory":          c.cfg.Memory,
 		"consul_addr":     c.cfg.ConsulAddr,
 		"attempts":        j.Retry,
-		"log_destination": c.cfg.LogDestination,
+		"log_destination": c.cfg.Log.LogDestination,
 	}
 
 	if j.Dry {
