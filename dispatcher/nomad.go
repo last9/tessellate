@@ -13,23 +13,27 @@ import (
 )
 
 const Papertrail = "Papertrail"
-const PapertrailHost = "https://papertrailapp.com/groups/12417222"
 
 type client struct {
 	cfg NomadConfig
 }
 
-type NomadConfig struct {
-	Address        string
-	Username       string
-	Password       string
-	Datacenter     string
-	Image          string
-	CPU            string
-	Memory         string
-	ConsulAddr     string
+type Log struct {
 	LogDestination string
 	LogAggregator  string
+	PapertrailHost string
+}
+
+type NomadConfig struct {
+	Address    string
+	Username   string
+	Password   string
+	Datacenter string
+	Image      string
+	CPU        string
+	Memory     string
+	ConsulAddr string
+	Log        *Log
 }
 
 func NewNomadClient(cfg NomadConfig) *client {
@@ -143,9 +147,9 @@ func (c *client) Dispatch(w string, j *types.Job) (string, error) {
 
 	var link string
 
-	if c.cfg.LogAggregator == Papertrail {
+	if c.cfg.Log.LogAggregator == Papertrail {
 		jobFilter := fmt.Sprintf("tsl8w-%s-%s-%s", w, j.LayoutId, j.Id)
-		link = fmt.Sprintf("%s/events?q=program%%3A%s", PapertrailHost, jobFilter)
+		link = fmt.Sprintf("%s/events?q=program%%3A%s", c.cfg.Log.PapertrailHost, jobFilter)
 	} else {
 		u.Path = path.Join(u.Path, "ui", "jobs", w+"-"+j.LayoutId+"-"+j.Id)
 		link = u.String()

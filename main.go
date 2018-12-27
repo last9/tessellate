@@ -32,6 +32,7 @@ var (
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
 	logDestination = kingpin.Flag("log-dest", "Logger aggregation destination address").Default("unix:///lib/systemd/system/syslog.socket").OverrideDefaultFromEnvar("LOG_DESTINATION").String()
 	logAggregator  = kingpin.Flag("log-agg", "Logger aggregation tool").Default("").OverrideDefaultFromEnvar("LOG_AGGREGATOR").String()
+	papertrailHost = kingpin.Flag("papertrail-host", "Papertrail Host").OverrideDefaultFromEnvar("PAPERTRAIL_HOST").String()
 
 	unlocker = "tsl8_unlock_job"
 )
@@ -56,16 +57,19 @@ func main() {
 
 	// TODO: validate config first.
 	nomadClient := dispatcher.NewNomadClient(dispatcher.NomadConfig{
-		Address:        *nomadAddr,
-		Username:       *nomadHttpAuthUsername,
-		Password:       *nomadHttpAuthPassword,
-		Datacenter:     *nomadDc,
-		Image:          *workerImage,
-		CPU:            *workerCPU,
-		Memory:         *workerMemory,
-		ConsulAddr:     *consulAddr,
-		LogDestination: *logDestination,
-		LogAggregator:  *logAggregator,
+		Address:    *nomadAddr,
+		Username:   *nomadHttpAuthUsername,
+		Password:   *nomadHttpAuthPassword,
+		Datacenter: *nomadDc,
+		Image:      *workerImage,
+		CPU:        *workerCPU,
+		Memory:     *workerMemory,
+		ConsulAddr: *consulAddr,
+		Log: &dispatcher.Log{
+			LogDestination: *logDestination,
+			LogAggregator:  *logAggregator,
+			PapertrailHost: *papertrailHost,
+		},
 	})
 
 	dispatcher.Set(nomadClient)
