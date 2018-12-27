@@ -31,6 +31,7 @@ var (
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
 	logDestination = kingpin.Flag("log-dest", "Logger aggregation destination address").Default("unix:///lib/systemd/system/syslog.socket").OverrideDefaultFromEnvar("LOG_DESTINATION").String()
+	logAggregator  = kingpin.Flag("log-agg", "Logger aggregation tool").Default("").OverrideDefaultFromEnvar("LOG_AGGREGATOR").String()
 
 	unlocker = "tsl8_unlock_job"
 )
@@ -64,6 +65,7 @@ func main() {
 		Memory:         *workerMemory,
 		ConsulAddr:     *consulAddr,
 		LogDestination: *logDestination,
+		LogAggregator:  *logAggregator,
 	})
 
 	dispatcher.Set(nomadClient)
