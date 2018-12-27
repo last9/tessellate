@@ -143,7 +143,7 @@ func (c *client) Dispatch(w string, j *types.Job) (string, error) {
 
 	var link string
 
-	if c.cfg.LogAggregator != Papertrail {
+	if c.cfg.LogAggregator == Papertrail {
 		jobFilter := fmt.Sprintf("tsl8w-%s-%s-%s", w, j.LayoutId, j.Id)
 		link = fmt.Sprintf("%s/events?q=program%%3A%s", PapertrailHost, jobFilter)
 	} else {
