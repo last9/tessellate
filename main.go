@@ -30,7 +30,7 @@ var (
 			Default("200").String()
 	consulAddr = kingpin.Flag("consul-addr", "Consul address").Default("127.0.0.1:8500").
 			OverrideDefaultFromEnvar("CONSUL_ADDR").String()
-	logDestination = kingpin.Flag("log-dest", "Logger aggregation destination address").OverrideDefaultFromEnvar("LOG_DESTINATION").String()
+	logDestination = kingpin.Flag("log-dest", "Logger aggregation destination address").Default("unix:///lib/systemd/system/syslog.socket").OverrideDefaultFromEnvar("LOG_DESTINATION").String()
 
 	unlocker = "tsl8_unlock_job"
 )
