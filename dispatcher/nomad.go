@@ -57,7 +57,7 @@ job "{{ job_name }}" {
 		  config {
 		    syslog-format  = "rfc3164"
 		    syslog-address = "{{ log_destination }}"
-		    tag            = "tsl8-worker-{{ job_name }}"
+		    tag            = "tsl8w-{{ job_name }}"
           }
         }
       }
