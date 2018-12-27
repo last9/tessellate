@@ -19,6 +19,9 @@ func TestMain(m *testing.M) {
 		Image:      "redis",
 		CPU:        "32",
 		Memory:     "32",
+		Log: &Log{
+			LogDestination: "",
+		},
 	})
 
 	Set(cl)
@@ -54,7 +57,7 @@ func TestDispatched_Job(t *testing.T) {
 		tasks := runningJob.TaskGroups[0]
 		for _, val := range tasks.Tasks {
 			jobID := val.Config["entrypoint"].([]interface{})[2]
-            assert.Equal(t, jobID, job.Id)
+			assert.Equal(t, jobID, job.Id)
 		}
 	})
 }
