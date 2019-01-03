@@ -148,8 +148,12 @@ func (c *client) Dispatch(w string, j *types.Job) (string, error) {
 	var link string
 
 	if c.cfg.Log.Aggregator == Papertrail {
+		var logUrl *url.URL
 		jobFilter := fmt.Sprintf("tsl8w-%s-%s-%s", w, j.LayoutId, j.Id)
-		link = fmt.Sprintf("%s/events?q=program%%3A%s", c.cfg.Log.PapertrailHost, jobFilter)
+		if logUrl, err = url.Parse(fmt.Sprintf("%s/events?q=program:%s", c.cfg.Log.PapertrailHost, jobFilter)); err != nil {
+			log.Printf("error generating papertrail url : %+v", err)
+		}
+		link = logUrl.String()
 	} else {
 		u.Path = path.Join(u.Path, "ui", "jobs", w+"-"+j.LayoutId+"-"+j.Id)
 		link = u.String()
