@@ -147,16 +147,18 @@ func (c *client) Dispatch(w string, j *types.Job) (string, error) {
 
 	var link string
 
+	u.Path = path.Join(u.Path, "ui", "jobs", w+"-"+j.LayoutId+"-"+j.Id)
+	link = u.String()
+
 	if c.cfg.Log.Aggregator == Papertrail {
 		var logUrl *url.URL
 		jobFilter := fmt.Sprintf("tsl8w-%s-%s-%s", w, j.LayoutId, j.Id)
-		if logUrl, err = url.Parse(fmt.Sprintf("%s/events?q=program:%s", c.cfg.Log.PapertrailHost, jobFilter)); err != nil {
+
+		if logUrl, err = url.Parse(fmt.Sprintf("%s/events?q=program:%s", c.cfg.Log.PapertrailHost, jobFilter)); err == nil {
+			link = logUrl.String()
+		} else {
 			log.Printf("error generating papertrail url : %+v", err)
 		}
-		link = logUrl.String()
-	} else {
-		u.Path = path.Join(u.Path, "ui", "jobs", w+"-"+j.LayoutId+"-"+j.Id)
-		link = u.String()
 	}
 
 	return link, nil
