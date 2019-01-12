@@ -13,6 +13,9 @@ import (
 
 	"os"
 
+	"net/url"
+	"sync"
+
 	"github.com/meson10/highbrow"
 	"github.com/meson10/pester"
 	"github.com/pkg/errors"
@@ -32,6 +35,7 @@ var (
 	layoutID    = kingpin.Flag("layout", "Layout ID").Short('l').String()
 	consulIP    = kingpin.Flag("consul-host", "Consul IP").Short('c').String()
 	tmpDir      = kingpin.Flag("tmp-dir", "Temporary Dir").Short('d').Default("test-runner").String()
+	defaultHook = kingpin.Flag("default-hook", "URL which is triggered on successful apply.").URL()
 )
 
 type input struct {
@@ -41,10 +45,14 @@ type input struct {
 	tmpDir      string
 }
 
+type watchPacket struct {
+	OldState interface{} `json:"old_state"`
+	NewState interface{} `json:"new_state"`
+}
+
 // Make a HTTP Call to the callbacks specified.
 // Does an internal retries in case of connection failures.
 func makeCall(req *http.Request) error {
-	log.Println("Making request", req)
 	client := pester.New()
 	client.Concurrency = 3
 	client.MaxRetries = 3
@@ -52,30 +60,23 @@ func makeCall(req *http.Request) error {
 	client.KeepLog = true
 	client.Timeout = time.Duration(5 * time.Second)
 
+	fmt.Println(req.URL)
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Printf("Error while making a request: %v", err)
 		return err
 	}
 
 	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
+	log.Println(b)
 	if err != nil {
+		log.Printf("Error while reading body: %v", err)
 		return err
 	}
 
-	log.Println("Response from callback", string(b))
 	return nil
-}
-
-// Exit Routine that is responsible for cleaning the Lock, only in case of success.
-// Since failure ends up retrying a job on the Job scheduler, Lock cleanup should be a
-// responsibility of dispatcher in case of failures.
-// Cleanup lies outside the scope of this worker.
-func exit(store storage.Storer, status int) {
-	if status == 0 {
-	}
-	os.Exit(status)
 }
 
 // getJob details.
@@ -190,23 +191,24 @@ func getCmd(store storage.Storer, in *input) (*runner.Cmd, error) {
 }
 
 // Engine tries to accept a storage and input and run the Command.
-func engine(store storage.Storer, in *input) (string, error) {
+func engine(store storage.Storer, in *input) (*url.URL, error) {
 	cmd, err := getCmd(store, in)
 	if err != nil {
-		return "", errors.Wrap(err, "Cannot get cmd")
+		return nil, errors.Wrap(err, "Cannot get cmd")
 	}
 
 	w, err := getLayoutWatch(store, in)
 	if err != nil {
-		return w.SuccessURL, errors.Wrap(err, "Cannot get layout watch")
+		return nil, errors.Wrap(err, "Cannot get layout watch")
 	}
 
-	url := w.SuccessURL
 	if err := cmd.Run(); err != nil {
-		return w.FailureURL, errors.Wrap(err, "Exited with failure")
+		u, _ := url.Parse(w.FailureURL)
+		return u, errors.Wrap(err, "Exited with failure")
 	}
 
-	return url, errors.Wrap(err, "Error executing Cmd")
+	u, _ := url.Parse(w.SuccessURL)
+	return u, errors.Wrap(err, "Error executing Cmd")
 }
 
 // MainRunner takes input parametes and does the rest.
@@ -216,38 +218,60 @@ func mainRunner(store storage.Storer, in *input) int {
 	status := 0
 
 	if err := func() error {
-		startState, _ := store.GetKey(remotePath(in))
-		url, err := engine(store, in)
+		startState, err := store.GetKey(remotePath(in))
 		if err != nil {
-			return errors.Wrap(err, "Cannot execute Engine")
+			return errors.Wrap(err, "Cannot get old state.")
 		}
 
-		if url == "" {
-			return nil
+		u, err := engine(store, in)
+		if err != nil {
+			return errors.Wrap(err, "Cannot execute Engine.")
 		}
 
-		endState, _ := store.GetKey(remotePath(in))
-		body := struct {
-			OldState interface{} `json:"old_state"`
-			NewState interface{} `json:"new_state"`
-		}{}
+		endState, err := store.GetKey(remotePath(in))
+		if err != nil {
+			return errors.Wrap(err, "Cannot fetch watch.")
+		}
 
+		body := watchPacket{}
 		if err := json.Unmarshal(startState, &body.OldState); err != nil {
 			log.Println(err)
-			return nil
 		}
 
 		if err := json.Unmarshal(endState, &body.NewState); err != nil {
 			log.Println(err)
-			return nil
 		}
 
-		bfinal, _ := json.Marshal(body)
-		if req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(bfinal)); err != nil {
-			log.Println(err)
-		} else {
-			makeCall(req)
+		bfinal, err := json.Marshal(body)
+		if err != nil {
+			return errors.Wrap(err, "Cannot marshal body to json.")
 		}
+
+		urls := []*url.URL{}
+		if u != nil {
+			urls = append(urls, u)
+		}
+		if defaultHook != nil {
+			urls = append(urls, *defaultHook)
+		}
+
+		var wg sync.WaitGroup
+		for _, x := range urls {
+			wg.Add(1)
+
+			go func(u *url.URL) {
+				defer wg.Done()
+
+				req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(bfinal))
+				if err != nil {
+					fmt.Printf("Error while creating http request %v", err)
+					return
+				}
+
+				makeCall(req)
+			}(x)
+		}
+		wg.Wait()
 
 		return nil
 	}(); err != nil {

@@ -6,6 +6,12 @@ import (
 	"log"
 	"testing"
 
+	"net/http"
+
+	"fmt"
+	"net/http/httptest"
+	"net/url"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/server"
 	"github.com/tsocial/tessellate/storage"
@@ -16,6 +22,7 @@ var store storage.Storer
 
 func TestMainRunner(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	wID := "w123"
 	lID := "l123"
 
@@ -67,6 +74,12 @@ func TestMainRunner(t *testing.T) {
 			tmpDir:      "success-run",
 		}
 
+		s, err := attachWatch(wID, lID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer s.Close()
+
 		x := mainRunner(store, in)
 		assert.Equal(t, 0, x)
 	})
@@ -83,4 +96,57 @@ func TestMainRunner(t *testing.T) {
 		x := mainRunner(store, in)
 		assert.Equal(t, 127, x)
 	})
+}
+
+// Starts a new server for test purposes
+func watchMux(f func(p *watchPacket)) (*http.ServeMux, error) {
+	mux := http.NewServeMux()
+
+	mux.Handle("/user-watch", watchHandler(f))
+	mux.Handle("/default-watch", watchHandler(f))
+	return mux, nil
+}
+
+func watchHandler(f func(p *watchPacket)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s := watchPacket{}
+
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.Unmarshal(b, &s); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		f(&s)
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func attachWatch(workspaceID, layoutID string) (*httptest.Server, error) {
+	var err error
+	m, err := watchMux(func(p *watchPacket) {
+		fmt.Println(p)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	s := httptest.NewServer(m)
+	tree := types.MakeTree(workspaceID, layoutID)
+
+	uw := types.Watch{SuccessURL: s.URL + "/user-watch"}
+	if err := store.Save(&uw, tree); err != nil {
+		return nil, err
+	}
+
+	*defaultHook, err = url.Parse(s.URL + "/default-watch")
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
 }
