@@ -212,7 +212,7 @@ func engine(store storage.Storer, in *input) (*url.URL, error) {
 // MainRunner takes input parametes and does the rest.
 // Invokes the engine, and also makes callback to any watches that may be available
 // on the layout.
-func mainRunner(store storage.Storer, in *input) int {
+func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 	status := 0
 
 	if err := func() error {
@@ -225,7 +225,7 @@ func mainRunner(store storage.Storer, in *input) int {
 
 		endState, _ := store.GetKey(remotePath(in))
 
-		body := watchPacket{}
+		body := &watchPacket{}
 		if err := json.Unmarshal(startState, &body.OldState); err != nil {
 			log.Println(err)
 		}
@@ -243,8 +243,8 @@ func mainRunner(store storage.Storer, in *input) int {
 		if u != nil {
 			urls = append(urls, u)
 		}
-		if defaultHook != nil {
-			urls = append(urls, *defaultHook)
+		if hook != nil {
+			urls = append(urls, hook)
 		}
 
 		var wg sync.WaitGroup
@@ -297,5 +297,5 @@ func main() {
 		tmpDir:      *tmpDir,
 	}
 
-	os.Exit(mainRunner(store, in))
+	os.Exit(mainRunner(store, in, *defaultHook))
 }
