@@ -1,6 +1,7 @@
 package dispatcher
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"path"
@@ -11,20 +12,28 @@ import (
 	"github.com/tsocial/tessellate/tmpl"
 )
 
+const Papertrail = "Papertrail"
+
 type client struct {
 	cfg NomadConfig
 }
 
+type JobLog struct {
+	Destination    string
+	Aggregator     string
+	PapertrailHost string
+}
+
 type NomadConfig struct {
-	Address        string
-	Username       string
-	Password       string
-	Datacenter     string
-	Image          string
-	CPU            string
-	Memory         string
-	ConsulAddr     string
-	LogDestination string
+	Address    string
+	Username   string
+	Password   string
+	Datacenter string
+	Image      string
+	CPU        string
+	Memory     string
+	ConsulAddr string
+	Log        *JobLog
 }
 
 func NewNomadClient(cfg NomadConfig) *client {
@@ -81,7 +90,7 @@ job "{{ job_name }}" {
 		"memory":          c.cfg.Memory,
 		"consul_addr":     c.cfg.ConsulAddr,
 		"attempts":        j.Retry,
-		"log_destination": c.cfg.LogDestination,
+		"log_destination": c.cfg.Log.Destination,
 	}
 
 	if j.Dry {
@@ -135,7 +144,22 @@ func (c *client) Dispatch(w string, j *types.Job) (string, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var link string
+
 	u.Path = path.Join(u.Path, "ui", "jobs", w+"-"+j.LayoutId+"-"+j.Id)
-	link := u.String()
+	link = u.String()
+
+	if c.cfg.Log.Aggregator == Papertrail {
+		var logUrl *url.URL
+		jobFilter := fmt.Sprintf("tsl8w-%s-%s-%s", w, j.LayoutId, j.Id)
+
+		if logUrl, err = url.Parse(fmt.Sprintf("%s/events?q=program:%s", c.cfg.Log.PapertrailHost, jobFilter)); err == nil {
+			link = logUrl.String()
+		} else {
+			log.Printf("error generating papertrail url : %+v", err)
+		}
+	}
+
 	return link, nil
 }
