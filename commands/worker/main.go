@@ -53,6 +53,7 @@ type watchPacket struct {
 // Make a HTTP Call to the callbacks specified.
 // Does an internal retries in case of connection failures.
 func makeCall(req *http.Request) error {
+	log.Println("Making request", req)
 	client := pester.New()
 	client.Concurrency = 3
 	client.MaxRetries = 3
@@ -60,22 +61,19 @@ func makeCall(req *http.Request) error {
 	client.KeepLog = true
 	client.Timeout = time.Duration(5 * time.Second)
 
-	fmt.Println(req.URL)
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Error while making a request: %v", err)
 		return err
 	}
 
 	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
-	log.Println(b)
 	if err != nil {
-		log.Printf("Error while reading body: %v", err)
 		return err
 	}
 
+	log.Println("Response from callback", string(b))
 	return nil
 }
 
@@ -218,20 +216,14 @@ func mainRunner(store storage.Storer, in *input) int {
 	status := 0
 
 	if err := func() error {
-		startState, err := store.GetKey(remotePath(in))
-		if err != nil {
-			return errors.Wrap(err, "Cannot get old state.")
-		}
+		startState, _ := store.GetKey(remotePath(in))
 
 		u, err := engine(store, in)
 		if err != nil {
 			return errors.Wrap(err, "Cannot execute Engine.")
 		}
 
-		endState, err := store.GetKey(remotePath(in))
-		if err != nil {
-			return errors.Wrap(err, "Cannot fetch watch.")
-		}
+		endState, _ := store.GetKey(remotePath(in))
 
 		body := watchPacket{}
 		if err := json.Unmarshal(startState, &body.OldState); err != nil {
