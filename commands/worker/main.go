@@ -27,7 +27,7 @@ import (
 )
 
 // Version of the runner.
-const Version = "0.0.1"
+const Version = "0.0.2"
 
 var (
 	jobID       = kingpin.Flag("job", "Job ID").Short('j').String()
