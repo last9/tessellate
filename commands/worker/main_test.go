@@ -6,6 +6,12 @@ import (
 	"log"
 	"testing"
 
+	"net/http"
+
+	"net/http/httptest"
+
+	"net/url"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/tsocial/tessellate/server"
 	"github.com/tsocial/tessellate/storage"
@@ -16,6 +22,7 @@ var store storage.Storer
 
 func TestMainRunner(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	wID := "w123"
 	lID := "l123"
 
@@ -67,8 +74,47 @@ func TestMainRunner(t *testing.T) {
 			tmpDir:      "success-run",
 		}
 
-		x := mainRunner(store, in)
-		assert.Equal(t, 0, x)
+		collector := map[string][]*watchPacket{}
+
+		s, err := hookServer(func(uv *url.URL, p *watchPacket) {
+			u := uv.String()
+			if _, ok := collector[u]; !ok {
+				collector[u] = []*watchPacket{}
+			}
+			collector[u] = append(collector[u], p)
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		defer s.Close()
+
+		defaultWatch := "/default-watch"
+		h, err := url.Parse(s.URL + defaultWatch)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tree := types.MakeTree(wID, lID)
+		if err := addWatch(tree, s.URL); err != nil {
+			t.Fatal(err)
+		}
+
+		t.Run("without default watch", func(t *testing.T) {
+			x := mainRunner(store, in, nil)
+			// expect that 2 handlers are called.
+			assert.Equal(t, 0, x)
+			assert.Equal(t, 0, len(collector[defaultWatch]))
+			assert.Equal(t, 1, len(collector))
+		})
+
+		t.Run("with default watch", func(t *testing.T) {
+			x := mainRunner(store, in, h)
+			// expect that 2 handlers are called.
+			assert.Equal(t, 0, x)
+			assert.Equal(t, 1, len(collector[defaultWatch]))
+			assert.Equal(t, 2, len(collector))
+		})
 	})
 
 	t.Run("Should fail", func(t *testing.T) {
@@ -80,7 +126,55 @@ func TestMainRunner(t *testing.T) {
 			tmpDir:      "failed-run",
 		}
 
-		x := mainRunner(store, in)
+		x := mainRunner(store, in, nil)
 		assert.Equal(t, 127, x)
 	})
+}
+
+// Starts a new server for test purposes
+func watchMux(f func(*url.URL, *watchPacket)) (*http.ServeMux, error) {
+	mux := http.NewServeMux()
+
+	mux.Handle("/user-watch", watchHandler(f))
+	mux.Handle("/default-watch", watchHandler(f))
+	return mux, nil
+}
+
+func watchHandler(f func(url *url.URL, p *watchPacket)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s := watchPacket{}
+
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.Unmarshal(b, &s); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		f(r.URL, &s)
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func hookServer(f func(*url.URL, *watchPacket)) (*httptest.Server, error) {
+	var err error
+	m, err := watchMux(f)
+	if err != nil {
+		return nil, err
+	}
+
+	s := httptest.NewServer(m)
+	return s, nil
+}
+
+func addWatch(tree *types.Tree, url string) error {
+	uw := types.Watch{SuccessURL: url + "/user-watch"}
+	if err := store.Save(&uw, tree); err != nil {
+		return err
+	}
+	return nil
 }
