@@ -24,6 +24,7 @@ script:
   - docker-compose -f docker-compose.yaml up -d consul
   - sleep 5
   - make cli_build
+  - export TSL8_WORKER_CONSUL_IP="127.0.0.1:8500"
   - make all_test
   - make build_images
 
