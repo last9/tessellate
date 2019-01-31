@@ -387,7 +387,7 @@ func (s *Server) GetState(ctx context.Context, in *GetStateRequest) (*GetStateRe
 	// When the state is gzipped
 	r, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid gzip or json")
 	}
 
 	data, err = ioutil.ReadAll(r)
