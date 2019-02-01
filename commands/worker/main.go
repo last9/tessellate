@@ -33,7 +33,7 @@ var (
 	jobID       = kingpin.Flag("job", "Job ID").Short('j').String()
 	workspaceID = kingpin.Flag("workspace", "Workspace ID").Short('w').String()
 	layoutID    = kingpin.Flag("layout", "Layout ID").Short('l').String()
-	consulIP    = kingpin.Flag("consul-host", "Consul IP").Short('c').String()
+	consulIP    = kingpin.Flag("consul-host", "Consul IP").Short('c').Envar("TSL8_WORKER_CONSUL_IP").String()
 	tmpDir      = kingpin.Flag("tmp-dir", "Temporary Dir").Short('d').Default("test-runner").String()
 	defaultHook = kingpin.Flag("default-hook", "URL which is triggered on successful apply.").URL()
 )

@@ -34,6 +34,7 @@ func remoteLayout(addr, path string) map[string]interface{} {
 				"consul": map[string]interface{}{
 					"address": addr,
 					"path":    path,
+					"gzip":    true,
 				},
 			},
 		},

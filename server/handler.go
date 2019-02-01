@@ -1,9 +1,12 @@
 package server
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"path"
 	"path/filepath"
@@ -369,6 +372,25 @@ func (s *Server) saveWatch(wID, lID, success, failure string) (*Ok, error) {
 func (s *Server) GetState(ctx context.Context, in *GetStateRequest) (*GetStateResponse, error) {
 	key := filepath.Join(types.STATE, in.WorkspaceId, in.LayoutId)
 	data, err := s.store.GetKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// for backward compatibility, if user tries to get a state which is in plain json
+	var tmp interface{}
+	if err := json.Unmarshal(data, &tmp); err == nil {
+		return &GetStateResponse{
+			State: data,
+		}, nil
+	}
+
+	// When the state is gzipped
+	r, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("invalid gzip or json")
+	}
+
+	data, err = ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
