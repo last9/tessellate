@@ -69,7 +69,6 @@ func (e *ConsulStore) gzip(unzipped []byte) ([]byte, error) {
 
 	if err := gz.Close(); err != nil {
 		return nil, err
-		//log.Printf("error while closing gzip writer: %+v", err)
 	}
 
 	return b.Bytes(), nil
