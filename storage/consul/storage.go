@@ -1,6 +1,10 @@
 package consul
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/json"
+	"io/ioutil"
 	"path"
 
 	"time"
@@ -23,8 +27,66 @@ type ConsulStore struct {
 	client *api.Client
 }
 
+func (e *ConsulStore) get(key string) ([]byte, error) {
+	b, _, err := e.client.KV().Get(key, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if b == nil {
+		return []byte{}, nil
+	}
+
+	// check if response is valid json
+	var res interface{}
+	if err := json.Unmarshal(b.Value, &res); err == nil {
+		return b.Value, err
+	}
+
+	// When the content is gzipped
+	r, err := gzip.NewReader(bytes.NewReader(b.Value))
+	if err != nil {
+		return nil, fmt.Errorf("invalid gzip or json")
+	}
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, err
+}
+
+func (e *ConsulStore) gzip(unzipped []byte) ([]byte, error) {
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+	if _, err := gz.Write(unzipped); err != nil {
+		return nil, err
+	}
+
+	if err := gz.Flush(); err != nil {
+		return nil, err
+	}
+
+	if err := gz.Close(); err != nil {
+		return nil, err
+		//log.Printf("error while closing gzip writer: %+v", err)
+	}
+
+	return b.Bytes(), nil
+}
+
+func (e *ConsulStore) save(key string, value []byte) error {
+	gz, err := e.gzip(value)
+	if err != nil {
+		return err
+	}
+
+	_, err = e.client.KV().Put(&api.KVPair{Key: key, Value: gz}, nil)
+	return err
+}
+
 func (e *ConsulStore) GetKey(key string) ([]byte, error) {
-	bytes, _, err := e.client.KV().Get(key, nil)
+	bytes, err := e.get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +95,11 @@ func (e *ConsulStore) GetKey(key string) ([]byte, error) {
 		return []byte{}, nil
 	}
 
-	return bytes.Value, err
+	return bytes, err
 }
 
 func (e *ConsulStore) SaveKey(key string, value []byte) error {
-	_, err := e.client.KV().Put(&api.KVPair{Key: key, Value: value}, nil)
-	return err
+	return e.save(key, value)
 }
 
 func (e *ConsulStore) GetVersions(reader types.ReaderWriter, tree *types.Tree) ([]string, error) {
@@ -73,16 +134,16 @@ func (e *ConsulStore) GetKeys(prefix string, separator string) ([]string, error)
 func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, version string) error {
 	path := path.Join(reader.MakePath(tree), version)
 	// Get the vars for the layout.
-	bytes, _, err := e.client.KV().Get(path, nil)
+	bytes, err := e.get(path)
 	if err != nil {
 		return errors.Wrapf(err, "Cannot fetch object for %v", path)
 	}
 
-	if bytes == nil {
+	if bytes == nil || len(bytes) == 0 {
 		return errors.Errorf("Missing Key %v", path)
 	}
 
-	if err := reader.Unmarshal(bytes.Value); err != nil {
+	if err := reader.Unmarshal(bytes); err != nil {
 		return errors.Wrap(err, "Cannot unmarshal data into Reader")
 	}
 
@@ -116,17 +177,23 @@ func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
 	}
 
 	// Create a Tx Chain of Ops.
+
+	gz, err := e.gzip(b)
+	if err != nil {
+		return err
+	}
+
 	ops := api.KVTxnOps{
 		&api.KVTxnOp{
 			Verb:    api.KVSet,
 			Key:     latestKey,
-			Value:   b,
+			Value:   gz,
 			Session: session,
 		},
 		&api.KVTxnOp{
 			Verb:    api.KVSet,
 			Key:     timestampKey,
-			Value:   b,
+			Value:   gz,
 			Session: session,
 		},
 	}
