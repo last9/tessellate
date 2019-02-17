@@ -247,8 +247,7 @@ func (s *Server) opLayout(wID, lID string, op int32, vars []byte, dry bool, retr
 	tree := types.MakeTree(wID)
 	layoutTree := types.MakeTree(wID, lID)
 	// GET versions of the layout.
-	versions, err := s.store.GetVersions(&lyt, tree)
-	log.Print(versions)
+	versions, err := s.store.GetVersions(&lyt, tree)	
 	if err != nil {
 		return nil, err
 	}
