@@ -1,5 +1,7 @@
 FROM hashicorp/terraform:light
 
+RUN apk add bash curl
+
 RUN mkdir -p /usr/local/go/lib/time
 COPY zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
 COPY tsl8_worker tsl8
