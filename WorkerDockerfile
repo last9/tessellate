@@ -1,6 +1,6 @@
 FROM hashicorp/terraform:0.11.13
 
-RUN apk add bash curl
+RUN apk add bash curl jq
 
 RUN mkdir -p /usr/local/go/lib/time
 COPY zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
