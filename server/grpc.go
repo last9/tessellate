@@ -39,8 +39,11 @@ var validator = totp.Validate
 func Grpc() *grpc.Server {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	raven.SetDSN(*sentryDsn)
+	if err := raven.SetDSN(*sentryDsn); err != nil {
+		log.Printf("Sentry initialization failed, continuing without sentry %v", err)
+	}
 	raven.SetEnvironment(*environment)
+	log.Printf("Sentry initialized :%v", *sentryDsn)
 
 	opts := []grpc_recovery.Option{
 		grpc_recovery.WithRecoveryHandler(customFunc),
@@ -51,7 +54,6 @@ func Grpc() *grpc.Server {
 	}
 
 	unaries := []grpc.UnaryServerInterceptor{
-		middleware.SentryInterceptor(),
 		grpc_recovery.UnaryServerInterceptor(opts...),
 		middleware.UnaryServerInterceptor(*support),
 		middleware.TwoFAInterceptor(twofaIO, validator),
