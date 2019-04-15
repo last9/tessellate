@@ -16,26 +16,28 @@ import time
 
 while True:
     try:
-        response = json.loads(urllib2.urlopen("http://%v/v1/kv/" + key).read().decode('utf-8'))[0]
+        keys = json.loads(urllib2.urlopen("http://%v/v1/kv/lock/?keys").read().decode('utf-8'))[1:]
     except urllib2.HTTPError as e:
         print("No lock found")
-        time.sleep(5)
-        continue
 
-    if len(keys) > 0:
+    if keys and len(keys) > 0:
         print("Keys are : " + ', '.join(keys))
         for key in keys:
             response = json.loads(urllib2.urlopen("http://%v/v1/kv/" + key).read().decode('utf-8'))[0]
             k = response['Key'].split('/')[1]
             v = response['Value'].decode('base64')
             print("Fetching Nomad Job details for Nomad Job Name: " + k + "-" + v)
-            status = json.loads(urllib2.urlopen("http://%v/v1/job/" + k + "-" + v).read().decode('utf-8'))['Status']
-            if status == 'dead':
+            status = None
+            try:
+                status = json.loads(urllib2.urlopen("%v/v1/job/" + k + "-" + v).read().decode('utf-8'))['Status']
+            except urllib2.HTTPError:
+                print("Job not found")
+            if status and status == 'dead':
                 print("Deleting lock from Consul for dead Nomad Job: " + key)
                 opener = urllib2.build_opener(urllib2.HTTPHandler)
                 request = urllib2.Request("http://%v/v1/kv/" + key, data='')
                 request.get_method = lambda: 'DELETE'
-
+                opener.open(request)
     time.sleep(5)
 `
 
