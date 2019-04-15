@@ -4,10 +4,10 @@ import (
 	"io"
 	"log"
 
-	"github.com/pquerna/otp/totp"
-
+	"github.com/getsentry/raven-go"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	"github.com/pquerna/otp/totp"
 	"github.com/tsocial/tessellate/cert"
 	"github.com/tsocial/tessellate/fault"
 	"github.com/tsocial/tessellate/server/middleware"
@@ -25,6 +25,8 @@ var (
 	support  = (kingpin.Flag("least-cli-version", "Client's least supported version by Tessellate.")).
 			Default(DefaultVersion).OverrideDefaultFromEnvar("LEAST_CLI_VERSION").String()
 	twoFAConfig = kingpin.Flag("totp-config", "Config file for 2FA").File()
+	sentryDsn   = kingpin.Flag("sentry-dsn", "Sentry Dsn").Envar("SENTRY_DSN").String()
+	environment = kingpin.Flag("environment", "environment").Envar("ENV").String()
 )
 
 func customFunc(t interface{}) error {
@@ -36,6 +38,12 @@ var validator = totp.Validate
 
 func Grpc() *grpc.Server {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	if err := raven.SetDSN(*sentryDsn); err != nil {
+		log.Printf("Sentry initialization failed, continuing without sentry %v", err)
+	}
+	raven.SetEnvironment(*environment)
+	log.Printf("Sentry initialized :%v", *sentryDsn)
 
 	opts := []grpc_recovery.Option{
 		grpc_recovery.WithRecoveryHandler(customFunc),
