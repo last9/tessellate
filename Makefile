@@ -10,10 +10,11 @@ endif
 
 # Make proto file for tessellate.
 protodep:
-	GOCACHE=/tmp/gocache go get -v github.com/golang/protobuf/protoc-gen-go
+	env GOCACHE=/tmp/gocache go get -v github.com/golang/protobuf/protoc-gen-go
 	cd ${GOPATH}/src/github.com/golang/protobuf/protoc-gen-go && git checkout tags/v1.2.0
-	GOCACHE=/tmp/gocache go get -v github.com/envoyproxy/protoc-gen-validate
-	GOCACHE=/tmp/gocache go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+	env GOCACHE=/tmp/gocache go get -v github.com/envoyproxy/protoc-gen-validate
+	env GOCACHE=/tmp/gocache go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+
 	protoc --version || /bin/bash install_protobuf.sh
 
 proto: protodep
@@ -38,10 +39,10 @@ build_deps: proto deps clean
 
 # Run unit tests.
 test: build_deps
-	go test -v ./...
+	env GOCACHE=/tmp/gocache go test -v ./...
 
 integration_tests:
-	go test -v -tags integration ./...
+	env GOCACHE=/tmp/gocache go test -v -tags integration ./...
 
 
 all_test: test integration_tests
@@ -53,7 +54,7 @@ http_build:
 		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 		--grpc-gateway_out=logtostderr=true:${GOPATH}/src \
 		proto/tessellate.proto
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tsl8_http -a -installsuffix cgo \
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 GOCACHE=/tmp/gocache go build -o tsl8_http -a -installsuffix cgo \
 		github.com/tsocial/tessellate/commands/http
 
 http: build_deps http_build
@@ -67,25 +68,25 @@ worker: build_deps worker_build
 
 # Build grpc tessellate server. For OSX and Linux.
 tessellate_build: build_deps
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tsl8_server -a -installsuffix \
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 GOCACHE=/tmp/gocache go build -o tsl8_server -a -installsuffix \
 		cgo github.com/tsocial/tessellate/
 
 tessellate_build_linux:
-	go build -o tsl8_server github.com/tsocial/tessellate/
+	env GOCACHE=/tmp/gocache go build -o tsl8_server github.com/tsocial/tessellate/
 
 tessellate_build_mac: build_deps
-	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tsl8_server -a -installsuffix \
+	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 GOCACHE=/tmp/gocache go build -o tsl8_server -a -installsuffix \
     		cgo github.com/tsocial/tessellate
 
 tessellate: build_deps tessellate_build
 
 # Build the tessellate cli.
 cli_build: build_deps
-	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 go build -o tsl8 -a -installsuffix \
+	env GOOS=linux GARCH=amd64 CGO_ENABLED=0 GOCACHE=/tmp/gocache go build -o tsl8 -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
 
 cli_build_mac: build_deps
-	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 go build -o tsl8 -a -installsuffix \
+	env GOOS=darwin GARCH=amd64 CGO_ENABLED=0 GOCACHE=/tmp/gocache go build -o tsl8 -a -installsuffix \
 		cgo github.com/tsocial/tessellate/commands/cli
 # Start tessellate server in background.
 start_server: tessellate
