@@ -3,6 +3,7 @@ package fault
 import (
 	"log"
 
+	"github.com/getsentry/raven-go"
 	"github.com/pkg/errors"
 )
 
@@ -25,7 +26,7 @@ func Printer(tIn interface{}) error {
 	if rerr == nil {
 		rerr = errors.Errorf("%+v", tIn)
 	}
-
+	raven.CaptureErrorAndWait(rerr, nil)
 	log.Printf("%+v\n", rerr)
 	return rerr
 }

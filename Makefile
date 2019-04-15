@@ -12,7 +12,7 @@ endif
 protodep:
 	GOCACHE=/tmp/gocache go get -v github.com/golang/protobuf/protoc-gen-go
 	cd ${GOPATH}/src/github.com/golang/protobuf/protoc-gen-go && git checkout tags/v1.2.0
-	GOCACHE=/tmp/gocache go get -v github.com/lyft/protoc-gen-validate
+	GOCACHE=/tmp/gocache go get -v github.com/envoyproxy/protoc-gen-validate
 	GOCACHE=/tmp/gocache go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	protoc --version || /bin/bash install_protobuf.sh
 
