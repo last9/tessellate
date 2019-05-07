@@ -157,16 +157,20 @@ func (e *ConsulStore) GetVersion(reader types.ReaderWriter, tree *types.Tree, ve
 // NOTE: This is an atomic operation, so either everything is written or nothing is.
 // The operation may take its own sweet time before a quorum write is guaranteed.
 func (e *ConsulStore) Save(source types.ReaderWriter, tree *types.Tree) error {
+	ts := time.Now().UnixNano()
+	return e.SaveTag(source, tree, fmt.Sprintf("%+v", ts))
+}
+
+func (e *ConsulStore) SaveTag(source types.ReaderWriter, tree *types.Tree, ts string) error {
 	b, err := source.Marshal()
 	if err != nil {
 		return errors.Wrap(err, "Cannot Marshal vars")
 	}
 
-	ts := time.Now().UnixNano()
 	key := source.MakePath(tree)
 
 	latestKey := path.Join(key, "latest")
-	timestampKey := path.Join(key, fmt.Sprintf("%+v", ts))
+	timestampKey := path.Join(key, ts)
 
 	session := types.MakeVersion()
 
