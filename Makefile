@@ -11,7 +11,7 @@ endif
 # Make proto file for tessellate.
 protodep:
 	env GOCACHE=/tmp/gocache go get -v github.com/golang/protobuf/protoc-gen-go
-	cd ${GOPATH}/src/github.com/golang/protobuf/protoc-gen-go && git checkout tags/v1.2.0
+	cd ${GOPATH}/src/github.com/golang/protobuf/protoc-gen-go && git checkout tags/v1.3.1
 	env GOCACHE=/tmp/gocache go get -v github.com/envoyproxy/protoc-gen-validate
 	env GOCACHE=/tmp/gocache go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 
