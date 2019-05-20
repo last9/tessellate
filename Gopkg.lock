@@ -41,6 +41,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:fed1f537c2f1269fe475a8556c393fe466641682d73ef8fd0491cd3aa1e47bad"
+  name = "github.com/certifi/gocertifi"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "deb3ae2ef2610fde3330947281941c562861188b"
+  version = "2018.01.18"
+
+[[projects]]
   digest = "1:c28625428387b63dd7154eb857f51e700465cfbf7c06f619e71f2da33cefe47e"
   name = "github.com/coreos/bbolt"
   packages = ["."]
@@ -57,12 +65,28 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:dfe5159383dfcd370555c35374ac99022906f987b55cc65a830fb9ced970b4b1"
+  name = "github.com/envoyproxy/protoc-gen-validate"
+  packages = ["validate"]
+  pruneopts = "UT"
+  revision = "930a67cf7ba41b9d9436ad7a1be70a5d5ff6e1fc"
+  version = "v0.0.6"
+
+[[projects]]
   digest = "1:434aab943cc1c082c9df36bd4b1f107d9ef4af930d2ce13d3f2eb008df9196f0"
   name = "github.com/flosch/pongo2"
   packages = ["."]
   pruneopts = "UT"
   revision = "5e81b817a0c48c1c57cdf1a9056cf76bdee02ca9"
   version = "v3.0"
+
+[[projects]]
+  digest = "1:d18f6f088d7d8365df47f49dfa24b6ff6701a941118ffda30c589d1bd954074b"
+  name = "github.com/getsentry/raven-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f04e7487e9a6b9d9837d52743fb5f40576c56411"
+  version = "v0.2.0"
 
 [[projects]]
   branch = "master"
@@ -245,14 +269,6 @@
   pruneopts = "UT"
   revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
   version = "v0.8.1"
-
-[[projects]]
-  digest = "1:894628a9f8e128036c8a4c00519ffc2c2555850db6b919330df82ce003eaf1b4"
-  name = "github.com/lyft/protoc-gen-validate"
-  packages = ["validate"]
-  pruneopts = "UT"
-  revision = "3bd820adb86cc455b16b37465905a9b99e22cbbb"
-  version = "v0.0.7"
 
 [[projects]]
   branch = "master"
@@ -509,7 +525,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/coreos/bbolt",
+    "github.com/envoyproxy/protoc-gen-validate/validate",
     "github.com/flosch/pongo2",
+    "github.com/getsentry/raven-go",
     "github.com/golang/glog",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
@@ -519,7 +537,6 @@
     "github.com/grpc-ecosystem/grpc-gateway/utilities",
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/nomad/api",
-    "github.com/lyft/protoc-gen-validate/validate",
     "github.com/mcuadros/go-version",
     "github.com/meson10/highbrow",
     "github.com/meson10/pester",

@@ -10,6 +10,8 @@ import (
 
 	"io"
 
+	"strings"
+
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/tsocial/tessellate/tmpl"
@@ -202,7 +204,7 @@ func (p *Cmd) saveLayout() error {
 			return errors.Wrap(err, "Invalid Layout template")
 		}
 
-		lPath := fmt.Sprintf("%v/%v.tf.json", p.dir, name)
+		lPath := fmt.Sprintf("%v/%v.tf.json", p.dir, strings.ReplaceAll(name, ".tf.json", ""))
 		if err := ioutil.WriteFile(lPath, layout, os.ModePerm); err != nil {
 			p.stdout.Write([]byte("Cannot save layout file."))
 			return errors.Wrap(err, "Cannot save Layout file")
