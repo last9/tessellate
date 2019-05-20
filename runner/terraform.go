@@ -203,6 +203,10 @@ func (p *Cmd) saveLayout() error {
 		}
 
 		lPath := fmt.Sprintf("%v/%v.tf.json", p.dir, name)
+		if strings.HasSuffix(name, ".tf.json") {
+			lPath = fmt.Sprintf("%v/%v", p.dir, name)
+		}
+		
 		if err := ioutil.WriteFile(lPath, layout, os.ModePerm); err != nil {
 			p.stdout.Write([]byte("Cannot save layout file."))
 			return errors.Wrap(err, "Cannot save Layout file")
