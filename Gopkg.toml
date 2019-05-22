@@ -1,6 +1,6 @@
 # Gopkg.toml example
 #
-# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# Refer to https://golang.github.io/dep/docs/Gopkg.toml.html
 # for detailed Gopkg.toml documentation.
 #
 # required = ["github.com/user/thing/cmd/thing"]
@@ -26,57 +26,97 @@
 
 
 [[constraint]]
+  name = "github.com/coreos/bbolt"
+  version = "1.3.2"
+
+[[constraint]]
+  name = "github.com/envoyproxy/protoc-gen-validate"
+  version = "0.0.6"
+
+[[constraint]]
   name = "github.com/flosch/pongo2"
   version = "3.0.0"
 
 [[constraint]]
-  name = "github.com/pkg/errors"
-  version = "0.8.0"
+  name = "github.com/getsentry/raven-go"
+  version = "0.2.0"
 
 [[constraint]]
-  name = "github.com/satori/go.uuid"
-  version = "1.2.0"
-
-[prune]
-  go-tests = true
-  unused-packages = true
+  branch = "master"
+  name = "github.com/golang/glog"
 
 [[constraint]]
-  name = "github.com/stretchr/testify"
-  version = "1.2.2"
-
-[[constraint]]
-  name = "github.com/hashicorp/consul"
-  version = "1.2.0"
-
-[[constraint]]
-  name = "gopkg.in/alecthomas/kingpin.v2"
-  version = "2.2.6"
-
-[[constraint]]
-  name = "google.golang.org/grpc"
-  version = "1.13.0"
+  name = "github.com/golang/protobuf"
+  version = "1.3.1"
 
 [[constraint]]
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   version = "1.0.0"
 
 [[constraint]]
+  name = "github.com/grpc-ecosystem/grpc-gateway"
+  version = "1.9.0"
+
+[[constraint]]
+  name = "github.com/hashicorp/consul"
+  version = "1.5.0"
+
+[[constraint]]
   name = "github.com/hashicorp/nomad"
-  version = "0.8.4"
+  version = "0.9.1"
 
 [[constraint]]
   branch = "master"
-  name = "github.com/meson10/pester"
+  name = "github.com/mcuadros/go-version"
 
 [[constraint]]
   branch = "master"
   name = "github.com/meson10/highbrow"
 
 [[constraint]]
-  name = "github.com/coreos/bbolt"
+  branch = "master"
+  name = "github.com/meson10/pester"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+  version = "0.8.1"
+
+[[constraint]]
+  name = "github.com/pquerna/otp"
+  version = "1.1.0"
+
+[[constraint]]
+  name = "github.com/satori/go.uuid"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
   version = "1.3.0"
 
 [[constraint]]
   branch = "master"
   name = "github.com/tsocial/ts2fa"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/genproto"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "1.20.1"
+
+[[constraint]]
+  name = "gopkg.in/alecthomas/kingpin.v2"
+  version = "2.2.6"
+
+[[constraint]]
+  name = "gopkg.in/h2non/filetype.v1"
+  version = "1.0.8"
+
+[prune]
+  go-tests = true
+  unused-packages = true
