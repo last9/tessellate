@@ -13,7 +13,10 @@ protodep:
 	env GOCACHE=/tmp/gocache go get -v github.com/golang/protobuf/protoc-gen-go
 	cd ${GOPATH}/src/github.com/golang/protobuf/protoc-gen-go && git checkout tags/v1.3.1
 	env GOCACHE=/tmp/gocache go get -v github.com/envoyproxy/protoc-gen-validate
-	env GOCACHE=/tmp/gocache go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+	# NOTE: A breaking was introduced in package google.golang.org/genproto (commit hash d00d292a067ce1aa0017b40ca75437b42461fa61)
+    	# 			hence adding a workaround
+	env GOCACHE=/tmp/gocache go get -v github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway || true
+	cd ${GOPATH}/src/google.golang.org/genproto && git checkout b515fa19cec88c32f305a962f34ae60068947aea
 
 	protoc --version || /bin/bash install_protobuf.sh
 
