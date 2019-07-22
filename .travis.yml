@@ -23,7 +23,6 @@ script:
   - export PATH="/tmp/proto/${PROTO_VERSION}/bin/":$PATH
   - docker-compose -f docker-compose.yaml up -d consul
   - sleep 5
-  - make cli_build
   - make all_test
   - export TSL8_WORKER_CONSUL_IP="127.0.0.1:8500"
   - make all_test
