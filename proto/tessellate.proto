@@ -56,6 +56,7 @@ service Tessellate {
   rpc GetState (GetStateRequest) returns (GetStateResponse) {}
   rpc GetOutput (GetOutputRequest) returns (GetOutputResponse) {}
   rpc GetAllWorkspaces(Ok) returns (AllWorkspaces) {}
+  rpc SearchResource(SearchRequest) returns (AllResources) {}
 }
 
 enum Errors {
@@ -95,6 +96,16 @@ message Workspace {
   bytes Vars = 2;
   string Version = 3;
   repeated string Versions = 4;
+}
+
+message Resource {
+  repeated string Resource = 1;
+  string Layout = 2;
+  string Workspace = 3;
+}
+
+message AllResources {
+  repeated Resource Resources = 1;
 }
 
 message AllWorkspaces {
@@ -141,6 +152,10 @@ message Ok {}
 message LayoutRequest {
   string WorkspaceId = 1 [(validate.rules).string.min_len = 1];
   string Id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message SearchRequest {
+  string ResourceName = 1 [(validate.rules).string.min_len = 1];
 }
 
 message SaveLayoutRequest {

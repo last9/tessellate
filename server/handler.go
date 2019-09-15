@@ -72,6 +72,49 @@ func (s *Server) GetWorkspace(ctx context.Context, in *GetWorkspaceRequest) (*Wo
 	return s.getWorkspace(in.Id)
 }
 
+
+func (s *Server) SearchResource(ctx context.Context, in *SearchRequest) (*AllResources, error) {
+
+	keys, err := s.store.GetKeys(types.STATE+"/", "/")
+	if err != nil {
+		return nil, err
+	}
+
+	var r []*Resource
+	for _, k := range keys {
+		splits := strings.Split(k, "/")
+		if len(splits) != 3 {
+			log.Printf("skipping %s, len = %d\n", k, len(splits))
+			continue
+		}
+
+		ks, _ := s.store.GetKeys(k, "/")
+		for _, j := range ks {
+			si := strings.Split(j, "/")
+
+			if strings.HasSuffix(si[2], "dry") {
+				continue
+			}
+
+			cr, err := checkResource(in.ResourceName)
+			if err != nil {
+				return nil, err
+			}
+			val, _ := s.store.GetKey(strings.Trim(j,"/"))
+
+			resourceArr := cr.getResource(val)
+
+			if len(resourceArr) == 0 {
+				continue
+			}
+
+			ab := Resource{Resource:resourceArr, Layout:si[2], Workspace:splits[1]}
+			r = append(r, &ab)
+		}
+	}
+	return &AllResources{Resources:r}, nil
+}
+
 func (s *Server) GetAllWorkspaces(ctx context.Context, in *Ok) (*AllWorkspaces, error) {
 	keys, err := s.store.GetKeys(types.WORKSPACE+"/", "/")
 	if err != nil {
