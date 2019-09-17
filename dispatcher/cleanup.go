@@ -85,7 +85,7 @@ class HTTPSConnection(httplib.HTTPSConnection):
                 ssl_version = self.ssl_version )
 
 client_cert_key = "%v" # file path
-client_cert_pem = "%v" #file path
+client_cert = "%v" #file path
 ca_certs = "%v" # file path
 
 handlers = []
@@ -93,7 +93,7 @@ handlers = []
 if client_cert_key:
 	handlers.append( HTTPSClientAuthHandler(
 		key = client_cert_key,
-		cert = client_cert_pem,
+		cert = client_cert,
 		ca_certs = ca_certs,
 		ssl_version = ssl.PROTOCOL_TLSv1_2,
 		ciphers = 'TLS_RSA_WITH_AES_256_CBC_SHA' ) )
@@ -116,7 +116,7 @@ while True:
             status = None
             try:
 				nomad_url = "%v"
-				nomad_resp = http.open(nomad_url + "/v1/job/" + k + "-" + v) if client_cert_key else urllib2.urlopen(nomad_url + "/v1/job/" + k + "-" + v
+				nomad_resp = http.open(nomad_url + "/v1/job/" + k + "-" + v) if client_cert_key else urllib2.urlopen(nomad_url + "/v1/job/" + k + "-" + v)
                 status = json.loads(nomad_resp.read().decode('utf-8'))['Status']
             except urllib2.HTTPError:
                 print("Job not found")
