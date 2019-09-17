@@ -115,9 +115,9 @@ while True:
             print("Fetching Nomad Job details for Nomad Job Name: " + k + "-" + v)
             status = None
             try:
-				nomad_url = "%v"
-				nomad_resp = http.open(nomad_url + "/v1/job/" + k + "-" + v) if client_cert_key else urllib2.urlopen(nomad_url + "/v1/job/" + k + "-" + v)
-                status = json.loads(nomad_resp.read().decode('utf-8'))['Status']
+	    	nomad_url = "%v"
+		nomad_resp = http.open(nomad_url + "/v1/job/" + k + "-" + v) if client_cert_key else urllib2.urlopen(nomad_url + "/v1/job/" + k + "-" + v)
+		status = json.loads(nomad_resp.read().decode('utf-8'))['Status']
             except urllib2.HTTPError:
                 print("Job not found")
             if status and status == 'dead':
