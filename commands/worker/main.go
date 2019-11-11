@@ -7,14 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 	"path"
 	"strings"
-	"time"
-
-	"os"
-
-	"net/url"
 	"sync"
+	"time"
 
 	"github.com/meson10/highbrow"
 	"github.com/meson10/pester"
@@ -209,6 +207,27 @@ func engine(store storage.Storer, in *input) (*url.URL, error) {
 	return u, errors.Wrap(err, "Error executing Cmd")
 }
 
+func watchCallback(urls []*url.URL, b []byte) {
+	var wg sync.WaitGroup
+	for _, x := range urls {
+		wg.Add(1)
+
+		go func(u *url.URL) {
+			defer wg.Done()
+
+			req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(b))
+			if err != nil {
+				fmt.Printf("Error while creating http request %v", err)
+				return
+			}
+
+			makeCall(req)
+		}(x)
+	}
+
+	wg.Wait()
+}
+
 // MainRunner takes input parametes and does the rest.
 // Invokes the engine, and also makes callback to any watches that may be available
 // on the layout.
@@ -217,10 +236,18 @@ func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 
 	if err := func() error {
 		startState, _ := store.GetKey(remotePath(in))
+		urls := []*url.URL{}
+		if hook != nil {
+			urls = append(urls, hook)
+		}
 
-		u, err := engine(store, in)
-		if err != nil {
-			return errors.Wrap(err, "Cannot execute Engine.")
+		u, engineErr := engine(store, in)
+		if u != nil {
+			urls = append(urls, u)
+		}
+		if engineErr != nil {
+			watchCallback(urls, []byte{})
+			return errors.Wrap(engineErr, "Cannot execute Engine.")
 		}
 
 		endState, _ := store.GetKey(remotePath(in))
@@ -239,33 +266,9 @@ func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 			return errors.Wrap(err, "Cannot marshal body to json.")
 		}
 
-		urls := []*url.URL{}
-		if u != nil {
-			urls = append(urls, u)
-		}
-		if hook != nil {
-			urls = append(urls, hook)
-		}
-
-		var wg sync.WaitGroup
-		for _, x := range urls {
-			wg.Add(1)
-
-			go func(u *url.URL) {
-				defer wg.Done()
-
-				req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(bfinal))
-				if err != nil {
-					fmt.Printf("Error while creating http request %v", err)
-					return
-				}
-
-				makeCall(req)
-			}(x)
-		}
-		wg.Wait()
-
+		watchCallback(urls, bfinal)
 		return nil
+
 	}(); err != nil {
 		fmt.Printf("%+v\n", err)
 		status = 127
