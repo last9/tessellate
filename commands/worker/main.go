@@ -46,6 +46,7 @@ type input struct {
 type watchPacket struct {
 	OldState interface{} `json:"old_state"`
 	NewState interface{} `json:"new_state"`
+	Success  bool        `json:"success"`
 }
 
 // Make a HTTP Call to the callbacks specified.
@@ -207,7 +208,7 @@ func engine(store storage.Storer, in *input) (*url.URL, error) {
 	return u, errors.Wrap(err, "Error executing Cmd")
 }
 
-func watchCallback(urls []*url.URL, b []byte) {
+func watchCallback(urls []*url.URL, b []byte, jId string) {
 	var wg sync.WaitGroup
 	for _, x := range urls {
 		wg.Add(1)
@@ -216,6 +217,7 @@ func watchCallback(urls []*url.URL, b []byte) {
 			defer wg.Done()
 
 			req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(b))
+			req.Header.Set("X-Idempotency-Id", jId)
 			if err != nil {
 				fmt.Printf("Error while creating http request %v", err)
 				return
@@ -237,22 +239,25 @@ func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 	if err := func() error {
 		startState, _ := store.GetKey(remotePath(in))
 		urls := []*url.URL{}
+		body := &watchPacket{
+			Success: true,
+		}
+
+		u, err := engine(store, in)
+		if err != nil {
+			body.Success = false
+			fmt.Printf("Error executing engine: %+v", err)
+		}
+		if u != nil {
+			urls = append(urls, u)
+		}
+
 		if hook != nil {
 			urls = append(urls, hook)
 		}
 
-		u, engineErr := engine(store, in)
-		if u != nil {
-			urls = append(urls, u)
-		}
-		if engineErr != nil {
-			watchCallback(urls, []byte{})
-			return errors.Wrap(engineErr, "Cannot execute Engine.")
-		}
-
 		endState, _ := store.GetKey(remotePath(in))
 
-		body := &watchPacket{}
 		if err := json.Unmarshal(startState, &body.OldState); err != nil {
 			log.Println(err)
 		}
@@ -266,7 +271,7 @@ func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 			return errors.Wrap(err, "Cannot marshal body to json.")
 		}
 
-		watchCallback(urls, bfinal)
+		watchCallback(urls, bfinal, in.JobId)
 		return nil
 
 	}(); err != nil {
