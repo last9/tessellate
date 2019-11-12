@@ -244,6 +244,9 @@ func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 		}
 
 		u, engineErr := engine(store, in)
+		if engineErr != nil {
+			body.Success = false
+		}
 		if u != nil {
 			urls = append(urls, u)
 		}
@@ -267,7 +270,6 @@ func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 			return errors.Wrap(err, "Cannot marshal body to json.")
 		}
 		if engineErr != nil {
-			body.Success = false
 			watchCallback(urls, bfinal, in.jobID)
 			return errors.Wrap(engineErr, "Cannot execute engine")
 
