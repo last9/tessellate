@@ -272,7 +272,6 @@ func mainRunner(store storage.Storer, in *input, hook *url.URL) int {
 		if engineErr != nil {
 			watchCallback(urls, bfinal, in.jobID)
 			return errors.Wrap(engineErr, "Cannot execute engine")
-
 		}
 
 		watchCallback(urls, bfinal, in.jobID)
